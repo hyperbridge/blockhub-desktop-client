@@ -1,18 +1,17 @@
 {
-    "name": "nostradamus",
+    "name": "blockhub-web-client",
     "version": "0.1.0",
-    "private": true,
-    "repository": "git@github.com:ericmuyser/nostradamus.git",
+    "repository": "git@github.com:hyperbridge/blockhub-web-client.git",
     "license": "UNLICENSED",
-    "main": "./build/scraper/index.js",
+    "main": "./build/index.js",
     "scripts": {
         "build": "yarn run tsc --listEmittedFiles",
-        "format": "./node_modules/.bin/tsfmt -r src/scraper/index.ts",
+        "format": "./node_modules/.bin/tsfmt -r src/index.ts",
         "start": "react-scripts start",
         "electron": "tsc && ELECTRON_ENABLE_LOGGING=1 electron .",
-        "graphql": "yarn run build && yarn run babel-node build/data-service/index.js",
         "test": "react-scripts test --env=jsdom",
-        "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --disable-web-security --user-data-dir"
+        "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --disable-web-security --user-data-dir",
+        "build-mac": "yarn run electron-packager -- . --overwrite --platform=darwin --arch=x64 --icon=assets/icons/mac/icon.icns --prune=true --out=build"
     },
     "theme": {
         "primary-color": "#dacd08"
@@ -33,12 +32,8 @@
         "d3plus": "^1.9.8",
         "d3plus-react": "^0.2.13",
         "dateformat": "^1.0.12",
-        "express": "^4.15.4",
-        "express-graphql": "^0.6.7",
+        "electron-packager": "^9.1.0",
         "flow-bin": "^0.50.0",
-        "graphql": "^0.10.5",
-        "graphql-tag": "^2.4.2",
-        "graphql-tools": "^1.1.0",
         "immutable": "^3.8.1",
         "isomorphic-fetch": "^2.2.1",
         "node-fetch": "^1.7.1",
@@ -49,6 +44,7 @@
         "react-apollo": "^1.4.8",
         "react-calendar-heatmap": "^1.3.0",
         "react-dom": "^15.6.1",
+        "react-hotkeys": "^0.10.0",
         "react-redux": "^5.0.5",
         "react-router": "^4.1.2",
         "react-router-dom": "^4.1.1",
@@ -71,7 +67,7 @@
     },
     "devDependencies": {
         "babel-plugin-import": "^1.2.1",
-        "electron": "1.6.11",
+        "electron": "1.6.16",
         "less": "^2.7.2",
         "less-loader": "^4.0.5",
         "postcss-pxtorem": "^4.0.1",
