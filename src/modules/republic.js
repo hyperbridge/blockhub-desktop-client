@@ -12,7 +12,8 @@ const initialState = {
     council: {
         delegates: []
     },
-    elections: []
+    currentElections: [],
+    pastElections: []
 }
 
 initialState.council.delegates = [
@@ -23,9 +24,45 @@ initialState.council.delegates = [
     }
 ]
 
-initialState.elections = [
+initialState.currentElections = [
     {
-        nominees: []
+        title: '2018 Election',
+        description: 'We intend to do things. Learn more here: https://hyperbridge.org/election2018',
+        startAt: '03-03-1987',
+        endAt: '03-03-2008',
+        nominees: [
+            {
+                address: "0x0",
+                name: "Microsoft"
+            },
+            {
+                address: "0x0",
+                name: "Google"
+            }
+        ]
+    }
+]
+
+initialState.pastElections = [
+    {
+        startAt: '03-03-1987',
+        endAt: '03-03-2008',
+        nominees: [
+            {
+                address: "0x0",
+                name: "Microsoft"
+            },
+            {
+                address: "0x0",
+                name: "Google"
+            }
+        ],
+        winners: [
+            {
+                address: "0x0",
+                name: "Google"
+            }
+        ]
     }
 ]
 
