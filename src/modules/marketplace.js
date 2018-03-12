@@ -7,23 +7,34 @@ const initialApp = {
 }
 
 const initialState = {
-    apps: []
+    apps: [],
+    selectedApp: {
+        title: null,
+        id: null
+    }
 }
 
 initialState.apps = [
     {
+        id: 'sadas3asdasd-asd34asd3-adsas3',
         name: 'Battlerite',
         type: 'game',
         downloads: 4000,
         owner: '0x0'
     },
     {
+        id: 'vsdvs-asd34asfdssd3-ad434sas3',
         name: 'Fortnite',
         type: 'game',
         downloads: 4000,
         owner: '0x0'
     }
 ]
+
+initialState.selectedApp = {
+    title: "World of Warcraft",
+    id: "29dsa90-asdsad9adas-asdadas-asdasd"
+}
 
 export default (state = initialState, action) => {
     console.log(action)

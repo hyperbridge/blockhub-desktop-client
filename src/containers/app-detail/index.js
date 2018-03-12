@@ -12,10 +12,29 @@ const { Header, Content, Sider } = Layout
 
 
 
-const Container = () => (
+const Container = (app) => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
-            <WhiteSpace />
+            <div>{app.title}</div>
+            <div>{app.publisher}</div>
+            {app.title}
+            <br />
+            {app.id}
+            <div>
+                tabs
+            </div>
+            <div>
+                friends who own this
+            </div>
+            <div>
+                achievements
+            </div>
+            <div>
+                news
+            </div>
+            <div>
+                Launch
+            </div>
         </Content>
     </AdvancedLayout>
 )
@@ -23,6 +42,7 @@ const Container = () => (
 Container.displayName = 'app-detail/Container'
 
 const mapStateToProps = state => ({
+    app: state.marketplace.selectedApp
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
