@@ -6,7 +6,7 @@
     "main": "./build/index.js",
     "scripts": {
         "build": "yarn run tsc --listEmittedFiles",
-        "format": "./node_modules/.bin/tsfmt -r src/index.ts",
+        "format": "./node_modules/.bin/tsfmt -r src/app/electron.ts",
         "start": "react-scripts start",
         "electron": "tsc && ELECTRON_ENABLE_LOGGING=1 electron .",
         "test": "react-scripts test --env=jsdom",

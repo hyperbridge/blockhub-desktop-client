@@ -39,7 +39,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-    getAccounts: () => dispatch(NetworkActions.getAccounts(dispatch))
+    getAccounts: () => NetworkActions.getAccounts(dispatch)
 }, dispatch)
 
 export default connect(

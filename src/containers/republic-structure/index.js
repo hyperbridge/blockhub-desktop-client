@@ -36,11 +36,11 @@ const Container = ({ getTransaction }) => (
 Container.displayName = 'republic-structure/Container'
 
 const mapStateToProps = state => ({
-    
+
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-    getTransaction: () => dispatch(NetworkActions.getTransaction(dispatch))
+    getTransaction: () => NetworkActions.getTransaction(dispatch)
 }, dispatch)
 
 export default connect(

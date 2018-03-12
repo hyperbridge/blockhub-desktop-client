@@ -63,7 +63,7 @@ class App extends Component {
 
         this.onRouteChange = this.onRouteChange.bind(this)
 
-        props.dispatch(NetworkActions.getAccounts(props.dispatch))
+        NetworkActions.getAccounts(props.dispatch)
         //props.dispatch(login())
     }
 

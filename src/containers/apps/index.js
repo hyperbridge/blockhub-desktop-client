@@ -12,11 +12,15 @@ const { Header, Content, Sider } = Layout
 
 
 
-const Container = () => (
+const Container = ({ apps }) => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
             <WhiteSpace />
-            
+            {apps.map((app) => (
+                <div>
+                    {app.name}
+                </div>
+            ))}
         </Content>
     </AdvancedLayout>
 )
@@ -24,6 +28,7 @@ const Container = () => (
 Container.displayName = 'apps/Container'
 
 const mapStateToProps = state => ({
+    apps: state.marketplace.apps
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({

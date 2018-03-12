@@ -1,15 +1,21 @@
 import Immutable from 'immutable'
 
-import metamask from '../lib/metamask'
-
-export const CONNECT = 'network/CONNECT'
-export const SEND_WEB3_REQ = 'network/SEND_WEB3_REQ'
-export const SEND_TXHASH = 'network/SEND_TXHASH'
-export const QUEUE_TXHASH = 'network/QUEUE_TXHASH'
-export const ADD_ACC = 'network/ADD_ACC'
+export const CONNECT_REQUEST = 'network/CONNECT_REQUEST'
+export const WEB3_REQUEST = 'network/WEB3_REQUEST'
+export const TRANSACTION_REQUEST = 'network/TRANSACTION_REQUEST'
+export const TRANSACTION_RESPONSE = 'network/TRANSACTION_RESPONSE'
+export const ADD_ACCOUNT_REQUEST = 'network/ADD_ACCOUNT_REQUEST'
 
 const initialAccount = {
-    balance: 0
+    balance: 0,
+    name: null,
+    tokens: []
+}
+
+const initialToken = {
+    contractAddress: null,
+    symbol: null,
+    digits: null
 }
 
 const initialState = {
@@ -32,12 +38,12 @@ if (typeof window.web3 == 'undefined') {
 export default (state = initialState, action) => {
     console.log(action)
     switch (action.type) {
-        case ADD_ACC:
+        case ADD_ACCOUNT_REQUEST:
             const exists = state.accounts.filter((acc) => acc.publicAddress == action.account.publicAddress).length
             if (exists)
                 return state
             return { ...state, accounts: [...state.accounts, action.account] }
-        case SEND_WEB3_REQ:
+        case WEB3_REQUEST:
             return { ...state, balance: action.balance }
         default:
             return state
@@ -46,7 +52,7 @@ export default (state = initialState, action) => {
 
 export const connect = () => {
     return {
-        type: CONNECT,
+        type: CONNECT_REQUEST,
         connected: true
     }
 }
@@ -55,12 +61,14 @@ export const getBalance = () => {
     const balance = window.web3.fromWei(window.web3.eth.getBalance(window.web3.eth.coinbase))
 
     return {
-        type: SEND_WEB3_REQ,
+        type: WEB3_REQUEST,
         balance
     }
 }
 
 export const getTransaction = (dispatch) => {
+    if (!initialState.connected) return
+
     const user = window.web3.eth.accounts[0];
     window.web3.eth.getTransactionCount(user, (err, nonce) => {
         // Form your tx object...
@@ -76,29 +84,33 @@ export const getTransaction = (dispatch) => {
 
         // window.web3.eth.sendTransaction(transaction, (err, res) => {
         //     if (err) { console.error('Error', err); }
-        //     else { dispatch({ type: QUEUE_TXHASH, result: res }); }
+        //     else { dispatch({ type: TRANSACTION_RESPONSE, result: res }); }
         // })
     })
 
-    window.web3.eth.accounts.forEach((e, i) => {
-        console.log(arguments)
-        const account = {
-            publicAddress: window.web3.eth.accounts[i] + ''
-        }
+    if (window.web3.eth.accounts.length) {
+        window.web3.eth.accounts.forEach((e, i) => {
+            console.log(arguments)
+            const account = {
+                publicAddress: window.web3.eth.accounts[i] + ''
+            }
 
-        dispatch({
-            type: ADD_ACC,
-            account
+            dispatch({
+                type: ADD_ACCOUNT_REQUEST,
+                account
+            })
         })
-    })
-
-    return {
-        type: SEND_TXHASH
     }
+
+    dispatch({
+        type: TRANSACTION_REQUEST
+    })
 }
 
 
 export const getAccounts = (dispatch) => {
+    if (!initialState.connected) return
+
     window.web3.eth.accounts.forEach((e, i) => {
         const account = {
             publicAddress: window.web3.eth.accounts[i] + ''
@@ -107,12 +119,12 @@ export const getAccounts = (dispatch) => {
         
 
         dispatch({
-            type: ADD_ACC,
+            type: ADD_ACCOUNT_REQUEST,
             account
         })
     })
 
-    return {
-        type: SEND_TXHASH
-    }
+    dispatch({
+        type: TRANSACTION_REQUEST
+    })
 }
