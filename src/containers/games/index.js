@@ -12,16 +12,14 @@ const { Header, Content, Sider } = Layout
 
 
 
-const Container = () => (
+const Container = ({ marketplace }) => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
-            <WhiteSpace />
-            <div>
-                sidebar
-            </div>
-            <div>
-                product details
-            </div>
+            {marketplace.apps.map((app) => (
+                <div>
+                    <Link to={"app/" + app.id}>{app.name}</Link>
+                </div>
+            ))}
         </Content>
     </AdvancedLayout>
 )
@@ -29,6 +27,7 @@ const Container = () => (
 Container.displayName = 'games/Container'
 
 const mapStateToProps = state => ({
+    marketplace: state.marketplace
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
