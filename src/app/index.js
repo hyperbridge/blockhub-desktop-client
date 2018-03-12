@@ -12,9 +12,11 @@ import Home from '../containers/home'
 import Games from '../containers/games'
 import Apps from '../containers/apps'
 import AppDetail from '../containers/app-detail'
+import RepublicStructure from '../containers/republic-structure'
 
 import registerServiceWorker from './registerServiceWorker'
 import { login } from '../modules/account'
+import { changeSection } from '../modules/site'
 import { history } from '../store'
 
 import './index.css'
@@ -55,7 +57,9 @@ class App extends Component {
         if (props.history)
             props.history.listen(this.onChangeLocation.bind(this))
 
-        window.dispatchhhh = props.dispatch // TODO: remove hack
+        window.appDispatch = props.dispatch // TODO: remove hack
+
+        this.onRouteChange = this.onRouteChange.bind(this)
 
         props.dispatch(login())
     }
@@ -74,11 +78,12 @@ class App extends Component {
         document.body && document.body.classList.add('t-' + route);
 
         this.setState({ lastRoute: route })
+        console.log(route);
+        //props.dispatch(changeSection(route))
     }
 
     componentWillReceiveProps(props) {
     }
-
 
     onRouteChange(route) {
         if (this.state.lastRoute)
@@ -87,6 +92,11 @@ class App extends Component {
         document.body && document.body.classList.add(route.url)
 
         this.setState({ lastRoute: route.url })
+
+        console.log(route);
+        //let route = route.url.slice(1).replace(/\//g, '-')
+
+        this.props.dispatch(changeSection(route))
     }
 
     render() {
@@ -94,10 +104,11 @@ class App extends Component {
             <div className="App">
                 <Router history={history} onUpdate={() => window.scrollTo(0, 0)}>
                     <Switch>
-                        <Route exact path="/" component={Home} onChange={this.onRouteChange.bind(this)} />
-                        <Route exact path="/games" component={Games} onChange={this.onRouteChange.bind(this)} />
-                        <Route exact path="/apps" component={Apps} onChange={this.onRouteChange.bind(this)} />
-                        <Route exact path="/apps/:pair" component={AppDetail} onChange={this.onRouteChange.bind(this)} />
+                        <Route exact path="/" component={Home} onChange={this.onRouteChange} />
+                        <Route exact path="/games" component={Games} onChange={this.onRouteChange} />
+                        <Route exact path="/apps" component={Apps} onChange={this.onRouteChange} />
+                        <Route exact path="/apps/:pair" component={AppDetail} onChange={this.onRouteChange} />
+                        <Route exact path="/republic/structure" component={RepublicStructure} onChange={this.onRouteChange} />
                     </Switch>
                 </Router>
             </div>

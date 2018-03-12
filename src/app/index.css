@@ -29,7 +29,7 @@ body {
     user-select: inherit !important;
     /*font-size: .32rem;*/
     
-    background-image: url(/static/images/body_bg.jpg);
+    /*background-image: url(/static/images/body_bg.jpg);*/
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
@@ -85,7 +85,6 @@ form {
 .ant-layout-sider,
 .ant-menu {
     background: transparent;
-    color: #fff;
 }
 
 .ant-menu-root.ant-menu-vertical, .ant-menu-root.ant-menu-inline {
@@ -98,6 +97,10 @@ form {
 
 .ant-menu-dark .ant-menu-inline.ant-menu-sub {
     background-color: rgba(0, 0, 0, 0.3);
+}
+
+.ant-menu-dark .ant-menu-submenu.ant-menu-submenu-open {
+    background-color: #202830;
 }
 
 .ant-layout {

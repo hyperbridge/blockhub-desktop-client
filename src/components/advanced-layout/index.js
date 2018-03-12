@@ -3,7 +3,11 @@ import ReactDOM from 'react-dom'
 import { Link } from 'react-router-dom'
 import { Layout, Menu, Breadcrumb, Icon, Collapse, Tabs, Spin, Table } from 'antd'
 import Terminal from 'terminal-in-react'
+import styled from 'styled-components'
 
+import { bindActionCreators } from 'redux'
+import { push } from 'react-router-redux'
+import { connect } from 'react-redux'
 import SplitPane from 'react-split-pane/lib/SplitPane'
 import ConnectionPanel from '../connection-panel'
 import PeerConnector from '../peer-connector'
@@ -17,7 +21,7 @@ const Panel = Collapse.Panel
 const TabPane = Tabs.TabPane
 
 const text = `
-  Blockhub is copyright @ Hyperbridge Technology Inc.
+    Blockhub is copyright @ Hyperbridge Technology Inc.
 `
 
 const liveNewsData = {
@@ -85,8 +89,16 @@ const LiveNews = ({ data }) => {
 }
 
 
+const Title = styled.text`
+    font-size: 15px;
+    color: #8E919A;
+    text-transform: uppercase;
+    padding: 23px;
+    border-bottom: 2px solid ${props => props.active ? "#688292" : "transparent"};
+    background: ${props => props.active ? "rgba(255, 255, 255, 0.05)" : "transparent"};
+`
 
-export default class AdvancedLayout extends React.Component {
+class Container extends React.Component {
     state = {
         showConsole: false,
         collapsed: false,
@@ -189,34 +201,36 @@ export default class AdvancedLayout extends React.Component {
                                         pane2Style={{ background: 'rgba(0, 0, 0, 0.3)' }}
                                     >
                                         <div>
-                                            Blockhub
+                                            <img src="https://hyperbridge.org/wp-content/uploads/sites/2/2018/03/Blockhub-Logo-Verticalfinal.png" style={{width: '70px'}} />
                                         </div>
                                         <div>
                                             <SplitPane
                                                 split="horizontal"
                                                 size={this.state.pane1Height}
-                                                pane1Style={{ background: 'rgba(0, 0, 0, 0.99)' }}
-                                                pane2Style={{ background: 'rgba(0, 0, 0, 0.3)' }}
+                                                pane1Style={{ background: '#14161A' }}
+                                                pane2Style={{ background: '#14161A' }}
                                                 ref={(ref) => this.pane1 = ref}
                                                 step={10}
                                             >
-                                                <Collapse
-                                                    bordered={false}
-                                                    defaultActiveKey={['1']}
-                                                    ref={(ref) => this.collapse1 = ref}
-                                                    onChange={() => setTimeout(() => this.setState({ pane1Height: ReactDOM.findDOMNode(this.collapse1).clientHeight }), 300)}
-                                                    style={{ display: 'table', width: '100%' }}
-                                                >
-                                                    <Panel header="Account Info" key="1" disabled>
-                                                        <p>{"stuff"}</p>
-                                                    </Panel>
-                                                    <Panel header="Live News" key="2" className="live-news">
-                                                        <LiveNews data={liveNewsData} />
-                                                    </Panel>
-                                                    <Panel header="Time Zone Map" key="3">
-                                                        <p>{"stuff"}</p>
-                                                    </Panel>
-                                                </Collapse>
+                                                <div>
+                                                    <Collapse
+                                                        bordered={false}
+                                                        defaultActiveKey={['1']}
+                                                        ref={(ref) => this.collapse1 = ref}
+                                                        onChange={() => setTimeout(() => this.setState({ pane1Height: ReactDOM.findDOMNode(this.collapse1).clientHeight }), 300)}
+                                                        style={{ display: 'none', width: '100%' }}
+                                                    >
+                                                        <Panel header="Account Info" key="1" disabled>
+                                                            <p>{"stuff"}</p>
+                                                        </Panel>
+                                                        <Panel header="Live News" key="2" className="live-news">
+                                                            <LiveNews data={liveNewsData} />
+                                                        </Panel>
+                                                        <Panel header="Time Zone Map" key="3">
+                                                            <p>{"stuff"}</p>
+                                                        </Panel>
+                                                    </Collapse>
+                                                </div>
                                                 <div>
                                                     <SplitPane split="horizontal"
                                                         defaultSize="50%"
@@ -238,14 +252,16 @@ export default class AdvancedLayout extends React.Component {
                                                                     <Menu.Item key="home">
                                                                         <Icon type="home" /><span>Home</span>
                                                                     </Menu.Item>
+                                                                    <SubMenu key="community" title={<span><Icon type="laptop" /><span>Community</span></span>}>
+                                                                        <Menu.Item key="community-top"><Link to="/community/chat">Chat</Link></Menu.Item>
+                                                                    </SubMenu>
+                                                                    <SubMenu key="republic" title={<span><Icon type="laptop" /><span>Republic</span></span>}>
+                                                                        <Menu.Item key="republic-structure"><Link to="/republic/structure">Structure</Link></Menu.Item>
+                                                                        <Menu.Item key="republic-membership"><Link to="/republic/membership">Membership</Link></Menu.Item>
+                                                                        <Menu.Item key="republic-elections"><Link to="/republic/elections">Elections</Link></Menu.Item>
+                                                                    </SubMenu>
                                                                     <SubMenu key="friends" title={<span><Icon type="laptop" /><span>Friends</span></span>}>
                                                                         <Menu.Item key="friends-top"><Link to="/friends/top">Top Friends</Link></Menu.Item>
-                                                                    </SubMenu>
-                                                                    <SubMenu key="downloads" title={<span><Icon type="pie-chart" /><span>Downloads</span></span>}>
-                                                                        <Menu.Item key="downloads-test">Test</Menu.Item>
-                                                                    </SubMenu>
-                                                                    <SubMenu key="voice" title={<span><Icon type="pie-chart" /><span>Voice</span></span>}>
-                                                                        <Menu.Item key="voice-test">Test</Menu.Item>
                                                                     </SubMenu>
                                                                     <SubMenu key="about" title={<span><Icon type="notification" /><span>About</span></span>}>
                                                                         <Menu.Item key="about-news">News</Menu.Item>
@@ -260,6 +276,7 @@ export default class AdvancedLayout extends React.Component {
                                                                     </SubMenu>
                                                                     <SubMenu key="settings" title={<span><Icon type="wheel" /><span>Settings</span></span>}>
                                                                         <Menu.Item key="settings-accounts"><Icon type="user" /><span>Accounts</span></Menu.Item>
+                                                                        <Menu.Item key="settings-client"><Icon type="user" /><span>Client</span></Menu.Item>
                                                                     </SubMenu>
                                                                     <Menu.Item key="8" style={{ display: "none" }}>
                                                                         <Icon
@@ -292,18 +309,18 @@ export default class AdvancedLayout extends React.Component {
                                             defaultSelectedKeys={['1']}
                                             style={{ lineHeight: '64px' }}
                                         >
-                                            <Menu.Item key="home"><Link to="/">Home</Link></Menu.Item>
-                                            <Menu.Item key="apps"><Link to="/apps">Apps</Link></Menu.Item>
-                                            <Menu.Item key="games"><Link to="/games">Games</Link></Menu.Item>
-                                            <Menu.Item key="music"><Link to="/music">Music</Link></Menu.Item>
-                                            <Menu.Item key="video"><Link to="/video">Video</Link></Menu.Item>
+                                            <Menu.Item key="home"><Link to="/"><Title active={this.props.section == 'home'}>Home</Title></Link></Menu.Item>
+                                            <Menu.Item key="apps"><Link to="/apps"><Title active={this.props.section == 'apps'}>Apps</Title></Link></Menu.Item>
+                                            <Menu.Item key="games"><Link to="/games"><Title active={this.props.section == 'games'}>Games</Title></Link></Menu.Item>
+                                            <Menu.Item key="music"><Link to="/music"><Title active={this.props.section == 'music'}>Music</Title></Link></Menu.Item>
+                                            <Menu.Item key="video"><Link to="/video"><Title active={this.props.section == 'video'}>Video</Title></Link></Menu.Item>
                                         </Menu>
                                     </Header>
                                     <SplitPane
                                         split="horizontal"
                                         size={this.state.pane2Height}
                                         step={10}
-                                        pane1Style={{ background: '#171E24', overflowY: 'auto' }}
+                                        pane1Style={{ background: '#38414c', overflowY: 'auto' }}
                                         pane2Style={{ background: 'rgba(0, 0, 0, 0.3)' }}
                                         ref={(ref) => this.pane2 = ref}
                                     >
@@ -335,3 +352,18 @@ export default class AdvancedLayout extends React.Component {
         )
     }
 }
+
+Container.displayName = 'advanced-layout/Container'
+
+const mapStateToProps = (state) => ({
+    section: state.site.section
+})
+
+const mapDispatchToProps = dispatch => bindActionCreators({
+    changePage: (page) => push(page)
+}, dispatch)
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Container)

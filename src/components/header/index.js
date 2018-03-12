@@ -1,11 +1,13 @@
 import React from 'react'
-import { push } from 'react-router-redux'
 import { Link } from 'react-router-dom'
 import { bindActionCreators } from 'redux'
+import { push } from 'react-router-redux'
 import { connect } from 'react-redux'
 import { Icon, NavBar } from 'antd-mobile'
+import styled from 'styled-components'
 
 import logo from './logo.svg'
+
 
 export const Container = ({ changePage }) => (
     <header className="header">

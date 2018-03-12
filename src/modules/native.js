@@ -91,8 +91,8 @@ document.addEventListener('WebViewBridge', () => {
         console.log('From Native: ' + data)
 
         const message = JSON.parse(data)
-        
-        const dispatch = window.dispatchhhh // hack for now
+
+        const dispatch = window.appDispatch // hack for now
 
         switch(message.key) {
             case SHOW_SIGN_IN:
