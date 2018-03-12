@@ -14,7 +14,11 @@
         "build-mac": "yarn run electron-packager -- . --overwrite --platform=darwin --arch=x64 --icon=assets/icons/mac/icon.icns --prune=true --out=build"
     },
     "theme": {
-        "primary-color": "#dacd08"
+        "primary-color": "#dacd08",
+        "heading-color": "#fff",
+        "text-color": "#fff",
+        "text-color-secondary": "#fff"
+
     },
     "dependencies": {
         "@types/react": "^16.0.0",
