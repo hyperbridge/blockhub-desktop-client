@@ -250,7 +250,7 @@ class Container extends React.Component {
                                                                     style={{ height: '100%', borderRight: 0 }}
                                                                 >
                                                                     <Menu.Item key="home">
-                                                                        <Icon type="home" /><span>Home</span>
+                                                                        <span><Icon type="home" /><Link to="/"><span>Home</span></Link></span>
                                                                     </Menu.Item>
                                                                     <SubMenu key="community" title={<span><Icon type="laptop" /><span>Community</span></span>}>
                                                                         <Menu.Item key="community-top"><Link to="/community/chat">Chat</Link></Menu.Item>
