@@ -9,7 +9,7 @@ const NoConnection = () => (
 )
 
 export const Container = (props) => (
-    props.connected ? props.children : <NoConnection />
+    props.connected ? <div>{props.children}</div> : <NoConnection />
 )
 
 Container.displayName = 'network-container/Container'

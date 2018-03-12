@@ -16,6 +16,7 @@ const Container = () => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
             <WhiteSpace />
+            
         </Content>
     </AdvancedLayout>
 )

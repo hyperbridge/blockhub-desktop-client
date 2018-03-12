@@ -275,7 +275,7 @@ class Container extends React.Component {
                                                                         <Menu.Item key="about-contact">Contact Us</Menu.Item>
                                                                     </SubMenu>
                                                                     <SubMenu key="settings" title={<span><Icon type="wheel" /><span>Settings</span></span>}>
-                                                                        <Menu.Item key="settings-accounts"><Icon type="user" /><span>Accounts</span></Menu.Item>
+                                                                        <Menu.Item key="settings-accounts"><Link to="/accounts"><Icon type="user" /> Accounts</Link></Menu.Item>
                                                                         <Menu.Item key="settings-client"><Icon type="user" /><span>Client</span></Menu.Item>
                                                                     </SubMenu>
                                                                     <Menu.Item key="8" style={{ display: "none" }}>

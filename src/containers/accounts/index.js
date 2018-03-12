@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Layout, Menu, Table, Badge, Breadcrumb, Dropdown, Icon, Spin } from 'antd'
 import { WhiteSpace } from 'antd-mobile'
-import styled from 'styled-components'
 
 import AdvancedLayout from '../../components/advanced-layout'
 import NetworkContainer from '../../components/network-container'
@@ -13,34 +12,34 @@ import * as NetworkActions from '../../modules/network'
 const { SubMenu } = Menu
 const { Header, Content, Sider } = Layout
 
-const Button = styled.button`
-    border-radius: 3px;
-    padding: 0.25em 1em;
-    margin: 0 1em;
-    background: transparent;
-    color: palevioletred;
-    border: 2px solid palevioletred;
-`
 
-const Container = ({ getTransaction }) => (
+
+const Container = ({ accounts, getAccounts }) => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
-            <NetworkContainer>
-                <Button onClick={getTransaction}>stuff</Button>
-                <WhiteSpace />
-            </NetworkContainer>
+            <h1>Accounts <button onClick={getAccounts}>Reload Accounts</button></h1>
+            
+            {!accounts.length && (
+                <div>None yet</div>
+            )}
+
+            {accounts.map((acc) => (
+                <div>
+                    {acc.publicAddress}
+                </div>
+            ))}
         </Content>
     </AdvancedLayout>
 )
 
-Container.displayName = 'republic-structure/Container'
+Container.displayName = 'accounts/Container'
 
 const mapStateToProps = state => ({
-    
+    accounts: state.network.accounts
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-    getTransaction: () => dispatch(NetworkActions.getTransaction(dispatch))
+    getAccounts: () => dispatch(NetworkActions.getAccounts(dispatch))
 }, dispatch)
 
 export default connect(

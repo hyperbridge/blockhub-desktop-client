@@ -9,15 +9,17 @@ import { bindActionCreators } from 'redux'
 import createBrowserHistory from 'history/createBrowserHistory'
 
 import Home from '../containers/home'
+import Accounts from '../containers/accounts'
 import Games from '../containers/games'
 import Apps from '../containers/apps'
 import AppDetail from '../containers/app-detail'
 import RepublicStructure from '../containers/republic-structure'
 
 import registerServiceWorker from './registerServiceWorker'
-import { login } from '../modules/account'
 import { changeSection } from '../modules/site'
 import { history } from '../store'
+
+import * as NetworkActions from '../modules/network'
 
 import './index.css'
 
@@ -61,7 +63,8 @@ class App extends Component {
 
         this.onRouteChange = this.onRouteChange.bind(this)
 
-        props.dispatch(login())
+        props.dispatch(NetworkActions.getAccounts(props.dispatch))
+        //props.dispatch(login())
     }
 
     onChangeLocation(location) {
@@ -105,6 +108,7 @@ class App extends Component {
                 <Router history={history} onUpdate={() => window.scrollTo(0, 0)}>
                     <Switch>
                         <Route exact path="/" component={Home} onChange={this.onRouteChange} />
+                        <Route exact path="/accounts" component={Accounts} onChange={this.onRouteChange} />
                         <Route exact path="/games" component={Games} onChange={this.onRouteChange} />
                         <Route exact path="/apps" component={Apps} onChange={this.onRouteChange} />
                         <Route exact path="/apps/:pair" component={AppDetail} onChange={this.onRouteChange} />
