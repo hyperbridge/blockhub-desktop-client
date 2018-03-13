@@ -163,11 +163,11 @@ class Container extends React.Component {
                                                 style={{ fontWeight: "bold", fontSize: "1em" }}
                                                 commands={{
                                                     'open-google': () => window.open('https://www.google.com/', '_blank'),
+                                                    'showme': () => window.open('https://media3.giphy.com/media/26gYPjuK6O0H63GyQ/giphy.gif'),
                                                     showmsg: this.showMsg,
                                                     popup: () => alert('Terminal in React')
                                                 }}
                                                 descriptions={{
-                                                    'open-google': 'opens google.com',
                                                     showmsg: 'shows a message',
                                                     alert: 'alert', popup: 'alert'
                                                 }}
@@ -264,15 +264,15 @@ class Container extends React.Component {
                                                                         <Menu.Item key="friends-top"><Link to="/friends/top">Top Friends</Link></Menu.Item>
                                                                     </SubMenu>
                                                                     <SubMenu key="about" title={<span><Icon type="notification" /><span>About</span></span>}>
-                                                                        <Menu.Item key="about-news">News</Menu.Item>
-                                                                        <Menu.Item key="about-status">Site Status</Menu.Item>
-                                                                        <Menu.Item key="about-privacy">Privacy Policy</Menu.Item>
-                                                                        <Menu.Item key="about-cookie">Cookie Policy</Menu.Item>
-                                                                        <Menu.Item key="about-terms">Terms and Conditions</Menu.Item>
-                                                                        <Menu.Item key="about-docs">Documentation</Menu.Item>
-                                                                        <Menu.Item key="about-fees">Fees</Menu.Item>
-                                                                        <Menu.Item key="about-support">Support</Menu.Item>
-                                                                        <Menu.Item key="about-contact">Contact Us</Menu.Item>
+                                                                        <Menu.Item key="about-news"><Link to="/news"><span>News</span></Link></Menu.Item>
+                                                                        <Menu.Item key="about-status"><Link to="/status"><span>Site Status</span></Link></Menu.Item>
+                                                                        <Menu.Item key="about-privacy"><Link to="/policy/privacy"><span>Privacy Policy</span></Link></Menu.Item>
+                                                                        <Menu.Item key="about-cookie"><Link to="/policy/cookie"><span>Cookie Policy</span></Link></Menu.Item>
+                                                                        <Menu.Item key="about-terms"><Link to="/terms"><span>Terms and Conditions</span></Link></Menu.Item>
+                                                                        <Menu.Item key="about-docs"><Link to="/docs"><span>Documentation</span></Link></Menu.Item>
+                                                                        <Menu.Item key="about-fees"><Link to="/fees"><span>Fees</span></Link></Menu.Item>
+                                                                        <Menu.Item key="about-support"><Link to="/support"><span>Support</span></Link></Menu.Item>
+                                                                        <Menu.Item key="about-contact"><Link to="/contact"><span>Contact Us</span></Link></Menu.Item>
                                                                     </SubMenu>
                                                                     <SubMenu key="settings" title={<span><Icon type="wheel" /><span>Settings</span></span>}>
                                                                         <Menu.Item key="settings-accounts"><Link to="/accounts"><Icon type="user" /> Accounts</Link></Menu.Item>
