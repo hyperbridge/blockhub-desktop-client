@@ -11,6 +11,7 @@ import createBrowserHistory from 'history/createBrowserHistory'
 import Home from '../containers/home'
 import Accounts from '../containers/accounts'
 import Games from '../containers/games'
+import News from '../containers/news'
 import Apps from '../containers/apps'
 import AppDetail from '../containers/app-detail'
 import RepublicStructure from '../containers/republic-structure'
@@ -112,6 +113,7 @@ class App extends Component {
                         <Route exact path="/accounts" component={Accounts} onChange={this.onRouteChange} />
                         <Route exact path="/games" component={Games} onChange={this.onRouteChange} />
                         <Route exact path="/apps" component={Apps} onChange={this.onRouteChange} />
+                        <Route exact path="/news" component={News} onChange={this.onRouteChange} />
                         <Route exact path="/settings/client" component={ClientSettings} onChange={this.onRouteChange} />
                         <Route exact path="/app/:id" component={AppDetail} onChange={this.onRouteChange} />
                         <Route exact path="/republic/structure" component={RepublicStructure} onChange={this.onRouteChange} />
