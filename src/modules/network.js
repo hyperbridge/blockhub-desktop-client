@@ -36,7 +36,6 @@ if (typeof window.web3 == 'undefined') {
 }
 
 export default (state = initialState, action) => {
-    console.log(action)
     switch (action.type) {
         case ADD_ACCOUNT_REQUEST:
             const exists = state.accounts.filter((acc) => acc.publicAddress == action.account.publicAddress).length

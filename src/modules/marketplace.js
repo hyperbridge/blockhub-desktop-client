@@ -1,6 +1,9 @@
 import Immutable from 'immutable'
 
+import db from '../app/db/db'
+
 export const APP_LISTING_REQUEST = 'network/APP_LISTING_REQUEST'
+
 
 const initialApp = {
     name: null
@@ -23,29 +26,15 @@ initialState.apps = {
     upcoming: [],
     newTrending: [],
     topSellers: [],
-    specials: [
-        {
-            id: 'sadas3asdasd-asd34asd3-adsas3',
-            name: 'Battlerite',
-            type: 'game',
-            downloads: 4000,
-            owner: '0x0',
-            author: {
-                id: '0x0'
-            }
-        },
-        {
-            id: 'vsdvs-asd34asfdssd3-ad434sas3',
-            name: 'Fortnite',
-            type: 'game',
-            downloads: 4000,
-            owner: '0x0',
-            author: {
-                id: '0x0'
-            }
-        }
-    ]
+    specials: []
 }
+
+
+var games = db.apps.addDynamicView('games')
+games.applyFind({ id: { '$gt': 2 } })
+games.applySimpleSort('id')
+
+initialState.apps.specials = games.data()
 
 
 initialState.selectedApp = {

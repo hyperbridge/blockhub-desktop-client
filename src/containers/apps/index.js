@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Layout, Menu, Table, Badge, Breadcrumb, Dropdown, Icon, Spin, Tabs } from 'antd'
 import { WhiteSpace } from 'antd-mobile'
+import db from '../../app/db/db'
 
 import AdvancedLayout from '../../components/advanced-layout'
 
@@ -21,9 +22,14 @@ const Container = ({ republic, marketplace }) => (
                     <Link to={"app/" + app.id}>{app.name}</Link>
                 </div>
             ))}
+
             filters
+            <br />
             featured
+            <br />
             special offers
+            <br />
+            {(db.apps.findOne({ id: 1 }) || {}).name}
 
             <Tabs defaultActiveKey="new-trending" size="small">
                 <TabPane tab="New and Trending" key="new-trending">
