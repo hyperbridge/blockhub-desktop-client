@@ -23,6 +23,8 @@ const Container = (app) => (
             <Rate onChange={handleRate} value={app.rating} />
             {app.rating && <span className="ant-rate-text">{app.rating} stars</span>}
             <br />
+            Downloads: {app.downloads}
+            <br />
             {app.id}
             <div>
                 tabs

@@ -7,6 +7,7 @@ import { WhiteSpace } from 'antd-mobile'
 import db from '../../app/db/db'
 
 import AdvancedLayout from '../../components/advanced-layout'
+import ProductTile from '../../components/product-tile'
 
 const { SubMenu } = Menu
 const { Header, Content, Sider } = Layout
@@ -29,7 +30,6 @@ const Container = ({ republic, marketplace }) => (
             <br />
             special offers
             <br />
-            {(db.apps.findOne({ id: 1 }) || {}).name}
 
             <Tabs defaultActiveKey="new-trending" size="small">
                 <TabPane tab="New and Trending" key="new-trending">
@@ -61,9 +61,8 @@ const Container = ({ republic, marketplace }) => (
                 
                 <TabPane tab="Specials" key="specials">
                     {marketplace.apps.specials.map((app) => (
-                        <div>
-                            <Link to={"app/" + app.id}>{app.name}</Link>
-                        </div>
+                        <ProductTile {...app}>
+                        </ProductTile>
                     ))}
                 </TabPane>
             </Tabs>

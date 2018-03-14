@@ -36,60 +36,12 @@ initialState.council.delegates = [
 ]
 
 initialState.currentElections = [
-    {
-        title: '2018 Election',
-        description: 'We intend to do things. Learn more here: https://hyperbridge.org/election2018',
-        startAt: '03-03-1987',
-        endAt: '03-03-2008',
-        nominees: [
-            {
-                address: "0x0",
-                name: "Microsoft"
-            },
-            {
-                address: "0x0",
-                name: "Google"
-            }
-        ]
-    }
 ]
 
 initialState.pastElections = [
-    {
-        startAt: '03-03-1987',
-        endAt: '03-03-2008',
-        nominees: [
-            {
-                address: "0x0",
-                name: "Microsoft"
-            },
-            {
-                address: "0x0",
-                name: "Google"
-            }
-        ],
-        winners: [
-            {
-                address: "0x0",
-                name: "Google"
-            }
-        ]
-    }
 ]
 
 initialState.apps = [
-    {
-        name: 'Battlerite',
-        type: 'game',
-        downloads: 4000,
-        owner: '0x0'
-    },
-    {
-        name: 'Fortnite',
-        type: 'game',
-        downloads: 4000,
-        owner: '0x0'
-    }
 ]
 
 export default (state = initialState, action) => {

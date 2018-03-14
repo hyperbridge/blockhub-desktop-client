@@ -30,11 +30,11 @@ initialState.apps = {
 }
 
 
-var games = db.apps.addDynamicView('games')
-games.applyFind({ id: { '$gt': 2 } })
-games.applySimpleSort('id')
+var specials = db.marketplace.apps.addDynamicView('specials')
+specials.applyFind({ 'republicTags': { '$contains': 'specials' } })
+specials.applySimpleSort('id')
 
-initialState.apps.specials = games.data()
+initialState.apps.specials = specials.data()
 
 
 initialState.selectedApp = {
