@@ -120,6 +120,22 @@ class DB {
                 },
                 republicTags: ['game', 'specials'],
                 authorTags: ['fps']
+            },
+            {
+                id: "29dsa90-asdsad9adas-asdadas-asdasd",
+                name: "World of Warcraft",
+                type: 'game',
+                downloads: 20,
+                republicTags: ['game', 'specials'],
+                authorTags: ['mmo']
+            },
+            {
+                id: "29dsa90-3434asd-asdadas-asdasd",
+                name: "Divvy",
+                type: 'app',
+                downloads: 0,
+                republicTags: ['productivity', 'specials'],
+                authorTags: ['hotkeys']
             }
         ])
 

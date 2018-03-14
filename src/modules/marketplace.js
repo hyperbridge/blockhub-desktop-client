@@ -16,6 +16,12 @@ const initialState = {
         topSellers: [],
         specials: []
     },
+    games: {
+        upcoming: [],
+        newTrending: [],
+        topSellers: [],
+        specials: []
+    },
     selectedApp: {
         title: null,
         id: null
@@ -23,24 +29,27 @@ const initialState = {
 }
 
 initialState.apps = {
-    upcoming: [],
-    newTrending: [],
-    topSellers: [],
-    specials: []
+    upcoming: db.marketplace.apps.find({ 'republicTags': { '$contains': 'upcoming' } }),
+    newTrending: db.marketplace.apps.find({ 'republicTags': { '$contains': 'newTrending' } }),
+    topSellers: db.marketplace.apps.find({ 'republicTags': { '$contains': 'topSellers' } }),
+    specials: db.marketplace.apps.find({ 'republicTags': { '$contains': 'specials' } })
 }
 
-
-var specials = db.marketplace.apps.addDynamicView('specials')
-specials.applyFind({ 'republicTags': { '$contains': 'specials' } })
-specials.applySimpleSort('id')
-
-initialState.apps.specials = specials.data()
-
-
-initialState.selectedApp = {
-    title: "World of Warcraft",
-    id: "29dsa90-asdsad9adas-asdadas-asdasd"
+initialState.games = {
+    upcoming: db.marketplace.apps.find({ 'republicTags': { '$contains': ['upcoming', 'game'] } }),
+    newTrending: db.marketplace.apps.find({ 'republicTags': { '$contains': ['newTrending', 'game'] } }),
+    topSellers: db.marketplace.apps.find({ 'republicTags': { '$contains': ['topSellers', 'game'] } }),
+    specials: db.marketplace.apps.find({ 'republicTags': { '$contains': ['specials', 'game'] } })
 }
+
+// var specials = db.marketplace.apps.addDynamicView('specials')
+// specials.applyFind({ 'republicTags': { '$contains': 'specials' } })
+// specials.applySimpleSort('id')
+
+// initialState.apps.specials = specials.data()
+
+
+initialState.selectedApp = initialState.apps.specials[0]
 
 export default (state = initialState, action) => {
     console.log(action)
@@ -57,4 +66,8 @@ export const getAppListing = (dispatch) => {
     return {
         type: APP_LISTING_REQUEST
     }
+}
+
+export const getApp = (id) => {
+    return db.marketplace.apps.findOne({ id: id })
 }

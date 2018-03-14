@@ -17,7 +17,7 @@ const TabPane = Tabs.TabPane
 const Container = ({ republic, marketplace }) => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
-            <h2>My Apps <button>Create App</button></h2>
+            <h2>My Apps <Link to="/app/create">Create App</Link></h2>
             {republic.currentCitizen.apps.map((app) => (
                 <div>
                     <Link to={"app/" + app.id}>{app.name}</Link>

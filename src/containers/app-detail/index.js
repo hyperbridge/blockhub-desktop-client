@@ -7,6 +7,9 @@ import { WhiteSpace } from 'antd-mobile'
 
 import AdvancedLayout from '../../components/advanced-layout'
 
+import * as MarketplaceActions from '../../modules/marketplace'
+
+
 const { SubMenu } = Menu
 const { Header, Content, Sider } = Layout
 
@@ -15,7 +18,7 @@ const handleRate = () => {
 
 }
 
-const Container = (app) => (
+const Container = ({ app }) => (
     <AdvancedLayout>
         <Content style={{ padding: '10px', marginTop: '10px' }}>
             <div>{app.title}</div>
@@ -47,8 +50,8 @@ const Container = (app) => (
 
 Container.displayName = 'app-detail/Container'
 
-const mapStateToProps = state => ({
-    app: state.marketplace.selectedApp
+const mapStateToProps = (state, ownProps) => ({
+    app: MarketplaceActions.getApp(ownProps.match.params.id)
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
