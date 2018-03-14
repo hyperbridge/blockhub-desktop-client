@@ -13,7 +13,18 @@ const initialState = {
         delegates: []
     },
     currentElections: [],
-    pastElections: []
+    pastElections: [],
+    currentCitizen: {
+        name: "eric",
+        address: "0x0",
+        apps: [
+            {
+                id: "0asdasd0a-adsasda-asdasd9",
+                name: "blockhub",
+                link: "http://something/blockhub.exe"
+            }
+        ]
+    }
 }
 
 initialState.council.delegates = [
