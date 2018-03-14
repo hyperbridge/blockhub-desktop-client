@@ -2,7 +2,7 @@ import React from 'react'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { Layout, Menu, Table, Badge, Breadcrumb, Dropdown, Icon, Spin } from 'antd'
+import { Layout, Menu, Table, Badge, Breadcrumb, Dropdown, Icon, Spin, Rate } from 'antd'
 import { WhiteSpace } from 'antd-mobile'
 
 import AdvancedLayout from '../../components/advanced-layout'
@@ -11,13 +11,17 @@ const { SubMenu } = Menu
 const { Header, Content, Sider } = Layout
 
 
+const handleRate = () => {
+
+}
 
 const Container = (app) => (
     <AdvancedLayout>
-        <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
+        <Content style={{ padding: '10px', marginTop: '10px' }}>
             <div>{app.title}</div>
             <div>{app.publisher}</div>
-            {app.title}
+            <Rate onChange={handleRate} value={app.rating} />
+            {app.rating && <span className="ant-rate-text">{app.rating} stars</span>}
             <br />
             {app.id}
             <div>
