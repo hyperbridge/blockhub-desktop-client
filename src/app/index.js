@@ -14,6 +14,7 @@ import Games from '../containers/games'
 import News from '../containers/news'
 import Apps from '../containers/apps'
 import AppDetail from '../containers/app-detail'
+import CreateApp from '../containers/create-app'
 import ManageApp from '../containers/manage-app'
 import RepublicStructure from '../containers/republic-structure'
 import RepublicCitizenship from '../containers/republic-citizenship'
@@ -118,6 +119,7 @@ class App extends Component {
                         <Route exact path="/apps" component={Apps} onChange={this.onRouteChange} />
                         <Route exact path="/news" component={News} onChange={this.onRouteChange} />
                         <Route exact path="/settings/client" component={ClientSettings} onChange={this.onRouteChange} />
+                        <Route exact path="/app/create" component={CreateApp} onChange={this.onRouteChange} />
                         <Route exact path="/app/:id" component={AppDetail} onChange={this.onRouteChange} />
                         <Route exact path="/app/:id/edit" component={ManageApp} onChange={this.onRouteChange} />
                         <Route exact path="/community/chat" component={CommunityChat} onChange={this.onRouteChange} />
