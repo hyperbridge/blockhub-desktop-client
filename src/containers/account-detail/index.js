@@ -21,6 +21,8 @@ const Container = (account) => (
                 {account.tokens.map((token) => (
                     <div>{token.symbol}</div>
                 ))}
+                <br />
+                <button>Setup Citizenship of Hyperbridge Republic</button>
             </div>
         </Content>
     </AdvancedLayout>
@@ -29,6 +31,7 @@ const Container = (account) => (
 Container.displayName = 'account-detail/Container'
 
 const mapStateToProps = state => ({
+    account: state.network.currentAccount
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
