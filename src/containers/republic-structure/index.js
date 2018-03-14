@@ -22,7 +22,7 @@ const Button = styled.button`
     border: 2px solid palevioletred;
 `
 
-const Container = ({ republic, getTransaction }) => (
+const Container = ({ republic, account, getTransaction }) => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
             <NetworkContainer>
@@ -54,7 +54,9 @@ const Container = ({ republic, getTransaction }) => (
                         <br />
                         Nominees:
                         <br />
-                        {election.nominees.map((nominee) => (
+                        {!election.nominees && <div>No nominees</div>}
+
+                        {election.nominees && election.nominees.map((nominee) => (
                             <div>{nominee.name} ({nominee.address})</div>
                         ))}
                     </div>
@@ -74,6 +76,19 @@ const Container = ({ republic, getTransaction }) => (
                         ))}
                     </div>
                 ))}
+                <br />
+                Your Districts
+                <br />
+                {!account.citizen && (
+                    <div>Setup Citizenship</div>
+                )}
+                {account.citizen && account.citizen.districts.map((district) => (
+                    <div>
+                        district: {district.name}
+                        <br />
+                        total apps: {district.totalApps}
+                    </div>
+                ))}
             </div>
         </Content>
     </AdvancedLayout>
@@ -82,7 +97,8 @@ const Container = ({ republic, getTransaction }) => (
 Container.displayName = 'republic-structure/Container'
 
 const mapStateToProps = state => ({
-    republic: state.republic
+    republic: state.republic,
+    account: state.account
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
