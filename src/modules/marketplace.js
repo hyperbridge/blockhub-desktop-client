@@ -7,29 +7,46 @@ const initialApp = {
 }
 
 const initialState = {
-    apps: [],
+    apps: {
+        upcoming: [],
+        newTrending: [],
+        topSellers: [],
+        specials: []
+    },
     selectedApp: {
         title: null,
         id: null
     }
 }
 
-initialState.apps = [
-    {
-        id: 'sadas3asdasd-asd34asd3-adsas3',
-        name: 'Battlerite',
-        type: 'game',
-        downloads: 4000,
-        owner: '0x0'
-    },
-    {
-        id: 'vsdvs-asd34asfdssd3-ad434sas3',
-        name: 'Fortnite',
-        type: 'game',
-        downloads: 4000,
-        owner: '0x0'
-    }
-]
+initialState.apps = {
+    upcoming: [],
+    newTrending: [],
+    topSellers: [],
+    specials: [
+        {
+            id: 'sadas3asdasd-asd34asd3-adsas3',
+            name: 'Battlerite',
+            type: 'game',
+            downloads: 4000,
+            owner: '0x0',
+            author: {
+                id: '0x0'
+            }
+        },
+        {
+            id: 'vsdvs-asd34asfdssd3-ad434sas3',
+            name: 'Fortnite',
+            type: 'game',
+            downloads: 4000,
+            owner: '0x0',
+            author: {
+                id: '0x0'
+            }
+        }
+    ]
+}
+
 
 initialState.selectedApp = {
     title: "World of Warcraft",
@@ -43,6 +60,8 @@ export default (state = initialState, action) => {
             return state
     }
 }
+
+// get apps by tag topSellers upcoming newTrending 
 
 export const getAppListing = (dispatch) => {
 
