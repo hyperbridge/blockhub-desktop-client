@@ -14,8 +14,11 @@ import Games from '../containers/games'
 import News from '../containers/news'
 import Apps from '../containers/apps'
 import AppDetail from '../containers/app-detail'
+import ManageApp from '../containers/manage-app'
 import RepublicStructure from '../containers/republic-structure'
+import RepublicCitizenship from '../containers/republic-citizenship'
 import ClientSettings from '../containers/client-settings'
+import CommunityChat from '../containers/community-chat'
 
 import registerServiceWorker from './registerServiceWorker'
 import { changeSection } from '../modules/site'
@@ -116,7 +119,10 @@ class App extends Component {
                         <Route exact path="/news" component={News} onChange={this.onRouteChange} />
                         <Route exact path="/settings/client" component={ClientSettings} onChange={this.onRouteChange} />
                         <Route exact path="/app/:id" component={AppDetail} onChange={this.onRouteChange} />
+                        <Route exact path="/app/:id/edit" component={ManageApp} onChange={this.onRouteChange} />
+                        <Route exact path="/community/chat" component={CommunityChat} onChange={this.onRouteChange} />
                         <Route exact path="/republic/structure" component={RepublicStructure} onChange={this.onRouteChange} />
+                        <Route exact path="/republic/citizenship" component={RepublicCitizenship} onChange={this.onRouteChange} />
                     </Switch>
                 </Router>
             </div>
