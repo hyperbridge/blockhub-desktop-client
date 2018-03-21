@@ -1,5 +1,7 @@
 import Immutable from 'immutable'
 
+import Account from '../models/Account'
+
 export const CONNECT_REQUEST = 'network/CONNECT_REQUEST'
 export const WEB3_REQUEST = 'network/WEB3_REQUEST'
 export const TRANSACTION_REQUEST = 'network/TRANSACTION_REQUEST'
@@ -56,8 +58,11 @@ export const connect = () => {
     }
 }
 
-export const getBalance = () => {
-    const balance = window.web3.fromWei(window.web3.eth.getBalance(window.web3.eth.coinbase))
+export const getBalance = (addr) => {
+    if (!addr)
+        addr = window.web3.eth.coinbase
+
+    const balance = window.web3.fromWei(window.web3.eth.getBalance(addr))
 
     return {
         type: WEB3_REQUEST,
@@ -90,9 +95,12 @@ export const getTransaction = (dispatch) => {
     if (window.web3.eth.accounts.length) {
         window.web3.eth.accounts.forEach((e, i) => {
             console.log(arguments)
-            const account = {
-                publicAddress: window.web3.eth.accounts[i] + ''
-            }
+            const addr = window.web3.eth.accounts[i]
+
+            const account = new Account({
+                publicAddress: addr + '',
+                balance: getBalance(addr)
+            })
 
             dispatch({
                 type: ADD_ACCOUNT_REQUEST,

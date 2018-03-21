@@ -77,10 +77,10 @@ const Container = ({ republic, account, getTransaction }) => (
                     </div>
                 ))}
                 <br />
-                Your Districts
+                Your Districts <Link to="/republic/district/create">Create District</Link>
                 <br />
                 {!account.citizen && (
-                    <div>Setup Citizenship</div>
+                    <Link to="/republic/citizenship">Setup Citizenship</Link>
                 )}
                 {account.citizen && account.citizen.districts.map((district) => (
                     <div>

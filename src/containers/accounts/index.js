@@ -25,7 +25,7 @@ const Container = ({ accounts, getAccounts }) => (
 
             {accounts.map((acc) => (
                 <div>
-                    {acc.publicAddress}
+                    {acc.publicAddress} - {acc.balance}
                 </div>
             ))}
         </Content>

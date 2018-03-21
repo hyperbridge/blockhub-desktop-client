@@ -25,7 +25,7 @@ const Button = styled.button`
 
 const Container = ({ republic }) => (
     <AdvancedLayout>
-        <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
+        <Content style={{ 'padding': '10px', 'marginTop': '10px', 'background': '#fff' }}>
             <Steps>
                 <Step status="finish" title="Login" icon={<Icon type="user" />} />
                 <Step status="finish" title="Verification" icon={<Icon type="solution" />} />

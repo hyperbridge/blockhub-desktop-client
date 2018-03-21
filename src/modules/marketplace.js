@@ -1,5 +1,7 @@
 import Immutable from 'immutable'
 
+import Blockhub from 'blockhub-protocol'
+
 import db from '../app/db/db'
 
 export const APP_LISTING_REQUEST = 'network/APP_LISTING_REQUEST'
@@ -68,6 +70,25 @@ export const getAppListing = (dispatch) => {
     }
 }
 
-export const getApp = (id) => {
-    return db.marketplace.apps.findOne({ id: id })
+let abi = null
+
+export const fetchABI = async () => {
+    if (abi)
+        return abi
+
+    return await new Promise((resolve) => {
+        fetch("/contracts/Marketplace.json").then((data) => {
+            abi = data.json()
+
+            resolve(abi)
+        })
+    })
+}
+
+export const getApp = async (id) => {
+    const abi = await fetchABI()
+
+    Blockhub.Ethereum.Models.Marketplace.init(abi, "0x6bfeee909953693ed3958b5dfca3876e0eb2a31a")
+    Blockhub.Ethereum.Models.Marketplace.submitAppForReview()
+    return Blockhub.Ethereum.Models.Marketplace.apps[0]//db.marketplace.apps.findOne({ id: id })
 }
