@@ -89,6 +89,6 @@ export const getApp = async (id) => {
     const abi = await fetchABI()
 
     Blockhub.Ethereum.Models.Marketplace.init(abi, "0x6bfeee909953693ed3958b5dfca3876e0eb2a31a")
-    Blockhub.Ethereum.Models.Marketplace.submitAppForReview()
+    //Blockhub.Ethereum.Models.Marketplace.submitAppForReview()
     return Blockhub.Ethereum.Models.Marketplace.apps[0]//db.marketplace.apps.findOne({ id: id })
 }

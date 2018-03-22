@@ -113,14 +113,14 @@ class Container extends React.Component {
     }
 
     componentDidMount() {
-        this.setState({ pane1Height: ReactDOM.findDOMNode(this.collapse1).clientHeight })
+        //this.setState({ pane1Height: ReactDOM.findDOMNode(this.collapse1).clientHeight })
         this.setState({ pane2Height: ReactDOM.findDOMNode(this.pane2).clientHeight - ReactDOM.findDOMNode(this.collapse2).clientHeight })
 
     }
 
     updateLayout() {
         setTimeout(() => {
-            this.setState({ pane1Height: ReactDOM.findDOMNode(this.collapse1).clientHeight })
+            //this.setState({ pane1Height: ReactDOM.findDOMNode(this.collapse1).clientHeight })
             this.setState({ pane2Height: ReactDOM.findDOMNode(this.pane2).clientHeight - ReactDOM.findDOMNode(this.collapse2).clientHeight })
         }, 300)
     }
@@ -146,8 +146,8 @@ class Container extends React.Component {
                         defaultSize={this.state.showConsole ? "20%" : 0.01}
                         split="horizontal"
                         step={10}
-                        pane1Style={{ background: 'rgba(0, 0, 0, 0.3)' }}
-                        pane2Style={{ background: 'rgba(0, 0, 0, 0.3)' }}
+                        pane1Style={{ background: '#152521' }}
+                        pane2Style={{ background: '#152521' }}
                     >
                         <div style={{ display: this.state.showConsole ? "flex" : "none", width: "100%" }}>
                             <Layout style={{ padding: '0' }}>
@@ -156,7 +156,7 @@ class Container extends React.Component {
                                         <TabPane tab="Console" key="console">
                                             <Terminal
                                                 color='#fff'
-                                                backgroundColor='rgba(0, 0, 0, 0)'
+                                                backgroundColor='#152521'
                                                 barColor='black'
                                                 hideTopBar={true}
                                                 allowTabs={false}
@@ -189,7 +189,7 @@ class Container extends React.Component {
                             <SplitPane
                                 split="vertical"
                                 pane1Style={{ background: '#181B1F' }}
-                                pane2Style={{ background: 'rgba(0, 0, 0, 0)' }}
+                                pane2Style={{ background: '#152521' }}
                                 minSize={300}
                                 step={10}
                             >
@@ -197,100 +197,72 @@ class Container extends React.Component {
                                     <SplitPane
                                         defaultSize={65}
                                         split="horizontal"
-                                        pane1Style={{ background: 'rgba(0, 0, 0, 0.3)' }}
-                                        pane2Style={{ background: 'rgba(0, 0, 0, 0.3)' }}
+                                        pane1Style={{ background: '#152521' }}
+                                        pane2Style={{ background: '#152521' }}
                                     >
                                         <div>
                                             <img src="https://hyperbridge.org/wp-content/uploads/sites/2/2018/03/Blockhub-Logo-Verticalfinal.png" style={{width: '70px'}} />
                                         </div>
                                         <div>
-                                            <SplitPane
-                                                split="horizontal"
-                                                size={this.state.pane1Height}
-                                                pane1Style={{ background: '#14161A' }}
-                                                pane2Style={{ background: '#14161A' }}
-                                                ref={(ref) => this.pane1 = ref}
+                                            <SplitPane split="horizontal"
+                                                defaultSize="50%"
                                                 step={10}
+                                                pane1Style={{ background: '#152521' }}
+                                                pane2Style={{ background: '#152521' }}
                                             >
-                                                <div>
-                                                    <Collapse
-                                                        bordered={false}
-                                                        defaultActiveKey={['1']}
-                                                        ref={(ref) => this.collapse1 = ref}
-                                                        onChange={() => setTimeout(() => this.setState({ pane1Height: ReactDOM.findDOMNode(this.collapse1).clientHeight }), 300)}
-                                                        style={{ display: 'none', width: '100%' }}
+                                                <div style={{width: '100%'}}>
+                                                    <Sider
+                                                        width="100%"
+                                                        trigger={null}
+                                                        collapsible
+                                                        collapsed={this.state.collapsed}
                                                     >
-                                                        <Panel header="Account Info" key="1" disabled>
-                                                            <p>{"stuff"}</p>
-                                                        </Panel>
-                                                        <Panel header="Live News" key="2" className="live-news">
-                                                            <LiveNews data={liveNewsData} />
-                                                        </Panel>
-                                                        <Panel header="Time Zone Map" key="3">
-                                                            <p>{"stuff"}</p>
-                                                        </Panel>
-                                                    </Collapse>
+                                                        <Menu
+                                                            theme="dark"
+                                                            mode="inline"
+                                                            defaultSelectedKeys={['1']}
+                                                            style={{ height: '100%', borderRight: 0 }}
+                                                        >
+                                                            <Menu.Item key="home">
+                                                                <span><Icon type="home" /><Link to="/"><span>Home</span></Link></span>
+                                                            </Menu.Item>
+                                                            <SubMenu key="community" title={<span><Icon type="laptop" /><span>Community</span></span>}>
+                                                                <Menu.Item key="community-top"><Link to="/community/chat">Chat</Link></Menu.Item>
+                                                            </SubMenu>
+                                                            <SubMenu key="republic" title={<span><Icon type="laptop" /><span>Republic</span></span>}>
+                                                                <Menu.Item key="republic-structure"><Link to="/republic/structure">Structure</Link></Menu.Item>
+                                                                <Menu.Item key="republic-membership"><Link to="/republic/membership">Membership</Link></Menu.Item>
+                                                                <Menu.Item key="republic-elections"><Link to="/republic/elections">Elections</Link></Menu.Item>
+                                                            </SubMenu>
+                                                            <SubMenu key="friends" title={<span><Icon type="laptop" /><span>Friends</span></span>}>
+                                                                <Menu.Item key="friends-top"><Link to="/friends/top">Top Friends</Link></Menu.Item>
+                                                            </SubMenu>
+                                                            <SubMenu key="about" title={<span><Icon type="notification" /><span>About</span></span>}>
+                                                                <Menu.Item key="about-news"><Link to="/news"><span>News</span></Link></Menu.Item>
+                                                                <Menu.Item key="about-status"><Link to="/status"><span>Site Status</span></Link></Menu.Item>
+                                                                <Menu.Item key="about-privacy"><Link to="/policy/privacy"><span>Privacy Policy</span></Link></Menu.Item>
+                                                                <Menu.Item key="about-cookie"><Link to="/policy/cookie"><span>Cookie Policy</span></Link></Menu.Item>
+                                                                <Menu.Item key="about-terms"><Link to="/terms"><span>Terms and Conditions</span></Link></Menu.Item>
+                                                                <Menu.Item key="about-docs"><Link to="/docs"><span>Documentation</span></Link></Menu.Item>
+                                                                <Menu.Item key="about-fees"><Link to="/fees"><span>Fees</span></Link></Menu.Item>
+                                                                <Menu.Item key="about-support"><Link to="/support"><span>Support</span></Link></Menu.Item>
+                                                                <Menu.Item key="about-contact"><Link to="/contact"><span>Contact Us</span></Link></Menu.Item>
+                                                            </SubMenu>
+                                                            <SubMenu key="settings" title={<span><Icon type="wheel" /><span>Settings</span></span>}>
+                                                                <Menu.Item key="settings-accounts"><Link to="/accounts"><Icon type="user" /> Accounts</Link></Menu.Item>
+                                                                <Menu.Item key="settings-client"><Link to="/settings/client"><Icon type="user" /><span>Client</span></Link></Menu.Item>
+                                                            </SubMenu>
+                                                            <Menu.Item key="8" style={{ display: "none" }}>
+                                                                <Icon
+                                                                    className="trigger"
+                                                                    type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
+                                                                    onClick={this.toggle}
+                                                                />
+                                                            </Menu.Item>
+                                                        </Menu>
+                                                    </Sider>
                                                 </div>
-                                                <div>
-                                                    <SplitPane split="horizontal"
-                                                        defaultSize="50%"
-                                                        step={10}
-                                                    >
-                                                        <div style={{width: '100%'}}>
-                                                            <Sider
-                                                                width="100%"
-                                                                trigger={null}
-                                                                collapsible
-                                                                collapsed={this.state.collapsed}
-                                                            >
-                                                                <Menu
-                                                                    theme="dark"
-                                                                    mode="inline"
-                                                                    defaultSelectedKeys={['1']}
-                                                                    style={{ height: '100%', borderRight: 0 }}
-                                                                >
-                                                                    <Menu.Item key="home">
-                                                                        <span><Icon type="home" /><Link to="/"><span>Home</span></Link></span>
-                                                                    </Menu.Item>
-                                                                    <SubMenu key="community" title={<span><Icon type="laptop" /><span>Community</span></span>}>
-                                                                        <Menu.Item key="community-top"><Link to="/community/chat">Chat</Link></Menu.Item>
-                                                                    </SubMenu>
-                                                                    <SubMenu key="republic" title={<span><Icon type="laptop" /><span>Republic</span></span>}>
-                                                                        <Menu.Item key="republic-structure"><Link to="/republic/structure">Structure</Link></Menu.Item>
-                                                                        <Menu.Item key="republic-membership"><Link to="/republic/membership">Membership</Link></Menu.Item>
-                                                                        <Menu.Item key="republic-elections"><Link to="/republic/elections">Elections</Link></Menu.Item>
-                                                                    </SubMenu>
-                                                                    <SubMenu key="friends" title={<span><Icon type="laptop" /><span>Friends</span></span>}>
-                                                                        <Menu.Item key="friends-top"><Link to="/friends/top">Top Friends</Link></Menu.Item>
-                                                                    </SubMenu>
-                                                                    <SubMenu key="about" title={<span><Icon type="notification" /><span>About</span></span>}>
-                                                                        <Menu.Item key="about-news"><Link to="/news"><span>News</span></Link></Menu.Item>
-                                                                        <Menu.Item key="about-status"><Link to="/status"><span>Site Status</span></Link></Menu.Item>
-                                                                        <Menu.Item key="about-privacy"><Link to="/policy/privacy"><span>Privacy Policy</span></Link></Menu.Item>
-                                                                        <Menu.Item key="about-cookie"><Link to="/policy/cookie"><span>Cookie Policy</span></Link></Menu.Item>
-                                                                        <Menu.Item key="about-terms"><Link to="/terms"><span>Terms and Conditions</span></Link></Menu.Item>
-                                                                        <Menu.Item key="about-docs"><Link to="/docs"><span>Documentation</span></Link></Menu.Item>
-                                                                        <Menu.Item key="about-fees"><Link to="/fees"><span>Fees</span></Link></Menu.Item>
-                                                                        <Menu.Item key="about-support"><Link to="/support"><span>Support</span></Link></Menu.Item>
-                                                                        <Menu.Item key="about-contact"><Link to="/contact"><span>Contact Us</span></Link></Menu.Item>
-                                                                    </SubMenu>
-                                                                    <SubMenu key="settings" title={<span><Icon type="wheel" /><span>Settings</span></span>}>
-                                                                        <Menu.Item key="settings-accounts"><Link to="/accounts"><Icon type="user" /> Accounts</Link></Menu.Item>
-                                                                        <Menu.Item key="settings-client"><Link to="/settings/client"><Icon type="user" /><span>Client</span></Link></Menu.Item>
-                                                                    </SubMenu>
-                                                                    <Menu.Item key="8" style={{ display: "none" }}>
-                                                                        <Icon
-                                                                            className="trigger"
-                                                                            type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
-                                                                            onClick={this.toggle}
-                                                                        />
-                                                                    </Menu.Item>
-                                                                </Menu>
-                                                            </Sider>
-                                                        </div>
-                                                        <div> D</div>
-                                                    </SplitPane>
-                                                </div>
+                                                <div> D</div>
                                             </SplitPane>
                                         </div>
                                     </SplitPane>
@@ -299,7 +271,8 @@ class Container extends React.Component {
                                     split="horizontal"
                                     minSize={65}
                                     step={10}
-                                    pane1Style={{ background: '#22272F' }}
+                                    pane1Style={{ background: '#152521' }}
+                                    pane2Style={{ background: '#152521' }}
                                 >
                                     <Header className="header titlebar">
                                         <div className="logo" />
@@ -320,8 +293,8 @@ class Container extends React.Component {
                                         split="horizontal"
                                         size={this.state.pane2Height}
                                         step={10}
-                                        pane1Style={{ background: '#38414c', overflowY: 'auto' }}
-                                        pane2Style={{ background: 'rgba(0, 0, 0, 0.3)' }}
+                                        pane1Style={{ background: '#F2F2F2', overflowY: 'auto' }}
+                                        pane2Style={{ background: '#152521' }}
                                         ref={(ref) => this.pane2 = ref}
                                     >
                                         <Layout style={{ padding: '0' }}>

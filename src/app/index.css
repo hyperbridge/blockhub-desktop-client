@@ -71,15 +71,19 @@ form {
     height: 100%;
 }
 
-.ant-layout-header {
-    width: 100%;
-    background: transparent; /*url(/static/images/head_bg_trans.png) */
+.ant-layout, .ant-layout-header {
+    background: inherit;
+}
+
+.ant-menu-dark, .ant-menu-dark .ant-menu-sub {
+    background: #162520;
+}
+
+.ant-menu-dark .ant-menu-inline.ant-menu-sub {
+    background: #0F1713;
 }
 
 
-h1, h2, h3, h4, h5, h6 {
-    color: rgba(255, 255, 255, 0.85);
-}
 
 .marker-bars {
     display: inline-block;
