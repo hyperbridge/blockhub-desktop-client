@@ -89,6 +89,20 @@ export const getApp = async (id) => {
     const abi = await fetchABI()
 
     Blockhub.Ethereum.Models.Marketplace.init(abi, "0x6bfeee909953693ed3958b5dfca3876e0eb2a31a")
-    //Blockhub.Ethereum.Models.Marketplace.submitAppForReview()
+
     return Blockhub.Ethereum.Models.Marketplace.apps[0]//db.marketplace.apps.findOne({ id: id })
+}
+
+export const submitApp = (name, version, category, files, checksum, permissions) => {
+    return function action(dispatch) {
+        fetchABI().then((abi) => {
+            Blockhub.Ethereum.Models.Marketplace.init(abi, "0x6bfeee909953693ed3958b5dfca3876e0eb2a31a")
+
+            Blockhub.Ethereum.Models.Marketplace.submitAppForReview(name, version, category, files, checksum, permissions).then(() => {
+                dispatch({
+                    type: APP_LISTING_REQUEST
+                })
+            })
+        })
+    }
 }
