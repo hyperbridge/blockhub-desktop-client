@@ -24,20 +24,19 @@ const initialState = {
         topSellers: [],
         specials: []
     },
-    selectedApp: {
-        title: null,
-        id: null
-    }
+    selectedApp: null
 }
 
 initialState.apps = {
-    upcoming: db.marketplace.apps.find({ 'republicTags': { '$contains': 'upcoming' } }),
-    newTrending: db.marketplace.apps.find({ 'republicTags': { '$contains': 'newTrending' } }),
-    topSellers: db.marketplace.apps.find({ 'republicTags': { '$contains': 'topSellers' } }),
-    specials: db.marketplace.apps.find({ 'republicTags': { '$contains': 'specials' } })
+    upcoming: db.marketplace.apps.find({ 'republicTags': { '$contains': ['app'] } }),
+    upcoming: db.marketplace.apps.find({ 'republicTags': { '$contains': ['app', 'upcoming'] } }),
+    newTrending: db.marketplace.apps.find({ 'republicTags': { '$contains': ['app', 'newTrending'] } }),
+    topSellers: db.marketplace.apps.find({ 'republicTags': { '$contains': ['app', 'topSellers'] } }),
+    specials: db.marketplace.apps.find({ 'republicTags': { '$contains': ['app', 'specials'] } })
 }
 
 initialState.games = {
+    all: db.marketplace.apps.find({ 'republicTags': { '$contains': ['game'] } }),
     upcoming: db.marketplace.apps.find({ 'republicTags': { '$contains': ['upcoming', 'game'] } }),
     newTrending: db.marketplace.apps.find({ 'republicTags': { '$contains': ['newTrending', 'game'] } }),
     topSellers: db.marketplace.apps.find({ 'republicTags': { '$contains': ['topSellers', 'game'] } }),

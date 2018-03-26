@@ -127,6 +127,9 @@ class DB {
                 type: 'game',
                 downloads: 20,
                 republicTags: ['game', 'specials'],
+                author: {
+                    id: '0x0'
+                },
                 authorTags: ['mmo']
             },
             {
@@ -134,7 +137,10 @@ class DB {
                 name: "Divvy",
                 type: 'app',
                 downloads: 0,
-                republicTags: ['productivity', 'specials'],
+                republicTags: ['app', 'productivity', 'specials'],
+                author: {
+                    id: '0x0'
+                },
                 authorTags: ['hotkeys']
             }
         ])

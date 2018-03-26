@@ -15,7 +15,7 @@ const { Header, Content, Sider } = Layout
 const Container = ({ marketplace }) => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
-            {marketplace.games.upcoming.map((app) => (
+            {marketplace.games.all.map((app) => (
                 <div>
                     <Link to={"app/" + app.id}>{app.name}</Link>
                 </div>
