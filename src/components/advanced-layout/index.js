@@ -151,12 +151,12 @@ class Container extends React.Component {
                     >
                         <div style={{ display: this.state.showConsole ? "flex" : "none", width: "100%" }}>
                             <Layout style={{ padding: '0' }}>
-                                <Content style={{ 'padding': '10px', 'marginTop': '0' }}>
+                                <Content style={{ 'padding': '10px', 'marginTop': '0', 'background': '#fff' }}>
                                     <Tabs defaultActiveKey="console" size="small">
                                         <TabPane tab="Console" key="console">
                                             <Terminal
-                                                color='#fff'
-                                                backgroundColor='#152521'
+                                                color='#000'
+                                                backgroundColor='#fff'
                                                 barColor='black'
                                                 hideTopBar={true}
                                                 allowTabs={false}
@@ -177,7 +177,7 @@ class Container extends React.Component {
                                         <TabPane tab="Tools" key="tools">
 
                                         </TabPane>
-                                        <TabPane tab="Connection" key="connection">
+                                        <TabPane tab="Connection" key="connection" >
                                             <ConnectionPanel />
                                             <PeerConnector />
                                         </TabPane>
@@ -205,7 +205,7 @@ class Container extends React.Component {
                                         </div>
                                         <div>
                                             <SplitPane split="horizontal"
-                                                defaultSize="50%"
+                                                defaultSize="80%"
                                                 step={10}
                                                 pane1Style={{ background: '#152521' }}
                                                 pane2Style={{ background: '#152521' }}
