@@ -20,6 +20,7 @@ import RepublicStructure from '../containers/republic-structure'
 import RepublicCitizenship from '../containers/republic-citizenship'
 import ClientSettings from '../containers/client-settings'
 import CommunityChat from '../containers/community-chat'
+import CreateDistrict from '../containers/create-district'
 
 import registerServiceWorker from './registerServiceWorker'
 import { changeSection } from '../modules/site'
@@ -125,6 +126,7 @@ class App extends Component {
                         <Route exact path="/community/chat" component={CommunityChat} onChange={this.onRouteChange} />
                         <Route exact path="/republic/structure" component={RepublicStructure} onChange={this.onRouteChange} />
                         <Route exact path="/republic/citizenship" component={RepublicCitizenship} onChange={this.onRouteChange} />
+                        <Route exact path="/republic/district/create" component={CreateDistrict} onChange={this.onRouteChange} />
                     </Switch>
                 </Router>
             </div>
