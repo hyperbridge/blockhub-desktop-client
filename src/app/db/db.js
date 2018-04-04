@@ -98,7 +98,7 @@ class DB {
 
         this.marketplace.apps.insert([
             {
-                id: 'sadas3asdasd-asd34asd3-adsas3',
+                id: '1',
                 name: 'Battlerite',
                 type: 'game',
                 downloads: 4000,
@@ -110,7 +110,7 @@ class DB {
                 authorTags: ['moba']
             },
             {
-                id: 'vsdvs-asd34asfdssd3-ad434sas3',
+                id: '2',
                 name: 'Fortnite',
                 type: 'game',
                 downloads: 4000,
@@ -122,7 +122,7 @@ class DB {
                 authorTags: ['fps']
             },
             {
-                id: "29dsa90-asdsad9adas-asdadas-asdasd",
+                id: "3",
                 name: "World of Warcraft",
                 type: 'game',
                 downloads: 20,
@@ -133,7 +133,7 @@ class DB {
                 authorTags: ['mmo']
             },
             {
-                id: "29dsa90-3434asd-asdadas-asdasd",
+                id: "4",
                 name: "Divvy",
                 type: 'app',
                 downloads: 0,
