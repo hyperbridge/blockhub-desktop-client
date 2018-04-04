@@ -1,7 +1,7 @@
 import Immutable from 'immutable'
 
-export const CHANGE_SECTION = 'network/CHANGE_SECTION'
-export const CONNECT = 'network/CONNECT'
+export const CHANGE_SECTION = 'site/CHANGE_SECTION'
+export const CONNECT = 'site/CONNECT'
 
 const initialState = {
     section: "home"

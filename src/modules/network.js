@@ -26,6 +26,7 @@ const initialState = {
     accounts: []
 }
 
+
 if (typeof window.web3 == 'undefined') {
     initialState.connected = false
 } else {
@@ -50,6 +51,7 @@ export default (state = initialState, action) => {
             return state
     }
 }
+
 
 export const connect = () => {
     return {
