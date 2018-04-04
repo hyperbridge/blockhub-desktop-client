@@ -9,12 +9,14 @@ import db from '../../app/db/db'
 import AdvancedLayout from '../../components/advanced-layout'
 import ProductTile from '../../components/product-tile'
 
+import * as MarketplaceActions from '../../modules/marketplace'
+
 const { SubMenu } = Menu
 const { Header, Content, Sider } = Layout
 const TabPane = Tabs.TabPane
 
 
-const Container = ({ republic, marketplace }) => (
+const MainContent = ({ republic, marketplace }) => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px', 'background': '#fff' }}>
             <h2>My Apps <Link to="/app/create">Create App</Link></h2>
@@ -32,6 +34,15 @@ const Container = ({ republic, marketplace }) => (
             <br />
 
             <Tabs defaultActiveKey="new-trending" size="small">
+                <TabPane tab="All" key="all">
+                    <br />
+                    {marketplace.apps.all.map((app) => (
+                        <div>
+                            <Link to={"app/" + app.id}>{app.name}</Link>
+                        </div>
+                    ))}
+                </TabPane>
+
                 <TabPane tab="New and Trending" key="new-trending">
                     <br />
                     {marketplace.apps.newTrending.map((app) => (
@@ -70,6 +81,19 @@ const Container = ({ republic, marketplace }) => (
     </AdvancedLayout>
 )
 
+
+
+class Container extends React.Component {
+    componentDidMount() {
+        this.props.getAppListing(0, 0)
+    }
+
+    render() {
+        return <MainContent {...this.props} />
+    }
+}
+
+
 Container.displayName = 'apps/Container'
 
 const mapStateToProps = state => ({
@@ -78,6 +102,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
+    getAppListing: () => dispatch(MarketplaceActions.getAppListing())
 }, dispatch)
 
 export default connect(
