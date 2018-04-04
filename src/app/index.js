@@ -12,6 +12,7 @@ import Home from '../containers/home'
 import Accounts from '../containers/accounts'
 import Games from '../containers/games'
 import News from '../containers/news'
+import Setup from '../containers/setup'
 import Apps from '../containers/apps'
 import AppDetail from '../containers/app-detail'
 import CreateApp from '../containers/create-app'
@@ -119,6 +120,7 @@ class App extends Component {
                         <Route exact path="/games" component={Games} onChange={this.onRouteChange} />
                         <Route exact path="/apps" component={Apps} onChange={this.onRouteChange} />
                         <Route exact path="/news" component={News} onChange={this.onRouteChange} />
+                        <Route exact path="/setup" component={Setup} onChange={this.onRouteChange} />
                         <Route exact path="/settings/client" component={ClientSettings} onChange={this.onRouteChange} />
                         <Route exact path="/app/create" component={CreateApp} onChange={this.onRouteChange} />
                         <Route exact path="/app/:id" component={AppDetail} onChange={this.onRouteChange} />
