@@ -10,6 +10,8 @@ export const APP_DETAIL_REQUEST = 'network/APP_DETAIL_REQUEST'
 export const APP_DETAIL_RESPONSE = 'network/APP_DETAIL_RESPONSE'
 export const VOTE_FOR_APP_REQUEST = 'network/VOTE_FOR_APP_REQUEST'
 export const VOTE_FOR_APP_RESPONSE = 'network/VOTE_FOR_APP_RESPONSE'
+export const UPDATE_APP_VOTES_REQUEST = 'network/UPDATE_APP_VOTES_REQUEST'
+export const UPDATE_APP_VOTES_RESPONSE = 'network/UPDATE_APP_VOTES_RESPONSE'
 export const SUBMIT_APP_FOR_REVIEW_REQUEST = 'network/SUBMIT_APP_FOR_REVIEW_REQUEST'
 export const SUBMIT_APP_FOR_REVIEW_RESPONSE = 'network/SUBMIT_APP_FOR_REVIEW_RESPONSE'
 export const SETUP_CONTRACTS_REQUEST = 'network/SETUP_CONTRACTS_REQUEST'
@@ -37,6 +39,7 @@ const initialApp = {
 }
 
 const initialState = {
+    contractMeta: null,
     contractAddress: null,
     apps: {
         all: [],
@@ -77,29 +80,42 @@ initialState.games = {
 
 // initialState.apps.specials = specials.data()
 
-export default (state = initialState, action) => {
-    console.log(action)
 
+
+let contractMeta = null
+let contractAddress = null
+
+export default (state = initialState, action) => {
     switch (action.type) {
         case APP_LISTING_RESPONSE:
-            return { ...state, apps: { ...state.apps, all: action.apps } }
+            return state //{ ...state, apps: { ...state.apps, all: action.apps } }
+
+        case FETCH_CONTRACT_META_RESPONSE:
+            contractMeta = state.contractMeta
+            return { ...state, contractMeta: action.contractMeta }
 
         case SETUP_CONTRACTS_RESPONSE:
+            contractAddress = state.contractAddress
             return { ...state, contractAddress: action.contractAddress }
 
         case APP_DETAIL_RESPONSE:
-            return { ...state, selectedApp: action.app }
+            const app = db.marketplace.apps.findOne({ 'id': action.app.id })
+            app.name = action.app.name
+
+            db.marketplace.apps.update(app)
+
+            const apps = db.marketplace.apps.find({ 'republicTags': { '$contains': ['app'] } })
+            
+            return { ...state, selectedApp: action.app, apps: { ...state.apps, all: apps } }
 
         default:
             return state
     }
 }
 
-
-let contractMeta = null
-let contractAddress = null
-
 export const fetchContractMeta = async () => {
+    console.log("Fetching contract meta from server", arguments)
+
     if (contractMeta)
         return contractMeta
 
@@ -115,40 +131,37 @@ export const fetchContractMeta = async () => {
 
 
 export const getApp = (id) => {
-    console.log("Attempting to get app by ID: ", id)
+    console.log("Getting app by ID: ", id)
 
     return dispatch => {
-        fetchContractMeta().then((contractMeta) => {
-            Blockhub.Ethereum.Models.Marketplace.init(contractMeta, contractAddress, network[currentNetwork].userFromAddress)
+        // let app = db.marketplace.apps.findOne({ id: id })
 
-            // let app = db.marketplace.apps.findOne({ id: id })
+        // if (app) {
+        //     dispatch({
+        //         type: APP_DETAIL_RESPONSE,
+        //         app: app
+        //     })
+        // }
 
-            // if (app) {
-            //     dispatch({
-            //         type: APP_DETAIL_RESPONSE,
-            //         app: app
-            //     })
-            // }
+        Blockhub.Ethereum.Models.Marketplace.getApp(id).then((res) => {
+            const app = {
+                id: id,
+                name: res.name,
+                author: {
+                    id: res.appOwner
+                },
+                type: "game",
+                rating: res.votes,
+                downloads: 100,
+                category: res.category,
+                files: res.files,
+                authorTags: ["demo"],
+                repubicTags: ["demo"]
+            }
 
-            Blockhub.Ethereum.Models.Marketplace.getApp(id).then((res) => {
-                const app = {
-                    name: res.name,
-                    author: {
-                        id: res.appOwner
-                    },
-                    type: "game",
-                    rating: res.votes,
-                    downloads: 100,
-                    category: res.category,
-                    files: res.files,
-                    authorTags: ["demo"],
-                    repubicTags: ["demo"]
-                }
-
-                dispatch({
-                    type: APP_DETAIL_RESPONSE,
-                    app: app
-                })
+            dispatch({
+                type: APP_DETAIL_RESPONSE,
+                app: app
             })
         })
 
@@ -159,12 +172,14 @@ export const getApp = (id) => {
 }
 
 export const setupContracts = () => {
+    console.log("Setting up contracts", arguments)
+
     return dispatch => {
         fetchContractMeta().then((contractMeta) => {
-            // dispatch({
-            //     type: FETCH_CONTRACT_META_RESPONSE,
-            //     contractMeta: contractMeta
-            // })
+            dispatch({
+                type: FETCH_CONTRACT_META_RESPONSE,
+                contractMeta: contractMeta
+            })
 
             const contract = new window.web3.eth.Contract(contractMeta.abi)
 
@@ -190,32 +205,130 @@ export const setupContracts = () => {
 }
 
 
+export const syncLocalToBlockchain = () => {
+    console.log("Syncing local data to blockchain", arguments)
+
+    return (dispatch, getState) => {
+        fetchContractMeta().then((contractMeta) => {
+            new Promise((resolve, reject) => {
+                setupContracts()((event) => {
+                    dispatch(event)
+                    if (event.type === SETUP_CONTRACTS_RESPONSE) {
+                        Blockhub.Ethereum.Models.Marketplace.init(contractMeta, event.contractAddress, network[currentNetwork].userFromAddress)
+
+                        setTimeout(resolve, 0)
+                    }
+                })
+            }).then(() => {
+                {
+                    // get local apps
+                    const apps = getState().marketplace.apps.all
+                    const promises = []
+
+                    // submit each app
+                    apps.forEach((app, i) => {
+                        console.log("Submitting local app: ", app)
+
+                        const promise = new Promise((resolve, reject) => {
+                            submitApp(app.name, '1', '1', '1', '1', 1)((event) => {
+                                dispatch(event)
+                                console.log(event.app.name, app.name, event.app)
+                                if (event.type === SUBMIT_APP_FOR_REVIEW_RESPONSE && event.app.name === app.name) {
+                                    const id = event.app.id
+
+                                    voteForApp(id, '1', 1)((event) => {
+                                        dispatch(event)
+
+                                        updateAppVotes(id, 1)((event) => {
+                                            dispatch(event)
+
+                                            resolve()
+                                        })
+                                    })
+                                }
+                            })
+                        })
+
+                        promises.push(promise)
+                    })
+
+                    Promise.all(promises).then((values) => {
+                        console.log("Submitted all apps")
+
+                        // update listing
+                        getAppListing(0, 0)((event) => {
+                            dispatch(event)
+                        })
+                    })
+                }
+
+                {
+                    const users = [] // TODO
+                    const promises = []
+
+                    // get user profiles
+                    users.forEach((i, user) => {
+                        const promise = new Promise((resolve, reject) => {
+                            // submit each profile
+
+                        })
+
+                        promises.push(promise)
+                    })
+                }
+            })
+        })
+
+        return {
+            type: SETUP_CONTRACTS_REQUEST
+        }
+    }
+}
+
+export const syncBlockchainToLocal = () => {
+    return dispatch => {
+        fetchContractMeta().then((contractMeta) => {
+            // get app listing
+
+            // get app details
+
+            // get user profile
+        })
+
+        return {
+            type: SETUP_CONTRACTS_REQUEST
+        }
+    }
+}
+
 // get apps by tag topSellers upcoming newTrending 
 
 export const getAppListing = () => {
-    console.log("Attempting to get app listing by filters: ", [null])
+    console.log("Geting app listing by filters: ", [null])
 
     return dispatch => {
-        fetchContractMeta().then((contractMeta) => {
-            Blockhub.Ethereum.Models.Marketplace.init(contractMeta, contractAddress, network[currentNetwork].userFromAddress)
+        // let apps = null
 
-            // let apps = null
+        // if (apps) {
+        //     dispatch({
+        //         type: APP_LISTING_RESPONSE,
+        //         apps: apps
+        //     })
+        //     return
+        // }
 
-            // if (apps) {
-            //     dispatch({
-            //         type: APP_LISTING_RESPONSE,
-            //         apps: apps
-            //     })
-            //     return
-            // }
+        Blockhub.Ethereum.Models.Marketplace.listApps(0, 0).then((res) => {
+            const apps = res
 
-            Blockhub.Ethereum.Models.Marketplace.getAppListing(0, 0).then((res) => {
-                debugger
-                const apps = res
-                dispatch({
-                    type: APP_LISTING_RESPONSE,
-                    apps: apps
-                })
+            if (!apps) return
+
+            dispatch({
+                type: APP_LISTING_RESPONSE,
+                apps: apps
+            })
+
+            apps.forEach((appId) => {
+                getApp(appId)(dispatch)
             })
         })
 
@@ -227,14 +340,12 @@ export const getAppListing = () => {
 
 
 export const voteForApp = (id, version, vote) => {
-    return dispatch => {
-        fetchContractMeta().then((contractMeta) => {
-            Blockhub.Ethereum.Models.Marketplace.init(contractMeta, contractAddress, network[currentNetwork].userFromAddress)
+    console.log("Voting for app", arguments)
 
-            Blockhub.Ethereum.Models.Marketplace.voteForApp(id, version, vote).then(() => {
-                dispatch({
-                    type: VOTE_FOR_APP_RESPONSE
-                })
+    return dispatch => {
+        Blockhub.Ethereum.Models.Marketplace.voteForApp(id, version, vote).then(() => {
+            dispatch({
+                type: VOTE_FOR_APP_RESPONSE
             })
         })
 
@@ -244,16 +355,36 @@ export const voteForApp = (id, version, vote) => {
     }
 }
 
+export const updateAppVotes = (id, version) => {
+    console.log("Updating app votes", arguments)
+
+    return dispatch => {
+        Blockhub.Ethereum.Models.Marketplace.updateAppVotes(id, version).then(() => {
+            dispatch({
+                type: UPDATE_APP_VOTES_RESPONSE
+            })
+        })
+
+        return {
+            type: UPDATE_APP_VOTES_REQUEST
+        }
+    }
+}
+
 
 export const submitApp = (name, version, category, files, checksum, permissions) => {
-    return dispatch => {
-        fetchContractMeta().then((contractMeta) => {
-            Blockhub.Ethereum.Models.Marketplace.init(contractMeta, contractAddress, network[currentNetwork].userFromAddress)
+    console.log("Submitting app", arguments)
 
-            Blockhub.Ethereum.Models.Marketplace.submitAppForReview(name, version, category, files, checksum, permissions).then(() => {
-                dispatch({
-                    type: SUBMIT_APP_FOR_REVIEW_RESPONSE
-                })
+    return dispatch => {
+        Blockhub.Ethereum.Models.Marketplace.submitAppForReview(name, version, category, files, checksum, permissions).then((res) => {
+            const app = db.marketplace.apps.findOne({ 'name': name })
+            app.id = res[0]
+
+            db.marketplace.apps.update(app)
+
+            dispatch({
+                type: SUBMIT_APP_FOR_REVIEW_RESPONSE,
+                app: app
             })
         })
 
