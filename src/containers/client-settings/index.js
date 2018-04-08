@@ -8,19 +8,25 @@ import styled from 'styled-components'
 
 import AdvancedLayout from '../../components/advanced-layout'
 import NetworkContainer from '../../components/network-container'
+
 import * as NetworkActions from '../../modules/network'
+import * as MarketplaceActions from '../../modules/marketplace'
 
 const FormItem = Form.Item
 const Option = Select.Option
 const { SubMenu } = Menu
 const { Header, Content, Sider } = Layout
 
-const Container = ({ republic, getTransaction, form }) => (
+const Container = ({ republic, getTransaction, setupContracts, syncLocalToBlockchain, syncBlockchainToLocal, contractAddress, form }) => (
     <AdvancedLayout>
         <Content style={{ 'padding': '10px', 'marginTop': '10px' }}>
+
             <Form onSubmit={this.handleSubmit}>
                 <FormItem>
-                    <h3>Governance contracts (Republic protocol)</h3>
+                    <h3>Governance protocol contracts</h3>
+                </FormItem>
+                <FormItem>
+                    <h3>Marketplace protocol contracts</h3>
                 </FormItem>
                 <FormItem
                     label="Marketplace contract"
@@ -29,25 +35,21 @@ const Container = ({ republic, getTransaction, form }) => (
                 >
                     {form.getFieldDecorator('note', {
                         rules: [{ required: true, message: 'Please input the contract address!' }],
+                        initialValue: contractAddress
                     })(
                         <Input />
                     )}
+                    <button onClick={setupContracts}>Deploy Marketplace Contracts</button>
                 </FormItem>
-                <FormItem
-                    wrapperCol={{ span: 12, offset: 5 }}
-                >
-                    <Button type="primary" htmlType="submit">
-                        Submit
-                    </Button>
+                <FormItem>
+                    <h3>Data protocol contracts</h3>
+                </FormItem>
+                <FormItem>
+                    <h3>Data</h3>
+                    <button onClick={syncLocalToBlockchain}>Local Data -> Blockchain</button>
+                    <button onClick={syncBlockchainToLocal}>Blockchain -> Local Data</button>
                 </FormItem>
             </Form>
-            <br />
-            Marketplace contracts (Blockhub protocol):
-            INPUT
-            <br />
-            Data contracts (Dataforce protocol):
-            INPUT
-            <br />
         </Content>
     </AdvancedLayout>
 )
@@ -55,10 +57,14 @@ const Container = ({ republic, getTransaction, form }) => (
 Container.displayName = 'client-settings/Container'
 
 const mapStateToProps = state => ({
+    contractAddress: state.marketplace.contractAddress
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-    getTransaction: () => NetworkActions.getTransaction(dispatch)
+    getTransaction: () => NetworkActions.getTransaction(dispatch),
+    setupContracts: () => dispatch(MarketplaceActions.setupContracts()),
+    syncLocalToBlockchain: () => dispatch(MarketplaceActions.syncLocalToBlockchain()),
+    syncBlockchainToLocal: () => dispatch(MarketplaceActions.syncBlockchainToLocal())
 }, dispatch)
 
 export default connect(
