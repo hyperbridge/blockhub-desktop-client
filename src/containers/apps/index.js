@@ -26,13 +26,14 @@ const MainContent = ({ republic, marketplace }) => (
                 </div>
             ))}
 
-            filters
+            <h2>Filters</h2>
             <br />
             featured
             <br />
             special offers
             <br />
 
+            <h2>All Apps</h2>
             <Tabs defaultActiveKey="new-trending" size="small">
                 <TabPane tab="All" key="all">
                     <br />
