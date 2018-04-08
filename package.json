@@ -52,6 +52,7 @@
         "react-scripts": "https://github.com/ericmuyser/react-relay-scripts.git",
         "react-split-pane": "^0.1.66",
         "redux": "^3.7.1",
+        "redux-localstorage": "^0.4.1",
         "redux-thunk": "^2.2.0",
         "sanitize.css": "^5.0.0",
         "socket.io-client": "^2.0.3",
