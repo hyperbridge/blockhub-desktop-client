@@ -37,5 +37,5 @@ app.on('ready', () => {
 
     win.webContents.session.webRequest.onHeadersReceived({ urls: [] }, onHeadersReceived)
 
-    win.loadURL('http://localhost:3000/')
+    win.loadURL('http://localhost:4200/')
 })
