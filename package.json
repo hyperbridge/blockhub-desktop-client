@@ -1,48 +1,22 @@
 {
-    "name": "blockhub-desktop-client",
-    "version": "0.1.0",
-    "repository": "git@github.com:hyperbridge/blockhub-desktop-client.git",
-    "license": "UNLICENSED",
-    "main": "./build/app/electron.js",
-    "scripts": {
-        "format": "./node_modules/.bin/tsfmt -r src/app/electron.ts",
-        "electron": "tsc && ELECTRON_ENABLE_LOGGING=1 electron .",
-        "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --disable-web-security --user-data-dir",
-        "build-mac": "yarn run electron-packager -- . --overwrite --platform=darwin --arch=x64 --icon=assets/icons/mac/icon.icns --prune=true --out=build"
-    },
-    "theme": {
-        "primary-color": "#dacd08",
-        "heading-color": "#fff",
-        "text-color": "#fff",
-        "text-color-secondary": "#fff"
-    },
-    "dependencies": {
-        "@types/react": "^16.0.0",
-        "babel-cli": "^6.24.1",
-        "babel-preset-es2015": "^6.24.1",
-        "babel-preset-es2017": "^6.24.1",
-        "babel-preset-react-app": "^3.0.1",
-        "babel-preset-stage-1": "^6.24.1",
-        "cors": "^2.8.4",
-        "dateformat": "^1.0.12",
-        "electron-packager": "^9.1.0",
-        "immutable": "^3.8.1",
-        "isomorphic-fetch": "^2.2.1",
-        "lokijs": "^1.5.3",
-        "opn": "^5.1.0",
-        "querystring": "^0.2.0",
-        "sanitize.css": "^5.0.0",
-        "socket.io-client": "^2.0.3",
-        "typescript": "^2.3.2",
-        "typescript-formatter": "^5.2.0"
-    },
-    "engines": {
-        "node": "8.11.1"
-    },
-    "devDependencies": {
-        "babel-plugin-import": "^1.2.1",
-        "electron": "1.8.2-beta5",
-        "svg-sprite-loader": "0.3.1",
-        "typings": "^2.1.1"
-    }
+  "name": "electron-quick-start",
+  "version": "1.0.0",
+  "description": "A minimal Electron application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/electron/electron-quick-start",
+  "keywords": [
+    "Electron",
+    "quick",
+    "start",
+    "tutorial",
+    "demo"
+  ],
+  "author": "GitHub",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^2.0.0"
+  }
 }
