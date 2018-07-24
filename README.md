@@ -1,4 +1,13 @@
-# electron-quick-start
+<div align="center">
+  <a href="https://hyperbridge.org/"><img src="https://hyperbridge.org/img/blockhub-logotype-color.svg" width="220" alt="logo"></a>
+
+  <h1><code>blockhub-desktop-client</code> for BlockHub</h1>
+</div>
+<br>
+
+This is the desktop client for BlockHub, built with Electron.
+
+## Getting Started
 
 **Clone and run for a quick way to see Electron in action.**
 
@@ -42,4 +51,7 @@ Note: If you're using Linux Bash for Windows, [see this guide](https://www.howto
 
 ## License
 
-[CC0 1.0 (Public Domain)](LICENSE.md)
+[Apache License 2.0](LICENSE.md)
+
+
+# electron-quick-start
