@@ -11,7 +11,6 @@ let mainWindow
 function createWindow () {
   const server = express();
   server.use("/static", express.static(path.join(__dirname, "web/static")));
-  console.log(path.join(__dirname, "web/static" ));
   server.get("/", function(req,res) {
     res.sendFile(path.join(__dirname + "/web/index.html"));
   })
@@ -19,8 +18,8 @@ function createWindow () {
   server.listen(9999, () => console.log("App is running on port 9999"));
 
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1200, height:800})
-
+  mainWindow = new BrowserWindow({width: 1200, height:800, frame:false, icon: __dirname + "web/static/img/Icon-512.icns"})
+  
   // and load the index.html of the app.
   //mainWindow.loadFile('index.html')
   //mainWindow.loadURL("http://localhost:8000/index.html#/store");
