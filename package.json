@@ -1,14 +1,17 @@
 {
   "name": "blockhub-desktop-client",
+  "productName": "BlockHub",
   "version": "1.0.0",
   "description": "BlockHub Desktop Client",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=web/static/img/Icon-512.icns --prune=true --out=release-builds"
   },
   "devDependencies": {
-    "electron": "^2.0.0"
+    "electron": "^2.0.0",
+    "electron-packager": "^12.1.0"
   },
   "dependencies": {
     "express": "^4.16.3"
