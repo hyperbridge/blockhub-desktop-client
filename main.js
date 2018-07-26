@@ -18,7 +18,7 @@ function createWindow () {
   server.listen(9999, () => console.log("App is running on port 9999"));
 
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1200, height:800, frame:false, icon: __dirname + "web/static/img/Icon-512.icns"})
+  mainWindow = new BrowserWindow({width: 1200, height:800, frame:false, icon: __dirname + "app-icons/Icon-512.icns"})
   
   // and load the index.html of the app.
   //mainWindow.loadFile('index.html')
