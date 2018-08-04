@@ -3,33 +3,38 @@ const {app, BrowserWindow} = require('electron')
 const express = require("express");
 const path = require("path");
 
+let argv = require('minimist')(process.argv.slice(2))
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
 function createWindow () {
-  const server = express();
-  server.use("/static", express.static(path.join(__dirname, "web/static")));
-  server.get("/", function(req,res) {
-    res.sendFile(path.join(__dirname + "/web/index.html"));
+  mainWindow = new BrowserWindow({
+    width: argv.tools ? 1920 : 1400,
+    height: 1000,
+    frame: false,
+    icon: __dirname + "web/static/img/Icon-512.icns"
   })
   
-  server.listen(9999, () => console.log("App is running on port 9999"));
+  if (argv.dev) {
+    mainWindow.loadURL("http://localhost:8000/");
+  } else {
+    const server = express();
+    server.use("/static", express.static(path.join(__dirname, "web/static")));
+    server.get("/", function (req, res) {
+      res.sendFile(path.join(__dirname + "/web/index.html"));
+    })
 
-  // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1200, height:800, frame:false, icon: __dirname + "web/static/img/Icon-512.icns"})
+    server.listen(9999, () => console.log("App is running on port 9999"));
+
+    mainWindow.loadURL("http://localhost:9999/");
+  }
+
+  if (argv.tools) {
+    mainWindow.webContents.openDevTools()
+  }
   
-  // and load the index.html of the app.
-  //mainWindow.loadFile('index.html')
-  //mainWindow.loadURL("http://localhost:8000/index.html#/store");
-  mainWindow.loadURL("http://localhost:9999");
-  //mainWindow.loadFile(path.join(__dirname + "/web/index.html"));
-
-
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
-
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
