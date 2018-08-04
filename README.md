@@ -1,11 +1,32 @@
 <div align="center">
-  <a href="https://hyperbridge.org/"><img src="https://hyperbridge.org/img/blockhub-logotype-color.svg" width="220" alt="logo"></a>
+  <br>
 
-  <h1><code>blockhub-desktop-client</code> for BlockHub</h1>
+  <a href="https://hyperbridge.org/"><img src="https://hyperbridge.org/img/blockhub-logotype-color.svg" width="400" alt="logo"></a>
+
+  <br>
+  <br>
+
+  [![Gitter chat](https://img.shields.io/gitter/room/TechnologyAdvice/Stardust.svg)](https://gitter.im/Hyperbridge/Lobby) [![license](https://img.shields.io/hexpm/l/plug.svg)](https://github.com/hyperbridge/blockhub-web-client/blob/master/LICENSE.md)
+
+  <h1><code>Desktop Client</code> for BlockHub</h1>
 </div>
+
 <br>
 
 This is the desktop client for BlockHub, built with Electron.
+
+## Quick Links
+
+- [Site](http://blockhub.gg/)
+- 📺 [Demo](http://beta.blockhub.gg/)
+- 📖 [Docs](http://docs.hyperbridge.org/blockhub)
+- [EIPs](https://github.com/hyperbridge/EIPs)
+- [Web Client](https://github.com/hyperbridge/blockhub-web-client)
+- [Node Operator](https://github.com/hyperbridge/blockhub-node-operator)
+- [Token](https://github.com/hyperbridge/token)
+- [Funding Protocol](https://github.com/hyperbridge/funding-protocol)
+- [Marketplace Protocol](https://github.com/hyperbridge/marketplace-protocol)
+
 
 ## Getting Started
 
@@ -55,5 +76,9 @@ Note: If you're using Linux Bash for Windows, [see this guide](https://www.howto
 
 [Apache License 2.0](LICENSE.md)
 
+## Problems?
 
-# electron-quick-start
+Discuss Node Operator on our Gitter:
+https://gitter.im/Hyperbridge/Lobby
+
+Please post any bugs as Github issues.
