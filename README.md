@@ -6,7 +6,7 @@
   <br>
   <br>
 
-  [![Gitter chat](https://img.shields.io/gitter/room/TechnologyAdvice/Stardust.svg)](https://gitter.im/Hyperbridge/Lobby) [![license](https://img.shields.io/hexpm/l/plug.svg)](https://github.com/hyperbridge/blockhub-web-client/blob/master/LICENSE.md)
+  [![Gitter chat](https://img.shields.io/gitter/room/TechnologyAdvice/Stardust.svg)](https://gitter.im/Hyperbridge/Lobby) [![license](https://img.shields.io/hexpm/l/plug.svg)](https://github.com/hyperbridge/blockhub-web-client/blob/master/LICENSE.md) [![Greenkeeper badge](https://badges.greenkeeper.io/hyperbridge/blockhub-desktop-client.svg)](https://greenkeeper.io/)
 
   <h1><code>Desktop Client</code> for BlockHub</h1>
 </div>
