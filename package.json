@@ -1,21 +1,35 @@
 {
   "name": "blockhub-desktop-client",
   "productName": "BlockHub",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "BlockHub Desktop Client",
   "license": "SEE LICENSE IN LICENSE.md",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron . --dev --tools",
-    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=web/static/img/Icon-512.icns --prune=true --out=release-builds"
-  },
-  "devDependencies": {
-    "electron": "^2.0.0",
-    "electron-packager": "^12.1.0",
-    "minimist": "^1.2.0"
+    "start": "electron ./src/main",
+    "dev": "electron ./src/main --dev --tools",
+    "build": "cp -R src/ build",
+    "package": "node ./bin/package.js"
   },
   "dependencies": {
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.5.2",
+    "application-config": "^1.0.0",
+    "arch": "^2.0.0",
     "express": "^4.16.3"
+  },
+  "devDependencies": {
+    "electron": "^2.0.8",
+    "electron-packager": "^12.1.0",
+    "electron-osx-sign": "^0.4.10",
+    "electron-winstaller": "^2.6.4",
+    "nobin-debian-installer": "0.0.10",
+    "run-series": "^1.1.4",
+    "buble": "^0.19.3",
+    "cross-zip": "^2.0.1",
+    "minimist": "^1.2.0"
+  },
+  "optionalDependencies": {
+    "appdmg": "^0.4.3"
   }
 }

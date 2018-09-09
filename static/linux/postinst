@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+chmod +x /opt/blockhub-desktop-client/BlockHub
+ln -s -f /opt/blockhub-desktop-client/BlockHub /usr/bin/blockhub-desktop-client
