@@ -1,3 +1,4 @@
+import * as Wallet from './wallet'
 
 export let config = {
 }
@@ -7,12 +8,25 @@ const local = {
 }
 
 
+export const createAccountRequest = async (data) => {
+    return new Promise(async (resolve) => {
+        const res = {
+            account: {
+
+            }
+        }
+
+        resolve(res)
+    })
+}
+
 export const ID = () => {
     // Math.random should be unique because of its seeding algorithm.
     // Convert it to base 36 (numbers + letters), and grab the first 9 characters
     // after the decimal.
     return '_' + Math.random().toString(36).substr(2, 9);
 }
+
 
 export const sendCommand = async (key, data = {}, peer = null, responseId = null) => {
     const cmd = {
@@ -44,7 +58,7 @@ export const sendCommand = async (key, data = {}, peer = null, responseId = null
 }
 
 
-export const runCommand = async (cmd, meta = null) => {
+export const runCommand = async (cmd, meta = {}) => {
     console.log('[DesktopBridge] Running command', cmd.key)
 
     return new Promise(async (resolve, reject) => {
@@ -60,31 +74,10 @@ export const runCommand = async (cmd, meta = null) => {
             return resolve()
         }
 
-        if (cmd.key === 'pageContentHashRequest') {
-            if (!config.RELAY) return Promise.resolve()
+        if (cmd.key === 'createAccountRequest') {
+            const res = await createAccountRequest(cmd.data)
 
-            const state = local.resolver(cmd)
-            const req = {
-                path: cmd.data.path,
-                hash: md5(JSON.stringify(state) + '')
-            }
-
-            return resolve(await sendCommand('pageContentHashResponse', req, meta.client, cmd.requestId))
-        } else if (cmd.key === 'pageContentDataRequest') {
-            if (!config.RELAY) return Promise.resolve()
-
-            const state = local.resolver(cmd)
-            const req = {
-                content: JSON.stringify(state)
-            }
-
-            return resolve(await sendCommand('pageContentDataResponse', req, meta.client, cmd.requestId))
-        } else if (cmd.key === 'addressBalanceRequest') {
-            if (!config.RELAY) return Promise.resolve()
-
-            const req = await addressBalanceRequest(cmd.address)
-
-            return resolve(await sendCommand('addressBalanceResponse', req, meta.client, cmd.requestId))
+            return resolve(await sendCommand('createAccountResponse', res, meta.client, cmd.requestId))
         }
     })
 }
