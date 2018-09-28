@@ -1,9 +1,16 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const express = require('express');
 const path = require('path');
 
 let argv = require('minimist')(process.argv.slice(2))
+
+const powerSaveBlocker = require('electron').powerSaveBlocker;
+powerSaveBlocker.start('prevent-app-suspension');
+
+app.commandLine.appendSwitch('page-visibility');
+app.commandLine.appendSwitch("disable-renderer-backgrounding");
+app.commandLine.appendSwitch("disable-background-timer-throttling");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -13,12 +20,51 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     width: argv.tools ? 1920 : 1400,
     height: 1000,
+    resizable: true,
     frame: false,
-    icon: __dirname + "static/Icon-512.icns"
+    icon: __dirname + "static/Icon-512.icns",
+    scrollBounce: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+    }
   })
-  
+
+  ipcMain.on('ping', (event, msg) => {
+    console.log('Ping from web', msg) // msg from web page
+    mainWindow.webContents.send('pong', 'ok') // send to web page
+  })
+
+  ipcMain.on('heartbeat', (event, msg) => {
+    console.log('Heartbeat from web', msg) // msg from web page
+  })
+
+  ipcMain.on('init', (event, msg) => {
+    console.log('Init from web', msg) // msg from web page
+
+    if (msg == '1') {
+
+      setInterval(() => {
+        mainWindow.webContents.send('heartbeat', 1) // send to web page
+      }, 2000)
+    } else {
+      console.error("Error initializing web", msg)
+    }
+  })
+
+  ipcMain.on('command', (event, msg) => {
+    console.log('Command from web', msg) // msg from web page
+    
+    const request = JSON.parse(msg)
+
+    const response = {
+      key: ''
+    }
+
+    mainWindow.webContents.send('command', JSON.stringify(response)) // send to web page
+  })
+
   if (argv.dev) {
-    mainWindow.loadURL("http://localhost:8000/");
+    mainWindow.webContents.loadURL("http://localhost:8000/");
   } else {
     const server = express();
     server.use("/static", express.static(path.join(__dirname, "web/static")));
