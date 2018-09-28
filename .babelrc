@@ -1,13 +1,39 @@
 {
+    "ignore": [
+        "node_modules",
+        "src/main/web"
+    ],
     "presets": [
         [
-            "env",
+            "@babel/preset-env",
             {
                 "targets": {
                     "node": "current"
                 }
             }
+        ]
+    ],
+    "plugins": [
+        "@babel/plugin-proposal-export-default-from",
+        "@babel/plugin-syntax-dynamic-import",
+        "@babel/plugin-proposal-logical-assignment-operators",
+        [
+            "@babel/plugin-proposal-optional-chaining",
+            {
+                "loose": false
+            }
         ],
-        "stage-1"
+        [
+            "@babel/plugin-proposal-pipeline-operator",
+            {
+                "proposal": "minimal"
+            }
+        ],
+        [
+            "@babel/plugin-proposal-nullish-coalescing-operator",
+            {
+                "loose": false
+            }
+        ]
     ]
 }

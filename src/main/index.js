@@ -1,20 +1,21 @@
-// Modules to control application life and create native browser window
+import * as DesktopBridge from '../framework/bridge'
+
 const { app, BrowserWindow, ipcMain } = require('electron')
-const express = require('express');
-const path = require('path');
+const express = require('express')
+const path = require('path')
 
 let argv = require('minimist')(process.argv.slice(2))
 
-const powerSaveBlocker = require('electron').powerSaveBlocker;
-powerSaveBlocker.start('prevent-app-suspension');
+const powerSaveBlocker = require('electron').powerSaveBlocker
+powerSaveBlocker.start('prevent-app-suspension')
 
-app.commandLine.appendSwitch('page-visibility');
-app.commandLine.appendSwitch("disable-renderer-backgrounding");
-app.commandLine.appendSwitch("disable-background-timer-throttling");
+app.commandLine.appendSwitch('page-visibility')
+app.commandLine.appendSwitch("disable-renderer-backgrounding")
+app.commandLine.appendSwitch("disable-background-timer-throttling")
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let mainWindow = null
 
 function createWindow () {
   mainWindow = new BrowserWindow({
@@ -54,27 +55,33 @@ function createWindow () {
   ipcMain.on('command', (event, msg) => {
     console.log('Command from web', msg) // msg from web page
     
-    const request = JSON.parse(msg)
+    const cmd = JSON.parse(msg)
 
-    const response = {
-      key: ''
-    }
+    DesktopBridge.runCommand(cmd).then(() => {
 
-    mainWindow.webContents.send('command', JSON.stringify(response)) // send to web page
-  })
-
-  if (argv.dev) {
-    mainWindow.webContents.loadURL("http://localhost:8000/");
-  } else {
-    const server = express();
-    server.use("/static", express.static(path.join(__dirname, "web/static")));
-    server.get("/", function (req, res) {
-      res.sendFile(path.join(__dirname + "/web/index.html"));
     })
 
-    server.listen(9999, () => console.log("App is running on port 9999"));
+    // const response = {
+    //   key: ''
+    // }
 
-    mainWindow.loadURL("http://localhost:9999/");
+    //mainWindow.webContents.send('command', JSON.stringify(response)) // send to web page
+  })
+
+  DesktopBridge.init(mainWindow.webContents)
+
+  if (argv.dev) {
+    mainWindow.webContents.loadURL("http://localhost:8000/")
+  } else {
+    const server = express()
+    server.use("/static", express.static(path.join(__dirname, "web/static")))
+    server.get("/", function (req, res) {
+      res.sendFile(path.join(__dirname + "/web/index.html"))
+    })
+
+    server.listen(9999, () => console.log("App is running on port 9999"))
+
+    mainWindow.loadURL("http://localhost:9999/")
   }
 
   if (argv.tools) {
