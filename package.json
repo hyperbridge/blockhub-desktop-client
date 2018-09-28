@@ -1,7 +1,7 @@
 {
   "name": "blockhub-desktop-client",
   "productName": "BlockHub",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "BlockHub Desktop Client",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "index.js",
@@ -9,7 +9,7 @@
     "start": "electron ./src/main",
     "dev": "electron ./src/main --dev --tools",
     "build": "cp -R src/ build",
-    "package": "node ./bin/package.js"
+    "package": "npm run build && node ./bin/package.js"
   },
   "dependencies": {
     "mkdirp": "^0.5.1",

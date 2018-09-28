@@ -89,7 +89,7 @@ const all = {
     // The build version of the application. Maps to the FileVersion metadata property on
     // Windows, and CFBundleVersion on Mac. Note: Windows requires the build version to
     // start with a number. We're using the version of the underlying BlockHub library.
-    'build-version': '0.1.0',
+    'build-version': '0.2.0',
 
     // The application source directory.
     dir: config.ROOT_PATH,
