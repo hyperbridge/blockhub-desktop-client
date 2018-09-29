@@ -1,6 +1,6 @@
 import * as DesktopBridge from '../framework/bridge'
 
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app, BrowserWindow, ipcMain, shell } = require('electron')
 const express = require('express')
 const path = require('path')
 
@@ -17,6 +17,14 @@ app.commandLine.appendSwitch("disable-background-timer-throttling")
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow = null
 
+function isSafeURL(url) {
+  return url.startsWith('http:') || url.startsWith('https:')
+}
+
+function isBlockHubURL(url) {
+  return url.startsWith('https://blockhub.gg')
+}
+
 function createWindow () {
   mainWindow = new BrowserWindow({
     width: argv.tools ? 1920 : 1400,
@@ -27,6 +35,13 @@ function createWindow () {
     scrollBounce: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+    }
+  })
+
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (isSafeURL(url) && !isBlockHubURL(url)) {
+      event.preventDefault()
+      shell.openExternal(url)
     }
   })
 
