@@ -22,7 +22,7 @@ function isSafeURL(url) {
 }
 
 function isBlockHubURL(url) {
-  return url.startsWith('https://blockhub.gg')
+  return url.startsWith('http://localhost') || url.startsWith('https://blockhub.gg')
 }
 
 function createWindow () {
