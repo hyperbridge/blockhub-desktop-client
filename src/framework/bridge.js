@@ -1,34 +1,114 @@
 import * as Wallet from './wallet'
 import * as DB from '../db'
+import CryptoJS from 'crypto-js'
 
 export let config = {
 }
 
 const local = {
     requests: {},
+    passphrase: null,
+    password: null,
 }
 
-export const getAccountRequest = async (data) => {
-    return new Promise(async (resolve) => {
-        const account = DB.network.config.data.account
-        const res = {
-            account: {
-                public_address: account.public_address,
-                email: account.email
-            }
-        }
 
-        resolve(res)
+export const decrypt = (data, key) => {
+    return CryptoJS.AES.decrypt(data, key).toString(CryptoJS.enc.Utf8)
+}
+
+export const encrypt = (data, key) => {
+    return CryptoJS.AES.encrypt(data, key).toString()
+}
+
+export const promptPasswordRequest = async (data) => {
+    return new Promise(async (resolve) => {
+        // Web sends back password prompt response
+        const res = await sendCommand('promptPasswordRequest')
+
+        // Decrypt the passphrase and use to set web3 provider
+        local.password = res.password
+        local.passphrase = decrypt(DB.network.config.data.account.passphrase, local.password)
+
+        console.log(DB.network.config.data.account.passphrase, local.password)
+        console.log(local.passphrase)
+
+        Wallet.setPassphrase(local.passphrase)
+
+        await Wallet.init()
+
+        // Desktop sends back all non-sensitive account info
+        await setAccountRequest()
+
+        // Check the wallet exists in the accounts contract
+        // If not, prompt to add it
+            // If no ETH, let them know they need it
+        // Sync any changes from smart contract
+
+        resolve()
     })
 }
 
-export const createAccountRequest = async (data) => {
+export const setAccountRequest = async (data) => {
     return new Promise(async (resolve) => {
-        const wallet = await Wallet.createEthereumWallet()
+        const account = DB.network.config.data.account
+        const decryptedPrivateKey = decrypt(account.private_key, local.password)
+
+        const req = {
+            account: {
+                public_address: account.public_address,
+                secret_question: account.secret_question,
+                secret_answer: 'UNAVAILABLE',
+                passphrase: 'UNAVAILABLE',
+                private_key: 'UNAVAILABLE',
+                password: 'UNAVAILABLE',
+                email: decrypt(account.email, decryptedPrivateKey),
+                first_name: decrypt(account.first_name, decryptedPrivateKey),
+                last_name: decrypt(account.last_name, decryptedPrivateKey),
+                birthday: decrypt(account.birthday, decryptedPrivateKey),
+            }
+        }
+
+        await sendCommand('setAccountRequest', req)
+
+        resolve()
+    })
+}
+
+export const handleCreateAccountRequest = async (data) => {
+    return new Promise(async (resolve) => {
+        const passphrase = 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' // TODO: randomly generate based on data.seed
+
+        Wallet.setPassphrase(passphrase)
+        
+        await Wallet.init()
+
+        const account = await Wallet.getCurrentAccount()
+
+        local.password = data.password
+
+        DB.network.config.data.account = {
+            ...DB.network.config.data.account,
+            public_address: account.public_address,
+            secret_answer: 'UNAVAILABLE',
+            passphrase: encrypt(passphrase, local.password),
+            private_key: encrypt(account.private_key, local.password),
+            password: encrypt(data.secret_answer + data.birthday, local.password),
+            email: encrypt(data.email, account.private_key),
+            first_name: encrypt(data.first_name, account.private_key),
+            last_name: encrypt(data.last_name, account.private_key),
+            birthday: encrypt(data.birthday, account.private_key),
+        }
+
+        DB.save()
 
         const res = {
             account: {
-
+                public_address: account.public_address,
+                email: data.email,
+                first_name: data.first_name,
+                last_name: data.last_name,
+                birthday: data.birthday,
+                secret_question: data.secret_question,
             }
         }
 
@@ -42,7 +122,6 @@ export const ID = () => {
     // after the decimal.
     return '_' + Math.random().toString(36).substr(2, 9);
 }
-
 
 export const sendCommand = async (key, data = {}, peer = null, responseId = null) => {
     const cmd = {
@@ -73,7 +152,6 @@ export const sendCommand = async (key, data = {}, peer = null, responseId = null
     return promise
 }
 
-
 export const runCommand = async (cmd, meta = {}) => {
     console.log('[DesktopBridge] Running command', cmd.key)
 
@@ -91,13 +169,42 @@ export const runCommand = async (cmd, meta = {}) => {
         }
 
         if (cmd.key === 'createAccountRequest') {
-            const res = await createAccountRequest(cmd.data)
+            const res = await handleCreateAccountRequest(cmd.data)
 
             return resolve(await sendCommand('createAccountResponse', res, meta.client, cmd.requestId))
         } else if (cmd.key === 'getAccountRequest') {
-            const res = await getAccountRequest(cmd.data)
+            const res = await handleGetAccountRequest(cmd.data)
 
             return resolve(await sendCommand('getAccountResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'setPasswordRequest') {
+            local.password = cmd.data.password
+
+            // TODO: validate
+            const res = {
+                success: 1
+            }
+
+            return resolve(await sendCommand('setPasswordResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'init') {
+
+            // Check local db for stored account
+            if (DB.network.config.data.account.passphrase) {
+                // Desktop asks to prompt password
+                const res = await promptPasswordRequest()
+            } else {
+
+            }
+            // If exists, prompt web to require password
+                // Web sends back response (requirePasswordResponse)
+                // Decrypt the passphrase and use to set web3 provider
+                // Desktop sends back all non-sensitive account info
+                // Check the wallet exists in the accounts contract
+                // If not, prompt to add it
+                    // If no ETH, let them know they need it
+                // Sync any changes from smart contract
+            // If doesn't exist, prompt web to create account
+        } else {
+            console.log('[DesktopBridge] Unhandled command:', cmd)
         }
     })
 }
@@ -110,10 +217,18 @@ export const initHeartbeat = () => {
     })
 }
 
+// Check local db for stored account
+// If exists, prompt web to require password
+    // Web sends back response (requirePasswordResponse)
+    // Decrypt the passphrase and use to set web3 provider
+    // Desktop sends back all non-sensitive account info
+    // Check the wallet exists in the accounts contract
+    // If not, prompt to add it
+        // If no ETH, let them know they need it
+    // Sync any changes from smart contract
+// If doesn't exist, prompt web to create account
 export const init = (bridge) => {
     console.log('[DesktopBridge] Initializing')
 
     local.bridge = bridge
-
-    Wallet.init()
 }

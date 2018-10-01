@@ -12,7 +12,7 @@ const local = {
     },
     ethereum: {
         account: {
-            mnemonic: null
+            passphrase: null
         },
         provider: null,
         web3: null,
@@ -25,7 +25,7 @@ const local = {
             development: {
                 provider: function () {
                     return new HDWalletProvider(
-                        local.ethereum.account.mnemonic,
+                        local.ethereum.account.passphrase,
                         "http://localhost:8545"
                     )
                 },
@@ -38,7 +38,7 @@ const local = {
             kovan: {
                 provider: function () {
                     return new HDWalletProvider(
-                        local.ethereum.account.mnemonic,
+                        local.ethereum.account.passphrase,
                         "https://kovan.infura.io/" + local.ethereum.infura.accessToken
                     )
                 },
@@ -49,7 +49,7 @@ const local = {
             rinkeby: {
                 provider: function () {
                     return new HDWalletProvider(
-                        local.ethereum.account.mnemonic,
+                        local.ethereum.account.passphrase,
                         "https://rinkeby.infura.io/" + local.ethereum.infura.accessToken
                     )
                 },
@@ -60,7 +60,7 @@ const local = {
             mainnet: {
                 provider: function () {
                     return new HDWalletProvider(
-                        local.ethereum.account.mnemonic,
+                        local.ethereum.account.passphrase,
                         "https://mainnet.infura.io/" + local.ethereum.infura.accessToken
                     )
                 },
@@ -71,7 +71,7 @@ const local = {
             ropsten: {
                 provider: function () {
                     return new HDWalletProvider(
-                        local.ethereum.account.mnemonic,
+                        local.ethereum.account.passphrase,
                         "https://ropsten.infura.io/" + local.ethereum.infura.accessToken
                     )
                 },
@@ -83,33 +83,44 @@ const local = {
     }
 }
 
+export const setPassphrase = (passphrase) => {
+    local.ethereum.account.passphrase = passphrase
+}
+
 export const getCurrentAccount = async () => {
     //console.log(local.ethereum.web3.eth)
     const currentAccounts = await local.ethereum.web3.eth.getAccountsPromise();
-    
-    return currentAccounts[0];
+
+    return {
+        public_address: currentAccounts[0],
+        private_key: local.ethereum.web3.currentProvider.wallets[currentAccounts[0]]._privKey.toString('hex')
+    }
 }
 
 export const createEthereumWallet = async () => {
     console.log('[BlockHub] Creating wallet...')
 
-    local.ethereum.web3.eth.defaultAccount = await getCurrentAccount()
-    
-    DB.network.config.data.account.public_address = local.ethereum.web3.eth.defaultAccount
-    DB.network.config.data.account.balance = (await local.ethereum.web3.eth.getBalancePromise(local.ethereum.web3.eth.defaultAccount)).toNumber()
-    DB.save()
+    return new Promise(async (resolve, reject) => {
+        local.ethereum.web3.eth.defaultAccount = await getCurrentAccount()
+
+        DB.network.config.data.account.public_address = local.ethereum.web3.eth.defaultAccount.public_address
+        DB.network.config.data.account.balance = (await local.ethereum.web3.eth.getBalancePromise(local.ethereum.web3.eth.defaultAccount.public_address)).toNumber()
+        DB.save()
+
+        resolve(local.ethereum.web3.eth.defaultAccount)
+    })
 }
 
 // 'retreat attack lift winter amazing noodle interest dutch craft old solve save',
-export const init = () => {
+export const init = async () => {
     console.log('[BlockHub] Initializing wallet...')
 
     local.ethereum.web3 = new Web3(local.ethereum.networks[local.ethereum.activeNetwork].provider())
 
     Bluebird.promisifyAll(local.ethereum.web3.eth, { suffix: 'Promise' })
 
-    createEthereumWallet()
-    
+    createEthereumWallet().then()
+
     // const myContract = contract(myABI)
     // myContract.setProvider(local.ethereum.web3.currentProvider)
 }
