@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "start": "./node_modules/.bin/babel src --out-dir build && electron ./build/main/index.js",
-    "dev": "./node_modules/.bin/babel src --out-dir build && cd ./build/main && electron . --dev --tools",
+    "dev": "rm -rf build && cp -R src/ build && ./node_modules/.bin/babel src --out-dir build && electron . --dev --tools",
     "build": "cp -R src/ build",
     "package": "npm run build && node ./bin/package.js"
   },
@@ -38,6 +38,8 @@
     "electron-osx-sign": "^0.4.10",
     "electron-packager": "^12.1.0",
     "electron-winstaller": "^2.6.4",
+    "json-beautify": "^1.0.1",
+    "lokijs": "^1.5.5",
     "minimist": "^1.2.0",
     "nobin-debian-installer": "0.0.10",
     "run-series": "^1.1.4",

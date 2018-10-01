@@ -1,4 +1,5 @@
 import * as Wallet from './wallet'
+import * as DB from '../db'
 
 export let config = {
 }
@@ -7,6 +8,19 @@ const local = {
     requests: {},
 }
 
+export const getAccountRequest = async (data) => {
+    return new Promise(async (resolve) => {
+        const account = DB.network.config.data.account
+        const res = {
+            account: {
+                public_address: account.public_address,
+                email: account.email
+            }
+        }
+
+        resolve(res)
+    })
+}
 
 export const createAccountRequest = async (data) => {
     return new Promise(async (resolve) => {
@@ -80,6 +94,10 @@ export const runCommand = async (cmd, meta = {}) => {
             const res = await createAccountRequest(cmd.data)
 
             return resolve(await sendCommand('createAccountResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'getAccountRequest') {
+            const res = await getAccountRequest(cmd.data)
+
+            return resolve(await sendCommand('getAccountResponse', res, meta.client, cmd.requestId))
         }
     })
 }
@@ -92,22 +110,10 @@ export const initHeartbeat = () => {
     })
 }
 
-export const initCommandMonitor = () => {
-    local.bridge.on('command', (event, msg) => {
-        const request = JSON.parse(msg)
-
-        const response = {
-            key: ''
-        }
-
-        local.bridge.send('command', JSON.stringify(response)) // send to web page
-    })
-}
-
 export const init = (bridge) => {
     console.log('[DesktopBridge] Initializing')
 
     local.bridge = bridge
-    
+
     Wallet.init()
 }

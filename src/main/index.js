@@ -1,14 +1,17 @@
+import { app, BrowserWindow, Menu, ipcMain, shell } from 'electron'
+import express from 'express'
+import path from 'path'
+import * as DB from '../db'
 import * as DesktopBridge from '../framework/bridge'
 
-const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron')
-const express = require('express')
-const path = require('path')
 
 let argv = require('minimist')(process.argv.slice(2))
 
 let mainWindow = null
 
 export const onException = (err) => {
+  console.log('[BlockHub] Exception', err)
+
   if (!mainWindow || !err) {
     return
   }
@@ -338,9 +341,6 @@ export const initMenu = () => {
 }
 
 export const installDarwin = () => {
-  const electron = require('electron')
-  const app = electron.app
-
   // On Mac, only protocols that are listed in `Info.plist` can be set as the
   // default handler at runtime.
   app.setAsDefaultProtocolClient('blockhub')
@@ -364,7 +364,9 @@ export const initApp = () => {
     installDarwin()
   }
 
-  const shouldQuit = app.makeSingleInstance(function (commandLine, workingDirectory) {
+  const isSecondInstance = app.makeSingleInstance(function (commandLine, workingDirectory) {
+    console.log('[BlockHub] Two app instances found. Closing duplicate.')
+
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
@@ -372,7 +374,7 @@ export const initApp = () => {
     }
   });
 
-  if (shouldQuit) {
+  if (isSecondInstance) {
     app.quit();
   }
 
@@ -383,72 +385,80 @@ export const initApp = () => {
     }
   })
 
-  app.setName('BlockHub')
-
-  // Quit when all windows are closed.
-  app.on('window-all-closed', function () {
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-      app.quit()
-    }
-  })
-
   app.on('activate', function () {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (mainWindow === null) {
-      createWindow()
+    if (mainWindow !== null) {
+      mainWindow.show()
+    }
+
+    if (process.platform === 'darwin') {
+      // On OS X it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (mainWindow === null) {
+        createWindow()
+      }
     }
   })
 
   app.on('window-all-closed', () => {
+    console.log('[BlockHub] All windows closed. Quitting.')
     app.quit()
   })
 
   // Mac only
-  app.on('open-url', (event, url) => {
+  if (process.platform !== 'darwin') {
+    app.on('open-url', (event, url) => {
 
+    })
+  }
+
+  app.setName('BlockHub')
+
+  app.on('ready', () => {
+    createWindow()
   })
-
-  app.on('ready', createWindow)
 }
 
 export const initIPC = () => {
+  let webInitialized = false
+
   ipcMain.on('ping', (event, msg) => {
-    console.log('Ping from web', msg) // msg from web page
+    console.log('[BlockHub] Ping from web', msg) // msg from web page
+
     mainWindow.webContents.send('pong', 'ok') // send to web page
   })
 
   ipcMain.on('heartbeat', (event, msg) => {
-    console.log('Heartbeat from web', msg) // msg from web page
+    console.log('[BlockHub] Heartbeat from web', msg) // msg from web page
+    
+    //mainWindow.webContents.send('heartbeat', 'ok') // send to web page
   })
 
   ipcMain.on('init', (event, msg) => {
-    console.log('Init from web', msg) // msg from web page
+    if (webInitialized) {
+      return
+    }
+
+    webInitialized = true
+
+    console.log('[BlockHub] Web initialized', msg) // msg from web page
 
     if (msg == '1') {
+      console.log('[BlockHub] Setting up heartbeat')
 
       setInterval(() => {
         mainWindow.webContents.send('heartbeat', 1) // send to web page
       }, 2000)
     } else {
-      console.error("Error initializing web", msg)
+      console.error('[BlockHub] Error initializing web', msg)
     }
   })
 
   ipcMain.on('command', (event, msg) => {
-    console.log('Command from web', msg) // msg from web page
+    console.log('[BlockHub] Received command from web', msg) // msg from web page
 
     const cmd = JSON.parse(msg)
 
-    DesktopBridge.runCommand(cmd).then(() => {
-      // const response = {
-      //   key: ''
-      // }
-
-      //mainWindow.webContents.send('command', JSON.stringify(response)) // send to web page
-    })
+    DesktopBridge.runCommand(cmd).then(() => {})
   })
 }
 
@@ -483,9 +493,7 @@ export const createWindow = () => {
   mainWindow.webContents.on('will-navigate', ensureLinksOpenInBrowser)
   mainWindow.webContents.on('new-window', ensureLinksOpenInBrowser)
 
-  initIPC()
-
-  DesktopBridge.init(mainWindow.webContents)
+  DB.init()
 
   if (argv.dev) {
     mainWindow.webContents.loadURL("http://localhost:8000/")
@@ -504,6 +512,8 @@ export const createWindow = () => {
   if (argv.tools) {
     mainWindow.webContents.openDevTools()
   }
+
+  DesktopBridge.init(mainWindow.webContents)
 
   mainWindow.webContents.on('did-finish-load', () => {
     initMenu()
@@ -535,6 +545,14 @@ export const createWindow = () => {
   })
 }
 
-initProcess()
-initIPC()
-initApp()
+export const init = () => {
+  initProcess()
+  initIPC()
+  initApp()
+}
+
+if (!global.electronInitialized) {
+  init()
+
+  global.electronInitialized = true
+}
