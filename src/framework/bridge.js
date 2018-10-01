@@ -10,6 +10,8 @@ const local = {
 
 export const createAccountRequest = async (data) => {
     return new Promise(async (resolve) => {
+        const wallet = await Wallet.createEthereumWallet()
+
         const res = {
             account: {
 
@@ -106,4 +108,6 @@ export const init = (bridge) => {
     console.log('[DesktopBridge] Initializing')
 
     local.bridge = bridge
+    
+    Wallet.init()
 }

@@ -6,8 +6,8 @@
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "index.js",
   "scripts": {
-    "start": "electron ./src/main",
-    "dev": "./node_modules/.bin/babel src --out-dir build && electron ./build/main/index.js --dev --tools",
+    "start": "./node_modules/.bin/babel src --out-dir build && electron ./build/main/index.js",
+    "dev": "./node_modules/.bin/babel src --out-dir build && cd ./build/main && electron . --dev --tools",
     "build": "cp -R src/ build",
     "package": "npm run build && node ./bin/package.js"
   },
@@ -28,6 +28,7 @@
     "@babel/plugin-proposal-optional-chaining": "^7.0.0",
     "@babel/plugin-proposal-pipeline-operator": "^7.0.0",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "@babel/plugin-transform-async-to-generator": "^7.1.0",
     "@babel/preset-env": "^7.0.0",
     "@babel/preset-stage-1": "^7.0.0",
     "@babel/register": "^7.0.0",

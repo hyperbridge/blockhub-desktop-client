@@ -17,6 +17,7 @@
         "@babel/plugin-proposal-export-default-from",
         "@babel/plugin-syntax-dynamic-import",
         "@babel/plugin-proposal-logical-assignment-operators",
+        "@babel/plugin-transform-async-to-generator",
         [
             "@babel/plugin-proposal-optional-chaining",
             {
