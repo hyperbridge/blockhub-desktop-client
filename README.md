@@ -22,6 +22,7 @@ This is the desktop client for BlockHub, built with Electron.
 - 📖 [Docs](http://docs.hyperbridge.org/blockhub)
 - 📓 [EIPs](https://github.com/hyperbridge/EIPs)
 - 💻 [Web Client](https://github.com/hyperbridge/blockhub-web-client)
+- 💻 [Desktop Client](https://github.com/hyperbridge/blockhub-desktop-client)
 - 🛡 [Node Operator](https://github.com/hyperbridge/blockhub-node-operator)
 - 🔗 [Token](https://github.com/hyperbridge/token)
 - 🔗 [Funding Protocol](https://github.com/hyperbridge/funding-protocol)
