@@ -1,6 +1,9 @@
+import CryptoJS from 'crypto-js'
 import * as Wallet from './wallet'
 import * as DB from '../db'
-import CryptoJS from 'crypto-js'
+import FundingProtocol from 'funding-protocol'
+import MarketplaceProtocol from 'marketplace-protocol'
+
 
 export let config = {
 }
@@ -20,7 +23,7 @@ export const encrypt = (data, key) => {
     return CryptoJS.AES.encrypt(data, key).toString()
 }
 
-export const promptPasswordRequest = async (data) => {
+export const promptPasswordRequest = async () => {
     return new Promise(async (resolve) => {
         // Web sends back password prompt response
         const res = await sendCommand('promptPasswordRequest')
@@ -48,7 +51,232 @@ export const promptPasswordRequest = async (data) => {
     })
 }
 
-export const setAccountRequest = async (data) => {
+export const getProtocolByName = (name) => {
+    if (protocolName === 'funding') {
+        return FundingProtocol
+    } else if (protocolName === 'marketplace') {
+        return MarketplaceProtocol
+    }
+
+    throw new Error('[DesktopBridge] Unknown protocol requested')
+}
+
+export const setContractAddress = async ({ protocolName, contractName, address }) => {
+    return new Promise(async (resolve) => {
+        let protocol = getProtocolByName(protocolName)
+
+        protocol.api.ethereum
+            .setContractAddress(contractName, address)
+            .catch(() => {
+                resolve('Unable to deploy contract')
+            })
+            .then(() => {
+                resolve(null)
+            })
+    })
+}
+
+export const updateFundingProject = async ({ id, data }) => {
+    const project = DB.funding.projects.findOne({ 'id': id })
+
+    return new Promise(async (resolve, reject) => {
+        const projectRegistrationContract = FundingProtocol.api.ethereum.state.contracts.ProjectRegistration.deployed
+
+        // TODO
+        resolve(null, project)
+    })
+}
+
+export const createFundingProject = async ({ title, description, about }) => {
+    const project = {
+        title,
+        description,
+        about,
+        minContributionGoal: 1000,
+        maxContributionGoal: 10000,
+        contributionPeriod: 4,
+        noRefunds: false,
+        noTimeline: true,
+    }
+
+    return new Promise(async (resolve, reject) => {
+        const projectRegistrationContract = FundingProtocol.api.ethereum.state.contracts.ProjectRegistration.deployed
+
+        projectRegistrationContract.ProjectCreated().watch((err, res) => {
+            if (err) {
+                console.warn('[BlockHub][Funding] Error', err)
+
+                return reject(err)
+            }
+
+            project.$loki = undefined
+            project.id = res.args.projectId.toNumber()
+
+            try {
+                DB.funding.projects.insert(project)
+            } catch (e) {
+                try {
+                    DB.funding.projects.update(project)
+                } catch (e) {
+                    reject(e)
+                }
+            }
+
+            resolve(null, project)
+        })
+
+        await projectRegistrationContract.createProject(
+            project.title,
+            project.description,
+            project.about,
+            project.minContributionGoal,
+            project.maxContributionGoal,
+            project.contributionPeriod,
+            project.noRefunds,
+            project.noTimeline
+        )
+    })
+}
+
+export const handleInitProtocol = async ({ protocolName }) => {
+    return new Promise(async (resolve) => {
+        const protocol = getProtocolByName(protocolName)
+        const state = DB[protocolName].config.data
+
+        protocol.api.ethereum.init(
+            store.state.ethereum[store.state.current_ethereum_network].user_from_address,
+            store.state.ethereum[store.state.current_ethereum_network].user_to_address
+        )
+
+        for (let contractName in store.state.ethereum[store.state.current_ethereum_network].contracts) {
+            const contract = store.state.ethereum[store.state.current_ethereum_network].contracts[contractName]
+
+            if (contract.address) {
+                await setContractAddress(protocolName, contractName, contract.address)
+                    .then((err) => {
+                        if (err) {
+                            store.state.ethereum[store.state.current_ethereum_network].contracts[contractName].address = null
+                            store.state.ethereum[store.state.current_ethereum_network].contracts[contractName].created_at = null
+                        }
+                    })
+            } else {
+                store.state.ethereum[store.state.current_ethereum_network].contracts[contractName].created_at = null
+            }
+        }
+
+        resolve(null, store.state.ethereum[store.state.current_ethereum_network])
+    })
+}
+
+export const deployContract = async ({ protocolName, contractName }) => {
+    return new Promise(async (resolve) => {
+        const protocol = getProtocolByName(protocolName)
+        const state = DB[protocolName].config.data
+        const links = []
+        const params = []
+
+        if (!state.ethereum[state.current_ethereum_network].contracts[contractName]) {
+            state.ethereum[state.current_ethereum_network].contracts[contractName] = {
+                created_at: null,
+                address: null
+            }
+        }
+
+        if (protocol.api.ethereum.state.contracts[contractName].links) {
+            links = protocol.api.ethereum.state.contracts[contractName].links
+
+            for (let i in links) {
+                links[i].address = state.ethereum[state.current_ethereum_network].contracts[links[i].name].address
+
+                if (!links[i].address) {
+                    await deployContract(protocolName, links[i].name)
+
+                    links[i].address = state.ethereum[state.current_ethereum_network].contracts[links[i].name].address
+                }
+            }
+        }
+
+        // Linking
+        if (protocol === 'funding') {
+            if (contractName === 'ProjectBase') {
+                params = [
+                    false
+                ]
+            }
+
+            if (contractName === 'FundingVault') {
+                params = [
+                    state.ethereum[state.current_ethereum_network].contracts.FundingStorage.address
+                ]
+            }
+
+            if (contractName === 'Contribution'
+                || contractName === 'Curation'
+                || contractName === 'Developer'
+                || contractName === 'ProjectContributionTier'
+                || contractName === 'ProjectMilestoneCompletion'
+                || contractName === 'ProjectMilestoneCompletionVoting'
+                || contractName === 'ProjectRegistration'
+                || contractName === 'ProjectTimeline'
+                || contractName === 'ProjectTimelineProposal'
+                || contractName === 'ProjectTimelineProposalVoting') {
+                params = [
+                    state.ethereum[state.current_ethereum_network].contracts.FundingStorage.address,
+                    false
+                ]
+            }
+        }
+
+        protocol.api.ethereum
+            .deployContract(contractName, links, params)
+            .then(async (err, contract) => {
+                state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = Date.now()
+                state.ethereum[state.current_ethereum_network].contracts[contractName].address = contract.address
+
+                DB[protocolName].config.update(state)
+                DB.save()
+
+                if (protocol === 'funding' && contractName === 'ProjectRegistration') {
+                    const blankAddress = 0x0000000000000000000000000000000000000000
+                    const projectRegistrationContract = protocol.api.ethereum.state.contracts.ProjectRegistration.deployed
+                    const fundingStorageContract = protocol.api.ethereum.state.contracts.FundingStorage.deployed
+
+                    await fundingStorageContract.registerContract('ProjectRegistration', blankAddress, projectRegistrationContract.address)
+                    await projectRegistrationContract.initialize()
+
+                    const developerContract = protocol.api.ethereum.state.contracts.Developer.deployed
+                    await fundingStorageContract.registerContract('Developer', blankAddress, developerContract.address)
+                    await developerContract.initialize()
+
+                    let developerId = null
+                    const developerAccount = state.ethereum[state.current_ethereum_network].user_from_address
+
+                    developerContract.DeveloperCreated().watch((err, res) => {
+                        if (err) {
+                            console.warn('[BlockHub][Funding] Error', err)
+                        }
+
+                        developerId = res.args.developerId
+                    })
+
+                    await developerContract.createDeveloper('Hyperbridge', { from: developerAccount })
+                }
+
+                resolve(null, state.ethereum[state.current_ethereum_network].contracts[contractName])
+            })
+    })
+}
+
+
+export const handleDeployContract = async ({ protocolName, contractName }) => {
+    return new Promise(async (resolve) => {
+        const { err, contract } = deployContract(protocolName, contractName)
+
+        resolve(err, contract)
+    })
+}
+
+export const setAccountRequest = async () => {
     return new Promise(async (resolve) => {
         const account = DB.network.config.data.account
         const decryptedPrivateKey = decrypt(account.private_key, local.password)
@@ -74,7 +302,7 @@ export const setAccountRequest = async (data) => {
     })
 }
 
-export const handleCreateAccountRequest = async (data) => {
+export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, secret_question, secret_answer }) => {
     return new Promise(async (resolve) => {
         const passphrase = 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' // TODO: randomly generate based on data.seed
 
@@ -84,31 +312,31 @@ export const handleCreateAccountRequest = async (data) => {
 
         const account = await Wallet.getCurrentAccount()
 
-        local.password = data.password
-
         DB.network.config.data.account = {
             ...DB.network.config.data.account,
             public_address: account.public_address,
             secret_answer: 'UNAVAILABLE',
-            passphrase: encrypt(passphrase, local.password),
-            private_key: encrypt(account.private_key, local.password),
-            password: encrypt(data.secret_answer + data.birthday, local.password),
-            email: encrypt(data.email, account.private_key),
-            first_name: encrypt(data.first_name, account.private_key),
-            last_name: encrypt(data.last_name, account.private_key),
-            birthday: encrypt(data.birthday, account.private_key),
+            passphrase: encrypt(passphrase, password),
+            private_key: encrypt(account.private_key, password),
+            password: encrypt(secret_answer + birthday, password),
+            email: encrypt(email, account.private_key),
+            first_name: encrypt(first_name, account.private_key),
+            last_name: encrypt(last_name, account.private_key),
+            birthday: encrypt(birthday, account.private_key),
         }
 
         DB.save()
 
+        local.password = password
+
         const res = {
             account: {
                 public_address: account.public_address,
-                email: data.email,
-                first_name: data.first_name,
-                last_name: data.last_name,
-                birthday: data.birthday,
-                secret_question: data.secret_question,
+                email: email,
+                first_name: first_name,
+                last_name: last_name,
+                birthday: birthday,
+                secret_question: secret_question,
             }
         }
 
@@ -167,7 +395,7 @@ export const runCommand = async (cmd, meta = {}) => {
 
             return resolve()
         }
-
+        
         if (cmd.key === 'createAccountRequest') {
             const res = await handleCreateAccountRequest(cmd.data)
 
@@ -176,6 +404,18 @@ export const runCommand = async (cmd, meta = {}) => {
             const res = await handleGetAccountRequest(cmd.data)
 
             return resolve(await sendCommand('getAccountResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'setContractAddress') {
+            const res = await handleSetContractAddress(cmd.data)
+
+            return resolve(await sendCommand('setContractAddressResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'deployContract') {
+            const res = await handleDeployContract(cmd.data)
+
+            return resolve(await sendCommand('deployContractResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'createFundingProject') {
+            const res = await createFundingProject(cmd.data)
+
+            return resolve(await sendCommand('createFundingProjectResponse', res, meta.client, cmd.requestId))
         } else if (cmd.key === 'setPasswordRequest') {
             local.password = cmd.data.password
 
