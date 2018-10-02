@@ -48,17 +48,41 @@ You can learn more about each of these components within the [Quick Start Guide]
 
 To clone and run this repository you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. From your command line:
 
+Install Node Package Manager (NVM): 
+
+```bash
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+```
+
+Install Node 8.11.1: 
+
+```bash
+nvm install 8.11.1
+```
+
+If you get `nvm: command not found`, simply close your current terminal, open a new terminal, and try again. Please see the [NVM readme](https://github.com/creationix/nvm) if you have any issues.
+
 ```bash
 # Clone this repository
 git clone https://github.com/hyperbridge/blockhub-desktop-client
-# Go into the repository
-cd BLOCKHUB-DESKTOP-CLIENT
-# Install dependencies
+# This are dev dependencies (linked for ease of development)
+git clone git@github.com:hyperbridge/token.git
+git clone git@github.com:hyperbridge/marketplace-protocol.git
+git clone git@github.com:hyperbridge/funding-protocol.git
+# Go into them and npm install
+cd token && npm install && cd ..
+cd marketplace-protocol && npm install && cd ..
+cd funding-protocol && npm install && cd ..
+# Go into the main repo
+cd blockhub-desktop-client
+# Link the deps
+npm link ../token ../marketplace-protocol ../funding-protocol
+# Install deps
 npm install
 # Run the app in electron
-npm start
+npm run dev
 # Create the desktop app
-npm run package-mac
+npm run package
 ```
 
 Note: If you're using Linux Bash for Windows, [see this guide](https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/) or use `node` from the command prompt.
