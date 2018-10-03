@@ -282,7 +282,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     computed: {
         networkIdentites: function networkIdentites() {
-            return this.$store.state.network.identities;
+            return this.$store.state.application.identities;
         },
         defaultIdentity: function defaultIdentity() {
             return this.identities.find(function (identity) {

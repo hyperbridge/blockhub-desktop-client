@@ -226,7 +226,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     computed: {
         identityCount: function identityCount() {
-            return babel_runtime_core_js_object_keys__WEBPACK_IMPORTED_MODULE_0___default()(this.$store.state.network.identities).length;
+            return babel_runtime_core_js_object_keys__WEBPACK_IMPORTED_MODULE_0___default()(this.$store.state.application.identities).length;
         }
     },
     data: function data() {

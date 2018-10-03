@@ -103,8 +103,8 @@ export const createEthereumWallet = async () => {
     return new Promise(async (resolve, reject) => {
         local.ethereum.web3.eth.defaultAccount = await getCurrentAccount()
 
-        DB.network.config.data.account.public_address = local.ethereum.web3.eth.defaultAccount.public_address
-        DB.network.config.data.account.balance = (await local.ethereum.web3.eth.getBalancePromise(local.ethereum.web3.eth.defaultAccount.public_address)).toNumber()
+        DB.application.config.data.account.public_address = local.ethereum.web3.eth.defaultAccount.public_address
+        DB.application.config.data.account.balance = (await local.ethereum.web3.eth.getBalancePromise(local.ethereum.web3.eth.defaultAccount.public_address)).toNumber()
         DB.save()
 
         resolve(local.ethereum.web3.eth.defaultAccount)

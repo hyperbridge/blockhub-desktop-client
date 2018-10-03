@@ -542,7 +542,7 @@ var updateProject = function updateProject() {
             $('.nav-tabs a[href="#' + name + '"]').tab('show');
         },
         showContributeModal: function showContributeModal() {
-            if (this.$store.state.network.signed_in) {
+            if (this.$store.state.application.signed_in) {
                 this.$store.commit('network/activateModal', 'send-funds');
             } else {
                 this.$store.commit('network/activateModal', 'login');

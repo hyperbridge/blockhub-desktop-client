@@ -44,9 +44,9 @@ __webpack_require__.r(__webpack_exports__);
 
   computed: {
     transaction: function transaction() {
-      if (!this.$store.state.network.transactions) return;
+      if (!this.$store.state.application.transactions) return;
 
-      var transaction = this.$store.state.network.transactions[this.id];
+      var transaction = this.$store.state.application.transactions[this.id];
 
       if (!transaction) return;
 

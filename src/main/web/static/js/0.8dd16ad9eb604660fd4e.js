@@ -156,10 +156,10 @@ __webpack_require__.r(__webpack_exports__);
             return this.$store.state.marketplace.editor_mode === 'editing';
         },
         signed_in: function signed_in() {
-            return this.$store.state.network.signed_in;
+            return this.$store.state.application.signed_in;
         },
         is_loading: function is_loading() {
-            return this.$store.state.network.loading;
+            return this.$store.state.application.loading;
         }
     },
     methods: {

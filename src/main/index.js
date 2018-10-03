@@ -3,7 +3,13 @@ import express from 'express'
 import path from 'path'
 import * as DB from '../db'
 import * as DesktopBridge from '../framework/bridge'
+import * as PeerService from '../framework/peer-service'
 
+
+// Initial settings
+// Disable peer relaying by default (until we're somewhat stable)
+// Disable chaos monkey by default (until we're somewhat stable)
+PeerService.config.RELAY = false
 
 let argv = require('minimist')(process.argv.slice(2))
 
@@ -16,7 +22,7 @@ export const onException = (err) => {
     return
   }
 
-  mainWindow.webContents.send('command', { key: 'SYSTEM_ERROR', message: err.stack || err })
+  mainWindow.webContents.send('command', JSON.stringify({ key: 'systemError', message: err.stack || err }))
 }
 
 export const initProcess = () => {
@@ -480,7 +486,7 @@ export const ensureLinksOpenInBrowser = (event, url) => {
 export const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: argv.tools ? 1920 : 1400,
-    height: 1000,
+    height: 1060,
     resizable: true,
     frame: false,
     icon: __dirname + "static/Icon-512.icns",

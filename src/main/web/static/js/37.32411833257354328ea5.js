@@ -306,7 +306,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     computed: {
         wallets: function wallets() {
-            return this.$store.state.network.wallets;
+            return this.$store.state.application.wallets;
         }
     },
     methods: {

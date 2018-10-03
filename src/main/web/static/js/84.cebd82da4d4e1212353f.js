@@ -41,7 +41,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     computed: {
         paginationMode: function paginationMode() {
-            return this.$store.state.network.account.settings.client.pagination;
+            return this.$store.state.application.account.settings.client.pagination;
         }
     }
 });

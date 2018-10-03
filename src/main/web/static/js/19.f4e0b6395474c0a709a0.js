@@ -182,7 +182,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     computed: {
         is_connected: function is_connected() {
-            return this.$store.state.network.connection.datasource;
+            return this.$store.state.application.connection.datasource;
         },
         marketplace: function marketplace() {
             return this.$store.state.marketplace;
@@ -191,16 +191,16 @@ __webpack_require__.r(__webpack_exports__);
             return this.$store.state.marketplace.assets;
         },
         trending_projects: function trending_projects() {
-            return this.$store.state.network.trending_projects;
+            return this.$store.state.application.trending_projects;
         },
         product_news: function product_news() {
-            return this.$store.state.network.product_news;
+            return this.$store.state.application.product_news;
         },
         main_banner: function main_banner() {
-            return this.$store.state.network.main_banner;
+            return this.$store.state.application.main_banner;
         },
         simulatorMode: function simulatorMode() {
-            return this.$store.state.network.simulatorMode;
+            return this.$store.state.application.simulatorMode;
         }
     },
     mounted: function mounted() {
@@ -208,7 +208,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     methods: {
         toggleSimulator: function toggleSimulator() {
-            this.$store.commit('network/setSimulatorMode', !this.$store.state.network.simulatorMode);
+            this.$store.commit('network/setSimulatorMode', !this.$store.state.application.simulatorMode);
         }
     }
 });

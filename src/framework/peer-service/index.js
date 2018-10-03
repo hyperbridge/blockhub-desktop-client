@@ -30,9 +30,9 @@ import * as Util from '../util'
 // }
 
 
-const NodeClient = require('peerjs')
-const LifeRaft = require('liferaft/index')
-const md5 = require('js-md5')
+const NodeClient = {} //require('peerjs-nodejs')
+const LifeRaft = {} //require('liferaft/index')
+const md5 = {} //require('js-md5')
 
 export let config = {
     RELAY: true,
@@ -390,6 +390,7 @@ export const monitorPeers = () => {
 }
 
 export const init = () => {
+    return;
     console.log('[PeerService] Initializing')
 
     ChaosMonkey.init(config.STRENGTH)

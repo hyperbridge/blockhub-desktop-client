@@ -198,7 +198,7 @@ __webpack_require__.r(__webpack_exports__);
 
     computed: {
         settings: function settings() {
-            return this.$store.state.network.account.settings;
+            return this.$store.state.application.account.settings;
         }
     }
 });

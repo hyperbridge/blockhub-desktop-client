@@ -1,6 +1,7 @@
 import CryptoJS from 'crypto-js'
 import * as Wallet from './wallet'
 import * as DB from '../db'
+import Token from 'hyperbridge-token'
 import FundingProtocol from 'funding-protocol'
 import MarketplaceProtocol from 'marketplace-protocol'
 
@@ -30,9 +31,9 @@ export const promptPasswordRequest = async () => {
 
         // Decrypt the passphrase and use to set web3 provider
         local.password = res.password
-        local.passphrase = decrypt(DB.network.config.data.account.passphrase, local.password)
+        local.passphrase = decrypt(DB.application.config.data.account.passphrase, local.password)
 
-        console.log(DB.network.config.data.account.passphrase, local.password)
+        console.log(DB.application.config.data.account.passphrase, local.password)
         console.log(local.passphrase)
 
         Wallet.setPassphrase(local.passphrase)
@@ -52,13 +53,15 @@ export const promptPasswordRequest = async () => {
 }
 
 export const getProtocolByName = (name) => {
-    if (protocolName === 'funding') {
+    if (name === 'funding') {
         return FundingProtocol
-    } else if (protocolName === 'marketplace') {
+    } else if (name === 'marketplace') {
         return MarketplaceProtocol
+    } else if (name === 'application') { // TODO: add a protocolToModule translator?
+        return Token
     }
 
-    throw new Error('[DesktopBridge] Unknown protocol requested')
+    throw new Error('[DesktopBridge] Unknown protocol requested: ' + name)
 }
 
 export const setContractAddress = async ({ protocolName, contractName, address }) => {
@@ -138,33 +141,33 @@ export const createFundingProject = async ({ title, description, about }) => {
     })
 }
 
-export const handleInitProtocol = async ({ protocolName }) => {
+export const initProtocol = async ({ protocolName }) => {
     return new Promise(async (resolve) => {
         const protocol = getProtocolByName(protocolName)
         const state = DB[protocolName].config.data
 
         protocol.api.ethereum.init(
-            store.state.ethereum[store.state.current_ethereum_network].user_from_address,
-            store.state.ethereum[store.state.current_ethereum_network].user_to_address
+            state.ethereum[state.current_ethereum_network].user_from_address,
+            state.ethereum[state.current_ethereum_network].user_to_address
         )
 
-        for (let contractName in store.state.ethereum[store.state.current_ethereum_network].contracts) {
-            const contract = store.state.ethereum[store.state.current_ethereum_network].contracts[contractName]
+        for (let contractName in state.ethereum[state.current_ethereum_network].contracts) {
+            const contract = state.ethereum[state.current_ethereum_network].contracts[contractName]
 
             if (contract.address) {
                 await setContractAddress(protocolName, contractName, contract.address)
                     .then((err) => {
                         if (err) {
-                            store.state.ethereum[store.state.current_ethereum_network].contracts[contractName].address = null
-                            store.state.ethereum[store.state.current_ethereum_network].contracts[contractName].created_at = null
+                            state.ethereum[state.current_ethereum_network].contracts[contractName].address = null
+                            state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = null
                         }
                     })
             } else {
-                store.state.ethereum[store.state.current_ethereum_network].contracts[contractName].created_at = null
+                state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = null
             }
         }
 
-        resolve(null, store.state.ethereum[store.state.current_ethereum_network])
+        resolve(null, state.ethereum[state.current_ethereum_network])
     })
 }
 
@@ -278,7 +281,7 @@ export const handleDeployContract = async ({ protocolName, contractName }) => {
 
 export const setAccountRequest = async () => {
     return new Promise(async (resolve) => {
-        const account = DB.network.config.data.account
+        const account = DB.application.config.data.account
         const decryptedPrivateKey = decrypt(account.private_key, local.password)
 
         const req = {
@@ -302,6 +305,22 @@ export const setAccountRequest = async () => {
     })
 }
 
+export const updateAccountRequest = async (data) => {
+    return new Promise(async (resolve) => {
+        if (data.encrypt_passphrase) {
+            DB.application.config.data.account.encrypt_passphrase = data.encrypt_passphrase
+
+            if (data.encrypt_passphrase) {
+                DB.application.config.data.account.passphrase = encrypt(data.passphrase, local.password)
+            }
+
+            DB.save()
+
+            resolve()
+        }
+    })
+}
+
 export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, secret_question, secret_answer }) => {
     return new Promise(async (resolve) => {
         const passphrase = 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' // TODO: randomly generate based on data.seed
@@ -312,11 +331,11 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
 
         const account = await Wallet.getCurrentAccount()
 
-        DB.network.config.data.account = {
-            ...DB.network.config.data.account,
+        DB.application.config.data.account = {
+            ...DB.application.config.data.account,
             public_address: account.public_address,
             secret_answer: 'UNAVAILABLE',
-            passphrase: encrypt(passphrase, password),
+            //passphrase: passphrase, //encrypt(passphrase, password),
             private_key: encrypt(account.private_key, password),
             password: encrypt(secret_answer + birthday, password),
             email: encrypt(email, account.private_key),
@@ -337,6 +356,7 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
                 last_name: last_name,
                 birthday: birthday,
                 secret_question: secret_question,
+                passphrase: passphrase
             }
         }
 
@@ -416,6 +436,14 @@ export const runCommand = async (cmd, meta = {}) => {
             const res = await createFundingProject(cmd.data)
 
             return resolve(await sendCommand('createFundingProjectResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'updateAccountRequest') {
+            const res = await updateAccountRequest(cmd.data)
+
+            return resolve(await sendCommand('updateAccountRequestResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'initProtocol') {
+            const res = await initProtocol(cmd.data)
+
+            return resolve(await sendCommand('initProtocolResponse', res, meta.client, cmd.requestId))
         } else if (cmd.key === 'setPasswordRequest') {
             local.password = cmd.data.password
 
@@ -428,7 +456,7 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'init') {
 
             // Check local db for stored account
-            if (DB.network.config.data.account.passphrase) {
+            if (DB.application.config.data.account.passphrase) {
                 // Desktop asks to prompt password
                 const res = await promptPasswordRequest()
             } else {

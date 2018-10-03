@@ -44,9 +44,9 @@ __webpack_require__.r(__webpack_exports__);
 
   computed: {
     wallet: function wallet() {
-      if (!this.$store.state.network.wallets) return;
+      if (!this.$store.state.application.wallets) return;
 
-      var wallet = this.$store.state.network.wallets[this.id];
+      var wallet = this.$store.state.application.wallets[this.id];
 
       if (!wallet) return;
 

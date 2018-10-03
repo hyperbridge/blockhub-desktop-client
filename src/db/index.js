@@ -9,7 +9,7 @@ let loki = null
 let initCallback = null
 let initialized = false
 
-export let network = {
+export let application = {
     config: null
 }
 
@@ -51,7 +51,7 @@ export const instance = () => {
 }
 
 export const loadDefault = () => {
-    network.config = loki.addCollection('networkConfig');
+    application.config = loki.addCollection('applicationConfig');
     marketplace.config = loki.addCollection('marketplaceConfig');
     marketplace.products = loki.addCollection('marketplaceProducts');
     marketplace.assets = loki.addCollection('marketplaceAssets');
@@ -60,13 +60,13 @@ export const loadDefault = () => {
 
     data.marketplace['$loki'] = 1
     data.funding['$loki'] = 1
-    data.network['$loki'] = 1
+    data.application['$loki'] = 1
     data.marketplace.id = '1'
     data.funding.id = '1'
-    data.network.id = '1'
+    data.application.id = '1'
 
     try {
-        updateCollection(network.config, data.network)
+        updateCollection(application.config, data.application)
         updateCollection(marketplace.config, data.marketplace)
         updateCollection(marketplace.products, data.marketplace.products)
         updateCollection(marketplace.assets, data.marketplace.assets)
@@ -77,8 +77,8 @@ export const loadDefault = () => {
         console.warn(e)
     }
 
-    network.config.ensureId();
-    network.config.ensureAllIndexes(true);
+    application.config.ensureId();
+    application.config.ensureAllIndexes(true);
     marketplace.config.ensureId();
     marketplace.config.ensureAllIndexes(true);
     funding.config.ensureId();
@@ -93,7 +93,7 @@ export const save = () => {
         return
     }
 
-    data.network = network.config.data
+    data.application = application.config.data
     data.marketplace = marketplace.config.data
     data.marketplace.products = marketplace.products.data
     data.marketplace.assets = marketplace.assets.data
@@ -110,7 +110,7 @@ export const save = () => {
 }
 
 export const clean = () => {
-    network.config.chain().remove()
+    application.config.chain().remove()
     marketplace.config.chain().remove()
     marketplace.products.chain().remove()
     marketplace.assets.chain().remove()

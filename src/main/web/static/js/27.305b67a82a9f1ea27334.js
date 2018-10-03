@@ -325,10 +325,10 @@ var updateLandingImage = function updateLandingImage() {
             return this.$refs.demo_products_sl.swiper;
         },
         curators_reviews: function curators_reviews() {
-            return this.$store.state.network.curator_reviews;
+            return this.$store.state.application.curator_reviews;
         },
         product_news: function product_news() {
-            return this.$store.state.network.product_news;
+            return this.$store.state.application.product_news;
         },
         assets: function assets() {
             return this.marketplace.assets;

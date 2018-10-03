@@ -90,7 +90,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     computed: {
         autoplay: function autoplay() {
-            return this.$store.state.network.account.settings.client.autoplay;
+            return this.$store.state.application.account.settings.client.autoplay;
         }
     }
 });
