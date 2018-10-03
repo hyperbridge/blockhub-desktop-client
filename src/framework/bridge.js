@@ -24,14 +24,22 @@ export const encrypt = (data, key) => {
     return CryptoJS.AES.encrypt(data, key).toString()
 }
 
-export const promptPasswordRequest = async () => {
+export const promptPasswordRequest = async (data = {}) => {
     return new Promise(async (resolve) => {
         // Web sends back password prompt response
-        const res = await sendCommand('promptPasswordRequest')
+        const res = await sendCommand('promptPasswordRequest', data)
 
         // Decrypt the passphrase and use to set web3 provider
-        local.password = res.password
-        local.passphrase = decrypt(DB.application.config.data.account.passphrase, local.password)
+        try {
+            local.password = res.password
+            local.passphrase = decrypt(DB.application.config.data.account.passphrase, local.password)
+
+            if (!local.passphrase) {
+                throw new Error()
+            }
+        } catch (e) {
+            return await promptPasswordRequest({ error: { message: 'Password was incorrect', code: 1 }})
+        }
 
         console.log(DB.application.config.data.account.passphrase, local.password)
         console.log(local.passphrase)
@@ -226,6 +234,14 @@ export const deployContract = async ({ protocolName, contractName }) => {
                 params = [
                     state.ethereum[state.current_ethereum_network].contracts.FundingStorage.address,
                     false
+                ]
+            }
+        }
+
+        if (protocol === 'application') {
+            if (payload.contractName !== 'EternalStorage') {
+                params = [
+                    state.ethereum[state.current_ethereum_network].contracts.EternalStorage.address
                 ]
             }
         }

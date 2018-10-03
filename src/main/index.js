@@ -5,6 +5,7 @@ import * as DB from '../db'
 import * as DesktopBridge from '../framework/bridge'
 import * as PeerService from '../framework/peer-service'
 
+const config = require('../config')
 
 // Initial settings
 // Disable peer relaying by default (until we're somewhat stable)
@@ -34,7 +35,7 @@ export const initMenu = () => {
   let template = null
 
   if (process.platform === 'darwin') {
-    const navigate = (path) => mainWindow.webContents.send('navigate', path);
+    const navigate = (path) => mainWindow.webContents.send('navigate', path)
     template = [
       {
         label: 'BlockHub',
@@ -361,8 +362,8 @@ export const initApp = () => {
   powerSaveBlocker.start('prevent-app-suspension')
 
   app.commandLine.appendSwitch('page-visibility')
-  app.commandLine.appendSwitch("disable-renderer-backgrounding")
-  app.commandLine.appendSwitch("disable-background-timer-throttling")
+  app.commandLine.appendSwitch('disable-renderer-backgrounding')
+  app.commandLine.appendSwitch('disable-background-timer-throttling')
 
   if (process.platform === 'darwin') {
     app.setAsDefaultProtocolClient('blockhub')
@@ -374,14 +375,14 @@ export const initApp = () => {
     console.log('[BlockHub] Two app instances found. Closing duplicate.')
 
     // Someone tried to run a second instance, we should focus our window.
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
+    if (mainWindow && config.IS_PRODUCTION) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.focus()
     }
-  });
+  })
 
   if (isSecondInstance) {
-    app.quit();
+    app.quit()
   }
 
   app.on('window-all-closed', () => {
@@ -392,14 +393,14 @@ export const initApp = () => {
   })
 
   app.on('activate', function () {
-    if (mainWindow !== null) {
+    if (mainWindow && config.IS_PRODUCTION) {
       mainWindow.show()
     }
 
     if (process.platform === 'darwin') {
       // On OS X it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
-      if (mainWindow === null) {
+      if (!mainWindow) {
         createWindow()
       }
     }
@@ -489,7 +490,7 @@ export const createWindow = () => {
     height: 1060,
     resizable: true,
     frame: false,
-    icon: __dirname + "static/Icon-512.icns",
+    icon: __dirname + 'static/Icon-512.icns',
     scrollBounce: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -502,17 +503,17 @@ export const createWindow = () => {
   DB.init()
 
   if (argv.dev) {
-    mainWindow.webContents.loadURL("http://localhost:8000/")
+    mainWindow.webContents.loadURL('http://localhost:8000/')
   } else {
     const server = express()
-    server.use("/static", express.static(path.join(__dirname, "web/static")))
-    server.get("/", function (req, res) {
-      res.sendFile(path.join(__dirname + "/web/index.html"))
+    server.use('/static', express.static(path.join(__dirname, 'web/static')))
+    server.get('/', function (req, res) {
+      res.sendFile(path.join(__dirname + '/web/index.html'))
     })
 
-    server.listen(9999, () => console.log("App is running on port 9999"))
+    server.listen(9999, () => console.log('App is running on port 9999'))
 
-    mainWindow.loadURL("http://localhost:9999/")
+    mainWindow.loadURL('http://localhost:9999/')
   }
 
   if (argv.tools) {
