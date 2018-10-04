@@ -375,10 +375,8 @@ export const initApp = () => {
     console.log('[BlockHub] Two app instances found. Closing duplicate.')
 
     // Someone tried to run a second instance, we should focus our window.
-    if (mainWindow && config.IS_PRODUCTION) {
-      if (mainWindow.isMinimized()) mainWindow.restore()
-      mainWindow.focus()
-    }
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
   })
 
   if (isSecondInstance) {
@@ -497,8 +495,8 @@ export const createWindow = () => {
     }
   })
 
-  mainWindow.webContents.on('will-navigate', ensureLinksOpenInBrowser)
-  mainWindow.webContents.on('new-window', ensureLinksOpenInBrowser)
+  // mainWindow.webContents.on('will-navigate', ensureLinksOpenInBrowser)
+  // mainWindow.webContents.on('new-window', ensureLinksOpenInBrowser)
 
   DB.init()
 
@@ -525,9 +523,12 @@ export const createWindow = () => {
   mainWindow.webContents.on('did-finish-load', () => {
     initMenu()
     mainWindow.setMenu(null)
-    mainWindow.show()
-    mainWindow.focus()
     mainWindow.setTitle('BlockHub')
+
+    if (config.IS_PRODUCTION) {
+      mainWindow.show()
+      mainWindow.focus()
+    }
   })
     
   // Emitted when the window is closed.

@@ -37,16 +37,6 @@
     ],
     "active_modal": null,
     "account": {
-      "email": "",
-      "first_name": "",
-      "last_name": "",
-      "birthday": "",
-      "password": "",
-      "public_address": "",
-      "secret_answer": "",
-      "passphrase": "",
-      "private_key": "",
-      "balance": 0,
       "notifications": [],
       "wallets": [],
       "identities": [],
@@ -58,7 +48,11 @@
           "cookie_policy_accepted": false
         }
       },
-      "encrypt_passphrase": true
+      "encrypt_passphrase": true,
+      "secret_question_1": "HIDDEN",
+      "secret_answer_1": "HIDDEN",
+      "secret_question_2": "HIDDEN",
+      "secret_answer_2": "HIDDEN"
     },
     "simulator_mode": false,
     "desktop_mode": null,

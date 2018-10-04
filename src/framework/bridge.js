@@ -303,11 +303,13 @@ export const setAccountRequest = async () => {
         const req = {
             account: {
                 public_address: account.public_address,
-                secret_question: account.secret_question,
-                secret_answer: 'UNAVAILABLE',
-                passphrase: 'UNAVAILABLE',
-                private_key: 'UNAVAILABLE',
-                password: 'UNAVAILABLE',
+                secret_question_1: account.secret_question_1,
+                secret_answer_1: 'HIDDEN',
+                secret_question_2: account.secret_question_2,
+                secret_answer_2: account.secret_answer_2,
+                passphrase: 'HIDDEN',
+                private_key: 'HIDDEN',
+                password: 'HIDDEN',
                 email: decrypt(account.email, decryptedPrivateKey),
                 first_name: decrypt(account.first_name, decryptedPrivateKey),
                 last_name: decrypt(account.last_name, decryptedPrivateKey),
@@ -337,7 +339,7 @@ export const updateAccountRequest = async (data) => {
     })
 }
 
-export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, secret_question, secret_answer }) => {
+export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, secret_question_1, secret_answer_1, secret_question_2, secret_answer_2 }) => {
     return new Promise(async (resolve) => {
         const passphrase = 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' // TODO: randomly generate based on data.seed
 
@@ -350,10 +352,13 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
         DB.application.config.data.account = {
             ...DB.application.config.data.account,
             public_address: account.public_address,
-            secret_answer: 'UNAVAILABLE',
+            secret_question_1: 'HIDDEN',
+            secret_answer_1: 'HIDDEN',
+            secret_question_2: 'HIDDEN',
+            secret_answer_2: 'HIDDEN',
             //passphrase: passphrase, //encrypt(passphrase, password),
             private_key: encrypt(account.private_key, password),
-            password: encrypt(secret_answer + birthday, password),
+            password: encrypt(secret_answer_1 + birthday, password),
             email: encrypt(email, account.private_key),
             first_name: encrypt(first_name, account.private_key),
             last_name: encrypt(last_name, account.private_key),
@@ -371,7 +376,10 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
                 first_name: first_name,
                 last_name: last_name,
                 birthday: birthday,
-                secret_question: secret_question,
+                secret_question_1: secret_question_1,
+                secret_answer_1: secret_answer_1,
+                secret_question_2: secret_question_2,
+                secret_answer_2: secret_answer_2,
                 passphrase: passphrase
             }
         }
