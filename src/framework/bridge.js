@@ -1,9 +1,11 @@
 import CryptoJS from 'crypto-js'
-import * as Wallet from './wallet'
-import * as DB from '../db'
+import electron from 'electron'
 import Token from 'hyperbridge-token'
 import FundingProtocol from 'funding-protocol'
 import MarketplaceProtocol from 'marketplace-protocol'
+import * as Wallet from './wallet'
+import * as DB from '../db'
+import * as Windows from '../main/windows'
 
 
 export let config = {
@@ -444,12 +446,15 @@ export const runCommand = async (cmd, meta = {}) => {
             console.log('[BlockHub] Web initialized', cmd.data) // msg from web page
 
             if (cmd.data == '1') {
+                const mode = config.IS_PRODUCTION ? 'production' : 'local'
+
+                sendCommand('setMode', mode)
+
                 // Check local db for stored account
                 if (DB.application.config.data.account.passphrase) {
+                    //Windows.main.window.webContents.setZoomFactor(1980 / 500)
                     // Desktop asks to prompt password
-                    const res = await promptPasswordRequest()
-                } else {
-
+                    await promptPasswordRequest()
                 }
 
                 // If exists, prompt web to require password
@@ -461,16 +466,20 @@ export const runCommand = async (cmd, meta = {}) => {
                         // If no ETH, let them know they need it
                     // Sync any changes from smart contract
                 // If doesn't exist, prompt web to create account
-                
-                const mode = config.IS_PRODUCTION ? 'production' : 'local'
 
-                sendCommand('setMode', mode)
-return
-                console.log('[BlockHub] Setting up heartbeat')
+                const mainScreen = electron.screen.getPrimaryDisplay()
+                // const width = 1400
+                // const height = (width / 1980) * 1080
 
-                setInterval(() => {
-                    sendCommand('heartbeat', 1) // send to web page
-                }, 2000)
+                // Windows.main.window.webContents.setZoomFactor(width / 1980)
+                Windows.main.window.setSize(mainScreen.size.width, mainScreen.size.height)
+                Windows.main.window.center()
+
+                // console.log('[BlockHub] Setting up heartbeat')
+
+                // setInterval(() => {
+                //     sendCommand('heartbeat', 1) // send to web page
+                // }, 2000)
             } else {
                 console.error('[BlockHub] Error initializing web', cmd.data)
             }
@@ -478,6 +487,10 @@ return
             console.log('[BlockHub] Ping from web', cmd.data)
 
             sendCommand('pong', 'ok')
+        } else if (cmd.key === 'resize') {
+            //Windows.main.window.webContents.setZoomFactor(cmd.data.width / 1980)
+            //Windows.main.window.setSize(cmd.data.width, cmd.data.height)
+            //Windows.main.window.center()
         } else if (cmd.key === 'createAccountRequest') {
             const res = await handleCreateAccountRequest(cmd.data)
 
