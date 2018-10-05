@@ -356,7 +356,7 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
             secret_answer_1: 'HIDDEN',
             secret_question_2: 'HIDDEN',
             secret_answer_2: 'HIDDEN',
-            //passphrase: passphrase, //encrypt(passphrase, password),
+            passphrase: 'HIDDEN',
             private_key: encrypt(account.private_key, password),
             password: encrypt(secret_answer_1 + birthday, password),
             email: encrypt(email, account.private_key),
@@ -444,10 +444,28 @@ export const runCommand = async (cmd, meta = {}) => {
             console.log('[BlockHub] Web initialized', cmd.data) // msg from web page
 
             if (cmd.data == '1') {
+                // Check local db for stored account
+                if (DB.application.config.data.account.passphrase) {
+                    // Desktop asks to prompt password
+                    const res = await promptPasswordRequest()
+                } else {
+
+                }
+
+                // If exists, prompt web to require password
+                    // Web sends back response (requirePasswordResponse)
+                    // Decrypt the passphrase and use to set web3 provider
+                    // Desktop sends back all non-sensitive account info
+                    // Check the wallet exists in the accounts contract
+                    // If not, prompt to add it
+                        // If no ETH, let them know they need it
+                    // Sync any changes from smart contract
+                // If doesn't exist, prompt web to create account
+                
                 const mode = config.IS_PRODUCTION ? 'production' : 'local'
 
                 sendCommand('setMode', mode)
-
+return
                 console.log('[BlockHub] Setting up heartbeat')
 
                 setInterval(() => {
@@ -497,24 +515,6 @@ export const runCommand = async (cmd, meta = {}) => {
             }
 
             return resolve(await sendCommand('setPasswordResponse', res, meta.client, cmd.requestId))
-        } else if (cmd.key === 'init') {
-
-            // Check local db for stored account
-            if (DB.application.config.data.account.passphrase) {
-                // Desktop asks to prompt password
-                const res = await promptPasswordRequest()
-            } else {
-
-            }
-            // If exists, prompt web to require password
-                // Web sends back response (requirePasswordResponse)
-                // Decrypt the passphrase and use to set web3 provider
-                // Desktop sends back all non-sensitive account info
-                // Check the wallet exists in the accounts contract
-                // If not, prompt to add it
-                    // If no ETH, let them know they need it
-                // Sync any changes from smart contract
-            // If doesn't exist, prompt web to create account
         } else {
             console.log('[DesktopBridge] Unhandled command:', cmd)
         }

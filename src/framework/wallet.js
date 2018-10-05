@@ -89,6 +89,7 @@ export const setPassphrase = (passphrase) => {
 
 export const getCurrentAccount = async () => {
     //console.log(local.ethereum.web3.eth)
+    // TODO: timeout if the remote isnt online
     const currentAccounts = await local.ethereum.web3.eth.getAccountsPromise();
 
     return {

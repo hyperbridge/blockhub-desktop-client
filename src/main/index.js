@@ -364,6 +364,7 @@ export const initApp = () => {
   app.commandLine.appendSwitch('page-visibility')
   app.commandLine.appendSwitch('disable-renderer-backgrounding')
   app.commandLine.appendSwitch('disable-background-timer-throttling')
+  app.commandLine.appendSwitch('force-color-profile', 'srgb')
 
   if (process.platform === 'darwin') {
     app.setAsDefaultProtocolClient('blockhub')
