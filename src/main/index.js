@@ -461,8 +461,8 @@ export const createWindow = () => {
     }
   })
 
-  // mainWindow.webContents.on('will-navigate', ensureLinksOpenInBrowser)
-  // mainWindow.webContents.on('new-window', ensureLinksOpenInBrowser)
+  mainWindow.webContents.on('will-navigate', ensureLinksOpenInBrowser)
+  mainWindow.webContents.on('new-window', ensureLinksOpenInBrowser)
 
   DB.init()
 

@@ -1,7 +1,7 @@
 {
   "name": "blockhub-desktop-client",
   "productName": "BlockHub",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "BlockHub Desktop Client",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "index.js",
@@ -14,19 +14,21 @@
   "dependencies": {
     "application-config": "^1.0.0",
     "arch": "^2.0.0",
+    "bignumber.js": "^7.2.1",
     "bluebird": "^3.5.2",
+    "ethereumjs-abi": "^0.6.5",
     "express": "^4.16.3",
+    "funding-protocol": "git@github.com:hyperbridge/funding-protocol.git",
+    "hyperbridge-token": "git@github.com:hyperbridge/token.git",
     "json-beautify": "^1.0.1",
     "lokijs": "^1.5.5",
+    "marketplace-protocol": "git@github.com:hyperbridge/marketplace-protocol.git",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.5.2",
     "run-series": "^1.1.4",
     "truffle-contract": "^3.0.5",
-    "truffle-hdwallet-provider": "^0.0.6",
-    "hyperbridge-token": "git@github.com:hyperbridge/token.git",
-    "funding-protocol": "git@github.com:hyperbridge/funding-protocol.git",
-    "marketplace-protocol": "git@github.com:hyperbridge/marketplace-protocol.git"
+    "truffle-hdwallet-provider": "^0.0.6"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.0",
