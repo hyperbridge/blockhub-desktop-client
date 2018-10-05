@@ -48,11 +48,19 @@
           "cookie_policy_accepted": false
         }
       },
+      "public_address": null,
       "encrypt_passphrase": true,
-      "secret_question_1": "HIDDEN",
-      "secret_answer_1": "HIDDEN",
-      "secret_question_2": "HIDDEN",
-      "secret_answer_2": "HIDDEN"
+      "secret_question_1": null,
+      "secret_answer_1": null,
+      "secret_question_2": null,
+      "secret_answer_2": null,
+      "passphrase": null,
+      "private_key": null,
+      "password": null,
+      "email": null,
+      "first_name": null,
+      "last_name": null,
+      "birthday": null
     },
     "simulator_mode": false,
     "desktop_mode": null,
