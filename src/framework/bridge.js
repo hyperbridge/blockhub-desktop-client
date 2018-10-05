@@ -440,7 +440,27 @@ export const runCommand = async (cmd, meta = {}) => {
             return resolve()
         }
         
-        if (cmd.key === 'createAccountRequest') {
+        if (cmd.key === 'init') {
+            console.log('[BlockHub] Web initialized', cmd.data) // msg from web page
+
+            if (cmd.data == '1') {
+                const mode = config.IS_PRODUCTION ? 'production' : 'local'
+
+                sendCommand('setMode', mode)
+
+                console.log('[BlockHub] Setting up heartbeat')
+
+                setInterval(() => {
+                    sendCommand('heartbeat', 1) // send to web page
+                }, 2000)
+            } else {
+                console.error('[BlockHub] Error initializing web', cmd.data)
+            }
+        } else if (cmd.key === 'ping') {
+            console.log('[BlockHub] Ping from web', cmd.data)
+
+            sendCommand('pong', 'ok')
+        } else if (cmd.key === 'createAccountRequest') {
             const res = await handleCreateAccountRequest(cmd.data)
 
             return resolve(await sendCommand('createAccountResponse', res, meta.client, cmd.requestId))

@@ -23,7 +23,7 @@ export const onException = (err) => {
     return
   }
 
-  mainWindow.webContents.send('command', JSON.stringify({ key: 'systemError', message: err.stack || err }))
+  DesktopBridge.sendCommand('systemError', err.stack || err)
 }
 
 export const initProcess = () => {
@@ -424,40 +424,6 @@ export const initApp = () => {
 }
 
 export const initIPC = () => {
-  let webInitialized = false
-
-  ipcMain.on('ping', (event, msg) => {
-    console.log('[BlockHub] Ping from web', msg) // msg from web page
-
-    mainWindow.webContents.send('pong', 'ok') // send to web page
-  })
-
-  ipcMain.on('heartbeat', (event, msg) => {
-    console.log('[BlockHub] Heartbeat from web', msg) // msg from web page
-    
-    //mainWindow.webContents.send('heartbeat', 'ok') // send to web page
-  })
-
-  ipcMain.on('init', (event, msg) => {
-    if (webInitialized) {
-      return
-    }
-
-    webInitialized = true
-
-    console.log('[BlockHub] Web initialized', msg) // msg from web page
-
-    if (msg == '1') {
-      console.log('[BlockHub] Setting up heartbeat')
-
-      setInterval(() => {
-        mainWindow.webContents.send('heartbeat', 1) // send to web page
-      }, 2000)
-    } else {
-      console.error('[BlockHub] Error initializing web', msg)
-    }
-  })
-
   ipcMain.on('command', (event, msg) => {
     console.log('[BlockHub] Received command from web', msg) // msg from web page
 

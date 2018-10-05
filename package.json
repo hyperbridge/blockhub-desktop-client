@@ -24,9 +24,9 @@
     "run-series": "^1.1.4",
     "truffle-contract": "^3.0.5",
     "truffle-hdwallet-provider": "^0.0.6",
-    "hyperbridge-token": "../token",
-    "funding-protocol": "../funding-protocol",
-    "marketplace-protocol": "../marketplace-protocol"
+    "hyperbridge-token": "git@github.com:hyperbridge/token.git",
+    "funding-protocol": "git@github.com:hyperbridge/funding-protocol.git",
+    "marketplace-protocol": "git@github.com:hyperbridge/marketplace-protocol.git"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.0",
