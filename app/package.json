@@ -1,0 +1,56 @@
+{
+    "name": "blockhub-desktop-client",
+    "version": "0.5.2",
+    "description": "BlockHub Desktop Client",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "author": {
+        "name": "Hyperbridge",
+        "email": "hello@hyperbridge.org",
+        "url": "https://hyperbridge.org"
+    },
+    "main": "./index.js",
+    "scripts": {
+        "build": "rm -rf build && cp -R src/ build && ./node_modules/.bin/babel src --out-dir build && rm -rf web && cp -R ../../blockhub-web-client/dist/ web",
+        "start": "npm run build && electron ./build/main/index.js",
+        "dev": "npm run build && ./node_modules/.bin/electron . --dev"
+    },
+    "dependencies": {
+        "application-config": "^1.0.0",
+        "arch": "^2.0.0",
+        "bignumber.js": "^7.2.1",
+        "bip39": "^2.5.0",
+        "bluebird": "^3.5.2",
+        "crypto": "^1.0.1",
+        "electron-updater": "^3.1.2",
+        "express": "^4.16.3",
+        "funding-protocol": "git@github.com:hyperbridge/funding-protocol.git",
+        "hyperbridge-token": "git@github.com:hyperbridge/token.git",
+        "json-beautify": "^1.0.1",
+        "lokijs": "^1.5.5",
+        "marketplace-protocol": "git@github.com:hyperbridge/marketplace-protocol.git",
+        "minimist": "^1.2.0",
+        "mkdirp": "^0.5.1",
+        "rimraf": "^2.5.2",
+        "run-series": "^1.1.4",
+        "truffle-contract": "^3.0.5",
+        "truffle-hdwallet-provider": "^0.0.6"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.1.0",
+        "@babel/core": "^7.1.0",
+        "@babel/polyfill": "^7.0.0",
+        "@babel/plugin-proposal-export-default-from": "^7.0.0",
+        "@babel/plugin-proposal-logical-assignment-operators": "^7.0.0",
+        "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0",
+        "@babel/plugin-proposal-optional-chaining": "^7.0.0",
+        "@babel/plugin-proposal-pipeline-operator": "^7.0.0",
+        "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+        "@babel/plugin-transform-async-to-generator": "^7.1.0",
+        "@babel/preset-env": "^7.0.0",
+        "@babel/preset-stage-1": "^7.0.0",
+        "@babel/register": "^7.0.0",
+        "buble": "^0.19.3",
+        "electron": "^2.0.8"
+    },
+    "optionalDependencies": {}
+}

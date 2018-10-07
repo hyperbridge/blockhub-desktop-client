@@ -48,18 +48,8 @@ If you get `nvm: command not found`, simply close your current terminal, open a 
 ```bash
 # Clone this repository
 git clone https://github.com/hyperbridge/blockhub-desktop-client
-# This are dev dependencies (linked for ease of development)
-git clone git@github.com:hyperbridge/token.git
-git clone git@github.com:hyperbridge/marketplace-protocol.git
-git clone git@github.com:hyperbridge/funding-protocol.git
-# Go into them and npm install
-cd token && npm install && cd ..
-cd marketplace-protocol && npm install && cd ..
-cd funding-protocol && npm install && cd ..
 # Go into the main repo
 cd blockhub-desktop-client
-# Link the deps
-npm link ../token ../marketplace-protocol ../funding-protocol
 # Install deps
 npm install
 # Run the app in electron

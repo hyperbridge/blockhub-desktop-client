@@ -1,57 +1,98 @@
 {
   "name": "blockhub-desktop-client",
   "productName": "BlockHub",
-  "version": "0.3.0",
+  "version": "0.5.3",
   "description": "BlockHub Desktop Client",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "index.js",
   "scripts": {
-    "start": "./node_modules/.bin/babel src --out-dir build && electron ./build/main/index.js",
-    "dev": "rm -rf build && cp -R src/ build && ./node_modules/.bin/babel src --out-dir build && ./node_modules/.bin/electron . --dev",
-    "build": "cp -R src/ build && ./node_modules/.bin/babel src --out-dir build",
-    "package": "rm -rf src/main/web/* && cp -R ../blockhub-web-client/dist/ src/main/web/ && npm run build && node ./bin/package.js"
+    "build": "cd app && npm run build && cd .. && rm -rf build && cp -R app/ build",
+    "package": "rm -rf dist/packages && npm run build && ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true electron-builder --mac --win --linux",
+    "package-test": "rm -rf dist/packages && npm run build && ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true electron-builder --mac",
+    "publish": "ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true electron-builder --publish"
   },
-  "dependencies": {
-    "application-config": "^1.0.0",
-    "arch": "^2.0.0",
-    "bignumber.js": "^7.2.1",
-    "bluebird": "^3.5.2",
-    "express": "^4.16.3",
-    "funding-protocol": "git@github.com:hyperbridge/funding-protocol.git",
-    "hyperbridge-token": "git@github.com:hyperbridge/token.git",
-    "json-beautify": "^1.0.1",
-    "lokijs": "^1.5.5",
-    "marketplace-protocol": "git@github.com:hyperbridge/marketplace-protocol.git",
-    "minimist": "^1.2.0",
-    "mkdirp": "^0.5.1",
-    "rimraf": "^2.5.2",
-    "run-series": "^1.1.4",
-    "truffle-contract": "^3.0.5",
-    "truffle-hdwallet-provider": "^0.0.6"
-  },
+  "postinstall": "electron-builder install-app-deps",
+  "dependencies": {},
   "devDependencies": {
-    "@babel/cli": "^7.1.0",
-    "@babel/core": "^7.1.0",
-    "@babel/polyfill": "^7.0.0",
-    "@babel/plugin-proposal-export-default-from": "^7.0.0",
-    "@babel/plugin-proposal-logical-assignment-operators": "^7.0.0",
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0",
-    "@babel/plugin-proposal-optional-chaining": "^7.0.0",
-    "@babel/plugin-proposal-pipeline-operator": "^7.0.0",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
-    "@babel/plugin-transform-async-to-generator": "^7.1.0",
-    "@babel/preset-env": "^7.0.0",
-    "@babel/preset-stage-1": "^7.0.0",
-    "@babel/register": "^7.0.0",
-    "buble": "^0.19.3",
-    "cross-zip": "^2.0.1",
     "electron": "^2.0.8",
-    "electron-osx-sign": "^0.4.10",
-    "electron-packager": "^12.1.0",
-    "electron-winstaller": "^2.6.4",
-    "nobin-debian-installer": "0.0.10"
+    "electron-builder": "^20.28.4"
   },
-  "optionalDependencies": {
-    "appdmg": "^0.4.3"
+  "optionalDependencies": {},
+  "build": {
+    "appId": "gg.blockhub.BlockHub",
+    "productName": "BlockHub",
+    "copyright": "Entertainment 🎮  by Hyperbridge",
+    "asar": false,
+    "removePackageScripts": false,
+    "generateUpdatesFilesForAllChannels": true,
+    "detectUpdateChannel": true,
+    "compression": "normal",
+    "directories": {
+      "app": "build",
+      "buildResources": "static",
+      "output": "dist/packages"
+    },
+    "npmRebuild": true,
+    "mac": {
+      "category": "public.app-category.entertainment",
+      "icon": "static/Icon-512.png",
+      "target": [
+        "zip",
+        "dmg"
+      ]
+    },
+    "win": {
+      "icon": "static/Icon-512.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "static/Icon-512.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "tar.gz",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "synopsis": "BlockHub",
+      "category": "Entertainment"
+    },
+    "nsis": {
+      "createDesktopShortcut": "always",
+      "installerIcon": "static/Icon-512.ico",
+      "perMachine": true,
+      "artifactName": "BlockHub-Setup-${version}.${ext}"
+    },
+    "afterPack": "./scripts/after-pack.js",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "hyperbridge",
+        "repo": "blockhub-desktop-client"
+      }
+    ]
   }
 }
