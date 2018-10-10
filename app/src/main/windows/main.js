@@ -143,23 +143,87 @@ export const initMenu = () => {
                     ]
             },
             {
-                label: 'Window',
+                label: 'Store',
                 submenu: [
                     {
-                        label: 'Account',
+                        label: 'Overview',
                         accelerator: 'Command+1',
                         click() { navigate('/account') }
                     },
                     {
-                        label: 'Logs',
-                        accelerator: 'Command+4',
-                        click() { navigate('/settings/activity') }
+                        label: 'Search',
+                        accelerator: 'Command+T,',
+                        click() { navigate('/search') }
+                    },
+                    {
+                        label: 'Crowdfunds',
+                        click() { navigate('/projects') }
+                    },
+                    {
+                        label: 'Realms',
+                        click() { navigate('/realms') }
+                    },
+                    {
+                        label: 'Curators',
+                        click() { navigate('/curators') }
+                    },
+                    {
+                        label: 'Collections',
+                        click() { navigate('/collections') }
+                    },
+                    {
+                        label: 'Items',
+                        click() { navigate('/items') }
+                    }
+                ]
+            },
+            {
+                label: 'Community',
+                submenu: [
+                    {
+                        label: 'Overview',
+                        accelerator: 'Command+2',
+                        click() { navigate('/community') }
+                    },
+                    {
+                        label: 'Forums',
+                        click() { navigate('/community/forums') }
+                    },
+                ]
+            },
+            {
+                label: 'Account',
+                submenu: [
+                    {
+                        label: 'Overview',
+                        accelerator: 'Command+3',
+                        click() { navigate('/account') }
+                    },
+                    {
+                        label: 'Stash',
+                        click() { navigate('/stash') }
+                    },
+                    {
+                        label: 'Identities',
+                        click() { navigate('/account/identities') }
                     },
                     {
                         label: 'Settings',
-                        accelerator: 'Command+5',
                         click() { navigate('/settings') }
                     },
+                    {
+                        label: 'Logs',
+                        click() { navigate('/settings/activity') }
+                    },
+                    {
+                        label: 'Apply to be Developer',
+                        click() { navigate('/developer/apply') }
+                    },
+                ]
+            },
+            {
+                label: 'Window',
+                submenu: [
                     {
                         label: 'Minimize',
                         accelerator: 'Command+M',
@@ -182,6 +246,10 @@ export const initMenu = () => {
             {
                 label: 'Help',
                 submenu: [
+                    {
+                        label: 'General Help',
+                        click() { navigate('/help') }
+                    },
                     {
                         label: 'Learn More',
                         click() {
@@ -387,17 +455,4 @@ export const init = (deeplinkUri, devMode, showTools) => {
     // window.once('ready-to-show', () => {
     //     window.webContents.setZoomFactor(1.01);
     // })
-
-    window.webContents.on('context-menu', (e, props) => {
-        const { x, y } = props
-
-        Menu.buildFromTemplate([
-            {
-                label: 'Inspect element',
-                click() {
-                    window.inspectElement(x, y)
-                }
-            }
-        ]).popup(window)
-    })
 }
