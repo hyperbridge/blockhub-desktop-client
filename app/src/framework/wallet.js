@@ -78,10 +78,20 @@ const local = {
     }
 }
 
+const withTimeout = (millis, promise, originalReject) => {
+    const timeout = new Promise((resolve, reject) => setTimeout(() => originalReject(`Timed out after ${millis} ms.`), millis))
+
+    return Promise.race([
+        promise,
+        timeout
+    ])
+}
+
 export const getCurrentAccount = async (web3) => {
     return new Promise(async (resolve, reject) => {
         // TODO: timeout if the remote isnt online
-        const currentAccounts = await web3.eth.getAccountsPromise();
+
+        const currentAccounts = await withTimeout(5000, web3.eth.getAccountsPromise(), reject)
 
         resolve({
             public_address: currentAccounts[0],
@@ -90,12 +100,25 @@ export const getCurrentAccount = async (web3) => {
     })
 }
 
+Bluebird.config({
+    // Enable warnings
+    warnings: true,
+    // Enable long stack traces
+    longStackTraces: true,
+    // Enable cancellation
+    cancellation: true,
+    // Enable monitoring
+    monitoring: true
+});
+
 // 'retreat attack lift winter amazing noodle interest dutch craft old solve save',
 export const create = async (passphrase) => {
     console.log('[BlockHub] Creating wallet...')
 
     const provider = local.ethereum.networks[local.ethereum.activeNetwork].provider()
     const web3 = new Web3(provider)
+
+    provider.engine._providers[2].provider.timeout = 10
 
     Bluebird.promisifyAll(web3.eth, { suffix: 'Promise' })
 

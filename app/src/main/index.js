@@ -27,7 +27,7 @@ export const onException = (err) => {
     return
   }
 
-  //DesktopBridge.sendCommand('systemError', err.stack || err)
+  DesktopBridge.sendCommand('systemError', err.stack || err)
 }
 
 export const initProcess = () => {
@@ -138,7 +138,7 @@ export const initApp = () => {
   if (process.platform === 'darwin') {
     app.on('open-url', (event, uri) => {
       event.preventDefault()
-      
+
       deeplinkUri = Security.sanitize(uri)
 
       log('[BlockHub] open-url # ' + deeplinkUri)
