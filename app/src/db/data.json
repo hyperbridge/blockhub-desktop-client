@@ -69,6 +69,7 @@
       "first_name": null,
       "last_name": null,
       "birthday": null,
+      "encrypt_passphrase": false,
       "balance": null,
       "current_identity": { "id": 1 }
     },

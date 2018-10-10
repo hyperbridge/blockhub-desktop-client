@@ -1,3 +1,4 @@
+import fs from 'fs'
 import CryptoJS from 'crypto-js'
 import bip39 from 'bip39'
 import crypto from 'crypto'
@@ -8,8 +9,6 @@ import MarketplaceProtocol from 'marketplace-protocol'
 import * as Wallet from './wallet'
 import * as DB from '../db'
 import * as Windows from '../main/windows'
-
-const { dialog } = require('electron').remote
 
 export let config = {
 }
@@ -69,12 +68,19 @@ export const promptPasswordRequest = async (data = {}) => {
 
         // Decrypt the passphrase and use to set web3 provider
         try {
-            local.password = res.password
-            local.passphrase = decrypt(DB.application.config.data.account.passphrase, local.password)
+            let passphrase = null
+            if (DB.application.config.data.account.encrypt_passphrase) {
+                passphrase = decrypt(DB.application.config.data.account.passphrase, res.password)
+            } else {
+                passphrase = DB.application.config.data.account.passphrase
+            }
 
-            if (!local.passphrase) {
+            if (!passphrase) {
                 throw new Error()
             }
+
+            local.passphrase = passphrase
+            local.password = res.password
         } catch (e) {
             return await promptPasswordRequest({ error: { message: 'Password was incorrect', code: 1 } })
         }
@@ -419,7 +425,7 @@ export const importAccountFileRequest = async (data) => {
     return new Promise(async (resolve, reject) => {
         const path = electron.app.getAppPath()
 
-        dialog.showOpenDialog(function (fileNames) {
+        electron.dialog.showOpenDialog(async (fileNames) => {
             if (fileNames === undefined) {
                 return reject("No file selected")
             }
@@ -435,7 +441,7 @@ export const exportAccountFileRequest = async (data) => {
         const path = electron.app.getAppPath()
         const content = JSON.stringify(DB.application.account)
 
-        dialog.showSaveDialog((fileName) => {
+        electron.dialog.showSaveDialog((fileName) => {
             if (fileName === undefined) {
                 return reject("You didn't save the file")
             }
@@ -491,6 +497,7 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
             secret_answer_1: 'HIDDEN',
             secret_question_2: 'HIDDEN',
             secret_answer_2: 'HIDDEN',
+            encrypt_passphrase: false,
             passphrase: account.passphrase,
             private_key: encrypt(account.private_key, password),
             password: encrypt(secret_answer_1 + birthday, password),
