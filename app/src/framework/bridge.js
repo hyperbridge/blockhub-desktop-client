@@ -700,7 +700,7 @@ export const runCommand = async (cmd, meta = {}) => {
             const electron = require('electron')
             const Menu = electron.Menu
 
-            const InputMenu = Menu.buildFromTemplate([
+            const menu = Menu.buildFromTemplate([
                 {
                     label: 'Undo',
                     role: 'undo'
@@ -723,10 +723,15 @@ export const runCommand = async (cmd, meta = {}) => {
                 }, {
                     label: 'Select all',
                     role: 'selectall'
+                }, {
+                    label: 'Inspect element',
+                    click() {
+                        Windows.main.window.inspectElement(cmd.data.x, cmd.data.y)
+                    }
                 }
             ])
 
-            InputMenu.popup(Windows.main.window)
+            menu.popup(Windows.main.window)
         } else if (cmd.key === 'setPasswordRequest') {
             local.password = cmd.data.password
 
