@@ -338,7 +338,7 @@ export const ensureLinksOpenInBrowser = (event, url) => {
 
 export let window = null
 
-export const init = (devMode, showTools) => {
+export const init = (deeplinkUri, devMode, showTools) => {
     window = new BrowserWindow({
         width: 500,
         height: 700,
@@ -350,7 +350,8 @@ export const init = (devMode, showTools) => {
         scrollBounce: true,
         webPreferences: {
             preload: path.join(__dirname, '../preload.js'),
-            zoomFactor: 0
+            zoomFactor: 0,
+            experimentalFeatures: true
         }
     })
 

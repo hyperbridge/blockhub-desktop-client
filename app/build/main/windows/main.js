@@ -334,7 +334,7 @@ exports.ensureLinksOpenInBrowser = ensureLinksOpenInBrowser;
 let window = null;
 exports.window = window;
 
-const init = (devMode, showTools) => {
+const init = (deeplinkUri, devMode, showTools) => {
   exports.window = window = new _electron.BrowserWindow({
     width: 500,
     height: 700,
@@ -346,7 +346,8 @@ const init = (devMode, showTools) => {
     scrollBounce: true,
     webPreferences: {
       preload: _path.default.join(__dirname, '../preload.js'),
-      zoomFactor: 0
+      zoomFactor: 0,
+      experimentalFeatures: true
     }
   });
   window.webContents.on('will-navigate', ensureLinksOpenInBrowser);
