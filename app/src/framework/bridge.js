@@ -692,6 +692,37 @@ export const runCommand = async (cmd, meta = {}) => {
             const res = await exportAccountFileRequest(cmd.data)
 
             return resolve(await sendCommand('exportAccountFileResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'showContextMenuRequest') {
+            const electron = require('electron')
+            const Menu = electron.Menu
+
+            const InputMenu = Menu.buildFromTemplate([
+                {
+                    label: 'Undo',
+                    role: 'undo'
+                }, {
+                    label: 'Redo',
+                    role: 'redo'
+                }, {
+                    type: 'separator'
+                }, {
+                    label: 'Cut',
+                    role: 'cut'
+                }, {
+                    label: 'Copy',
+                    role: 'copy'
+                }, {
+                    label: 'Paste',
+                    role: 'paste'
+                }, {
+                    type: 'separator'
+                }, {
+                    label: 'Select all',
+                    role: 'selectall'
+                }
+            ])
+
+            InputMenu.popup(Windows.main.window)
         } else if (cmd.key === 'setPasswordRequest') {
             local.password = cmd.data.password
 
