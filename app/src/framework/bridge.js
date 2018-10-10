@@ -711,6 +711,9 @@ export const runCommand = async (cmd, meta = {}) => {
                     }
                 },
                 {
+                    type: 'separator'
+                },
+                {
                     label: 'Undo',
                     role: 'undo'
                 },
