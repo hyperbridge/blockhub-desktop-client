@@ -615,11 +615,15 @@ export const runCommand = async (cmd, meta = {}) => {
 
                 sendCommand('setMode', mode)
 
-                // Check local db for stored account
+                // Prompt password request if account exists but hasn't been unlocked
                 if (DB.application.config.data.account.passphrase) {
-                    //Windows.main.window.webContents.setZoomFactor(1980 / 500)
-                    // Desktop asks to prompt password
-                    await promptPasswordRequest()
+                    if (local.password) {
+                        // Desktop sends back all non-sensitive account info
+                        await setAccountRequest()
+                    } else {
+                        // Desktop asks to prompt password
+                        await promptPasswordRequest()
+                    }
                 }
 
                 // If exists, prompt web to require password
