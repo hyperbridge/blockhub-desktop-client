@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import CryptoJS from 'crypto-js'
 import bip39 from 'bip39'
 import crypto from 'crypto'
@@ -415,22 +416,25 @@ export const saveFile = (filepath, content) => {
 
 export const saveAccountFileRequest = async (data) => {
     return new Promise(async (resolve) => {
-        const path = electron.app.getAppPath()
+        const userDataPath = electron.app.getPath('userData')
 
-        await saveFile(path + '/account.json', JSON.stringify(DB.application.account))
+        await saveFile(path.join(userDataPath, 'account.json'), JSON.stringify(DB.application.config.data.account))
     })
 }
 
 export const importAccountFileRequest = async (data) => {
     return new Promise(async (resolve, reject) => {
-        const path = electron.app.getAppPath()
+        const userDataPath = electron.app.getPath('userData')
 
         electron.dialog.showOpenDialog(async (fileNames) => {
             if (fileNames === undefined) {
                 return reject("No file selected")
             }
 
-            saveFile(path + '/account.json', await readFile(fileNames[0]))
+            saveFile(path.join(userDataPath, 'account.json'), await readFile(fileNames[0]))
+
+            console.log("The account has been succesfully imported: " + userDataPath + '/account.json')
+
             resolve()
         })
     })
@@ -438,8 +442,7 @@ export const importAccountFileRequest = async (data) => {
 
 export const exportAccountFileRequest = async (data) => {
     return new Promise(async (resolve, reject) => {
-        const path = electron.app.getAppPath()
-        const content = JSON.stringify(DB.application.account)
+        const content = JSON.stringify(DB.application.config.data.account)
 
         electron.dialog.showSaveDialog((fileName) => {
             if (fileName === undefined) {
@@ -451,7 +454,7 @@ export const exportAccountFileRequest = async (data) => {
                     return reject("An error ocurred creating the file " + err.message)
                 }
 
-                console.log("The file has been succesfully saved")
+                console.log("The account has been succesfully exported: " + fileName)
                 resolve()
             })
         })
@@ -460,9 +463,9 @@ export const exportAccountFileRequest = async (data) => {
 
 export const saveAccountFile = async () => {
     return new Promise(async (resolve) => {
-        const path = electron.app.getAppPath()
+        const path = electron.app.getPath('userData')
 
-        saveFile(path + '/account.json', JSON.stringify(DB.application.account))
+        saveFile(path + '/account.json', JSON.stringify(DB.application.config.data.account))
 
         resolve()
     })
