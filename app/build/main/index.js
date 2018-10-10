@@ -3,13 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.init = exports.initIPC = exports.initUpdater = exports.initApp = exports.uninstallDarwin = exports.installDarwin = exports.initProcess = exports.onException = void 0;
-
-var _electron = require("electron");
+exports.init = exports.initIPC = exports.initUpdater = exports.initApp = exports.log = exports.uninstallWindows = exports.installWindows = exports.uninstallDarwin = exports.installDarwin = exports.initProcess = exports.onException = void 0;
 
 var _path = _interopRequireDefault(require("path"));
 
+var _electron = require("electron");
+
 var DB = _interopRequireWildcard(require("../db"));
+
+var Security = _interopRequireWildcard(require("../framework/security"));
 
 var DesktopBridge = _interopRequireWildcard(require("../framework/bridge"));
 
@@ -31,6 +33,8 @@ const config = require('../config'); // Initial settings
 PeerService.config.RELAY = false;
 
 let argv = require('minimist')(process.argv.slice(2));
+
+let deeplinkUri = null;
 
 const onException = err => {
   console.log('[BlockHub] Exception', err);
@@ -63,6 +67,29 @@ const uninstallDarwin = () => {};
 
 exports.uninstallDarwin = uninstallDarwin;
 
+const installWindows = () => {
+  // Define custom protocol handler. Deep linking works on packaged versions of the application!
+  _electron.app.setAsDefaultProtocolClient('blockhub');
+};
+
+exports.installWindows = installWindows;
+
+const uninstallWindows = () => {};
+
+exports.uninstallWindows = uninstallWindows;
+
+const log = msg => {
+  console.log(msg);
+
+  if (Windows.main && Windows.main.webContents) {
+    // Anything executed my be sanitized
+    const windowMsg = Security.sanitize(msg);
+    Windows.main.webContents.executeJavaScript(`console.log("${windowMsg}")`);
+  }
+};
+
+exports.log = log;
+
 const initApp = () => {
   const powerSaveBlocker = require('electron').powerSaveBlocker;
 
@@ -77,16 +104,31 @@ const initApp = () => {
   _electron.app.commandLine.appendSwitch('force-color-profile', 'srgb');
 
   if (process.platform === 'darwin') {
-    _electron.app.setAsDefaultProtocolClient('blockhub');
-
     installDarwin();
   }
 
-  const isSecondInstance = _electron.app.makeSingleInstance(function (commandLine, workingDirectory) {
-    console.log('[BlockHub] Two app instances found. Closing duplicate.'); // Someone tried to run a second instance, we should focus our window.
+  if (process.platform === 'win32') {
+    installWindows();
+  }
 
-    if (Windows.main.isMinimized()) Windows.main.restore();
-    Windows.main.focus();
+  const isSecondInstance = _electron.app.makeSingleInstance(function (commandLine, workingDirectory) {
+    log('[BlockHub] Two app instances found. Closing duplicate.'); // Protocol handler for win32
+    // argv: An array of the second instance’s (command line / deep linked) arguments
+
+    if (process.platform == 'win32') {
+      // Keep only command line / deep linked arguments
+      deeplinkUri = commandLine.slice(1);
+    }
+
+    log("[BlockHub] app.makeSingleInstance # " + deepLinkUri); // Someone tried to run a second instance, we should focus our window.
+
+    if (Windows.main) {
+      if (Windows.main.isMinimized()) {
+        Windows.main.restore();
+      }
+
+      Windows.main.focus();
+    }
   });
 
   if (isSecondInstance) {
@@ -115,21 +157,33 @@ const initApp = () => {
   });
 
   _electron.app.on('window-all-closed', () => {
-    console.log('[BlockHub] All windows closed. Quitting.');
+    log('[BlockHub] All windows closed. Quitting.');
 
     _electron.app.quit();
   }); // Mac only
 
 
-  if (process.platform !== 'darwin') {
-    _electron.app.on('open-url', (event, url) => {});
+  if (process.platform === 'darwin') {
+    _electron.app.on('open-url', (event, uri) => {
+      event.preventDefault();
+      deeplinkUri = Security.sanitize(uri);
+      log('[BlockHub] open-url # ' + deeplinkUri); // TODO: we need to validate all routing for potentially malicious behaviour
+
+      if (deeplinkUri.startsWith('go')) {} else {
+        Windows.main.loadURL('http://localhost:8000/' + deeplinkUri);
+      }
+    });
+  }
+
+  if (process.platform === 'win32') {
+    deeplinkUri = process.argv.slice(1);
   }
 
   _electron.app.setName('BlockHub');
 
   _electron.app.on('ready', () => {
     DB.init();
-    Windows.main.init(argv.dev, argv.tools);
+    Windows.main.init(deeplinkUri, argv.dev, argv.tools);
     DesktopBridge.init(Windows.main.window.webContents);
     Updater.checkForUpdates();
   });
@@ -148,7 +202,7 @@ exports.initUpdater = initUpdater;
 
 const initIPC = () => {
   _electron.ipcMain.on('command', (event, msg) => {
-    console.log('[BlockHub] Received command from web', msg); // msg from web page
+    log('[BlockHub] Received command from web', msg); // msg from web page
 
     const cmd = JSON.parse(msg);
     DesktopBridge.runCommand(cmd).then(() => {});

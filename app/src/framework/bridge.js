@@ -9,6 +9,7 @@ import * as Wallet from './wallet'
 import * as DB from '../db'
 import * as Windows from '../main/windows'
 
+const { dialog } = require('electron').remote
 
 export let config = {
 }
@@ -75,7 +76,7 @@ export const promptPasswordRequest = async (data = {}) => {
                 throw new Error()
             }
         } catch (e) {
-            return await promptPasswordRequest({ error: { message: 'Password was incorrect', code: 1 }})
+            return await promptPasswordRequest({ error: { message: 'Password was incorrect', code: 1 } })
         }
 
         local.account.wallet = await Wallet.create(local.passphrase)
@@ -85,7 +86,7 @@ export const promptPasswordRequest = async (data = {}) => {
 
         // Check the wallet exists in the accounts contract
         // If not, prompt to add it
-            // If no ETH, let them know they need it
+        // If no ETH, let them know they need it
         // Sync any changes from smart contract
 
         resolve()
@@ -371,12 +372,97 @@ export const updateAccountRequest = async (data) => {
 
             DB.save()
 
+            await saveAccountFile()
+
             resolve()
         }
     })
 }
 
-const generateWallet = async () => {
+export const readFile = (filepath) => {
+    return new Promise(async (resolve, reject) => {
+        fs.readFile(filepath, 'utf-8', function (err, data) {
+            if (err) {
+                console.log("An error ocurred reading the file :" + err.message)
+                return reject(err)
+            }
+
+            resolve(data)
+        })
+    })
+}
+
+export const saveFile = (filepath, content) => {
+    return new Promise(async (resolve) => {
+        fs.writeFile(filepath, content, function (err) {
+            if (err) {
+                console.log("An error ocurred updating the file" + err.message)
+                return reject(err)
+            }
+
+            console.log("The file has been succesfully saved")
+
+            resolve()
+        })
+    })
+}
+
+export const saveAccountFileRequest = async (data) => {
+    return new Promise(async (resolve) => {
+        const path = electron.app.getAppPath()
+
+        await saveFile(path + '/account.json', JSON.stringify(DB.application.account))
+    })
+}
+
+export const importAccountFileRequest = async (data) => {
+    return new Promise(async (resolve, reject) => {
+        const path = electron.app.getAppPath()
+
+        dialog.showOpenDialog(function (fileNames) {
+            if (fileNames === undefined) {
+                return reject("No file selected")
+            }
+
+            saveFile(path + '/account.json', await readFile(fileNames[0]))
+            resolve()
+        })
+    })
+}
+
+export const exportAccountFileRequest = async (data) => {
+    return new Promise(async (resolve, reject) => {
+        const path = electron.app.getAppPath()
+        const content = JSON.stringify(DB.application.account)
+
+        dialog.showSaveDialog((fileName) => {
+            if (fileName === undefined) {
+                return reject("You didn't save the file")
+            }
+
+            fs.writeFile(fileName, content, (err) => {
+                if (err) {
+                    return reject("An error ocurred creating the file " + err.message)
+                }
+
+                console.log("The file has been succesfully saved")
+                resolve()
+            })
+        })
+    })
+}
+
+export const saveAccountFile = async () => {
+    return new Promise(async (resolve) => {
+        const path = electron.app.getAppPath()
+
+        saveFile(path + '/account.json', JSON.stringify(DB.application.account))
+
+        resolve()
+    })
+}
+
+export const generateWallet = async () => {
     return new Promise(async (resolve) => {
         let randomBytes = crypto.randomBytes(16) // 128 bits of seed is enough
 
@@ -427,6 +513,8 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
         }
 
         DB.save()
+
+        await saveAccountFile()
 
         local.password = password
         local.account.wallet = account
@@ -511,7 +599,7 @@ export const runCommand = async (cmd, meta = {}) => {
 
             return resolve()
         }
-        
+
         if (cmd.key === 'init') {
             console.log('[BlockHub] Web initialized', cmd.data) // msg from web page
 
@@ -528,13 +616,13 @@ export const runCommand = async (cmd, meta = {}) => {
                 }
 
                 // If exists, prompt web to require password
-                    // Web sends back response (requirePasswordResponse)
-                    // Decrypt the passphrase and use to set web3 provider
-                    // Desktop sends back all non-sensitive account info
-                    // Check the wallet exists in the accounts contract
-                    // If not, prompt to add it
-                        // If no ETH, let them know they need it
-                    // Sync any changes from smart contract
+                // Web sends back response (requirePasswordResponse)
+                // Decrypt the passphrase and use to set web3 provider
+                // Desktop sends back all non-sensitive account info
+                // Check the wallet exists in the accounts contract
+                // If not, prompt to add it
+                // If no ETH, let them know they need it
+                // Sync any changes from smart contract
                 // If doesn't exist, prompt web to create account
 
                 const mainScreen = electron.screen.getPrimaryDisplay()
@@ -589,6 +677,14 @@ export const runCommand = async (cmd, meta = {}) => {
             const res = await initProtocol(cmd.data)
 
             return resolve(await sendCommand('initProtocolResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'importAccountFileRequest') {
+            const res = await importAccountFileRequest(cmd.data)
+
+            return resolve(await sendCommand('importAccountFileResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'exportAccountFileRequest') {
+            const res = await exportAccountFileRequest(cmd.data)
+
+            return resolve(await sendCommand('exportAccountFileResponse', res, meta.client, cmd.requestId))
         } else if (cmd.key === 'setPasswordRequest') {
             local.password = cmd.data.password
 
@@ -616,13 +712,13 @@ export const initHeartbeat = () => {
 
 // Check local db for stored account
 // If exists, prompt web to require password
-    // Web sends back response (requirePasswordResponse)
-    // Decrypt the passphrase and use to set web3 provider
-    // Desktop sends back all non-sensitive account info
-    // Check the wallet exists in the accounts contract
-    // If not, prompt to add it
-        // If no ETH, let them know they need it
-    // Sync any changes from smart contract
+// Web sends back response (requirePasswordResponse)
+// Decrypt the passphrase and use to set web3 provider
+// Desktop sends back all non-sensitive account info
+// Check the wallet exists in the accounts contract
+// If not, prompt to add it
+// If no ETH, let them know they need it
+// Sync any changes from smart contract
 // If doesn't exist, prompt web to create account
 export const init = (bridge) => {
     console.log('[DesktopBridge] Initializing')
