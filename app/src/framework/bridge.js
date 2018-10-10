@@ -705,28 +705,42 @@ export const runCommand = async (cmd, meta = {}) => {
 
             const menu = Menu.buildFromTemplate([
                 {
+                    label: 'Back',
+                    click() {
+                        Windows.main.window.webContents.goBack()
+                    }
+                },
+                {
                     label: 'Undo',
                     role: 'undo'
-                }, {
+                },
+                {
                     label: 'Redo',
                     role: 'redo'
-                }, {
+                },
+                {
                     type: 'separator'
-                }, {
+                },
+                {
                     label: 'Cut',
                     role: 'cut'
-                }, {
+                },
+                {
                     label: 'Copy',
                     role: 'copy'
-                }, {
+                },
+                {
                     label: 'Paste',
                     role: 'paste'
-                }, {
+                },
+                {
                     type: 'separator'
-                }, {
+                },
+                {
                     label: 'Select all',
                     role: 'selectall'
-                }, {
+                }, 
+                {
                     label: 'Inspect element',
                     click() {
                         Windows.main.window.inspectElement(cmd.data.x, cmd.data.y)

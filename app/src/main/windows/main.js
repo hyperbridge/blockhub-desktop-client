@@ -455,4 +455,24 @@ export const init = (deeplinkUri, devMode, showTools) => {
     // window.once('ready-to-show', () => {
     //     window.webContents.setZoomFactor(1.01);
     // })
+
+    // window.webContents.on('context-menu', (e, props) => {
+    //     const { x, y } = props
+
+    //     Menu.buildFromTemplate([
+    //         {
+    //             label: 'Inspect element',
+    //             click() {
+    //                 window.inspectElement(x, y)
+    //             }
+    //         }
+    //     ]).popup(window)
+    // })
+
+    window.on('app-command', (e, cmd) => {
+        // Navigate the window back when the user hits their mouse back button
+        if (cmd === 'browser-backward' && window.webContents.canGoBack()) {
+            window.webContents.goBack()
+        }
+    })
 }
