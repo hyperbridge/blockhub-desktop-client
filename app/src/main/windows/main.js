@@ -5,11 +5,13 @@ import { app, BrowserWindow, Menu, ipcMain, shell, webFrame } from 'electron'
 const config = require('../../config')
 
 
+export let window = null
+
 export const initMenu = () => {
     let template = null
 
     if (process.platform === 'darwin') {
-        const navigate = (path) => Windows.main.window.webContents.send('navigate', path)
+        const navigate = (path) => window.webContents.send('command', JSON.stringify({ key: 'navigate', data: path }))
         template = [
             {
                 label: 'BlockHub',
@@ -24,7 +26,7 @@ export const initMenu = () => {
                     {
                         label: 'Preferences...',
                         accelerator: 'Command+,',
-                        click() { navigate('/config') }
+                        click() { navigate('/settings') }
                     },
                     {
                         type: 'separator'
@@ -112,7 +114,7 @@ export const initMenu = () => {
                             label: 'Reload',
                             accelerator: 'Command+R',
                             click() {
-                                Windows.main.window.webContents.reload()
+                                window.webContents.reload()
                             }
                         },
                         {
@@ -144,29 +146,19 @@ export const initMenu = () => {
                 label: 'Window',
                 submenu: [
                     {
-                        label: 'Accounts',
+                        label: 'Account',
                         accelerator: 'Command+1',
-                        click() { navigate('/accounts') }
-                    },
-                    {
-                        label: 'Blocks',
-                        accelerator: 'Command+2',
-                        click() { navigate('/blocks') }
-                    },
-                    {
-                        label: 'Transactions',
-                        accelerator: 'Command+3',
-                        click() { navigate('/transactions') }
+                        click() { navigate('/account') }
                     },
                     {
                         label: 'Logs',
                         accelerator: 'Command+4',
-                        click() { navigate('/logs') }
+                        click() { navigate('/settings/activity') }
                     },
                     {
                         label: 'Settings',
                         accelerator: 'Command+5',
-                        click() { navigate('/config') }
+                        click() { navigate('/settings') }
                     },
                     {
                         label: 'Minimize',
@@ -252,7 +244,7 @@ export const initMenu = () => {
                             label: '&Reload',
                             accelerator: 'Ctrl+R',
                             click() {
-                                Windows.main.window.webContents.reload()
+                                window.webContents.reload()
                             }
                         },
                         {
@@ -335,8 +327,6 @@ export const ensureLinksOpenInBrowser = (event, url) => {
         shell.openExternal(url)
     }
 }
-
-export let window = null
 
 export const init = (deeplinkUri, devMode, showTools) => {
     window = new BrowserWindow({
