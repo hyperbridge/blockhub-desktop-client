@@ -403,13 +403,26 @@ export const saveFile = (filepath, content) => {
     return new Promise(async (resolve) => {
         fs.writeFile(filepath, content, function (err) {
             if (err) {
-                console.log("An error ocurred updating the file" + err.message)
+                console.log('An error occurred updating the file: ' + err.message)
                 return reject(err)
             }
 
-            console.log("The file has been succesfully saved")
+            console.log('The file has been succesfully saved')
 
             resolve()
+        })
+    })
+}
+
+export const removeFile = (filepath) => {
+    return new Promise(async (resolve, reject) => {
+        fs.unlink(filepath, function (err, data) {
+            if (err) {
+                console.log('An error occurred removing the file: ' + err.message)
+                return reject(err)
+            }
+
+            resolve(data)
         })
     })
 }
@@ -457,6 +470,49 @@ export const exportAccountFileRequest = async (data) => {
                 console.log("The account has been succesfully exported: " + fileName)
                 resolve()
             })
+        })
+    })
+}
+
+export const deleteAccountRequest = async (data) => {
+    return new Promise(async (resolve, reject) => {
+        const content = JSON.stringify(DB.application.config.data.account)
+
+        const options = {
+            title: 'Delete Account?',
+            type: 'question',
+            buttons: ['OK', 'Cancel'],
+            message: 'Are you sure you would like to delete your account? Make sure you have a backup, as this will delete the file on this computer and it cannot be undone.'
+        };
+
+        electron.dialog.showMessageBox(Windows.main.window, options, async (res) => {
+            if (res === 0) {
+                const path = electron.app.getPath('userData')
+                removeFile(path + '/account.json')
+
+                DB.application.config.data.account = {
+                    public_address: null,
+                    secret_question_1: null,
+                    secret_answer_1: null,
+                    secret_question_2: null,
+                    secret_answer_2: null,
+                    passphrase: null,
+                    private_key: null,
+                    password: null,
+                    email: null,
+                    first_name: null,
+                    last_name: null,
+                    birthday: null,
+                }
+
+                DB.save()
+
+                const req = {
+                    account: DB.application.config.data.account
+                }
+
+                await sendCommand('setAccountRequest', req)
+            }
         })
     })
 }
@@ -699,6 +755,10 @@ export const runCommand = async (cmd, meta = {}) => {
             const res = await exportAccountFileRequest(cmd.data)
 
             return resolve(await sendCommand('exportAccountFileResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'deleteAccountRequest') {
+            const res = await deleteAccountRequest(cmd.data)
+
+            return resolve(await sendCommand('deleteAccountFesponse', res, meta.client, cmd.requestId))
         } else if (cmd.key === 'showContextMenuRequest') {
             const electron = require('electron')
             const Menu = electron.Menu
@@ -744,7 +804,7 @@ export const runCommand = async (cmd, meta = {}) => {
                     role: 'selectall'
                 }, 
                 {
-                    label: 'Inspect element',
+                    label: 'Inspect',
                     click() {
                         Windows.main.window.inspectElement(cmd.data.x, cmd.data.y)
                     }

@@ -79,7 +79,7 @@ const local = {
 }
 
 const withTimeout = (millis, promise, originalReject) => {
-    const timeout = new Promise((resolve, reject) => setTimeout(() => originalReject(`Timed out after ${millis} ms.`), millis))
+    const timeout = new Promise((resolve, reject) => setTimeout(() => originalReject(`Could not connect`), millis))
 
     return Promise.race([
         promise,
