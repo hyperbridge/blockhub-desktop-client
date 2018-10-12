@@ -556,22 +556,62 @@ export const generateWallet = async () => {
     })
 }
 
-export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, secret_question_1, secret_answer_1, secret_question_2, secret_answer_2 }) => {
+export const createTransactionRequest = async ({ fromAddress, toAddress, amount }) => {
     return new Promise(async (resolve) => {
-        const account = await generateWallet()
-        const identity = await Wallet.create(account.passphrase, 10)
+        let transactionData = createTransaction
+        
+        resolve(transactionData)
+    })
+}
+
+export const sendTransactionRequest = async ({ fromAddress, toAddress, amount, transactionData }) => {
+    return new Promise(async (resolve) => {
+
+        const options = {
+            title: 'Confirm Transaction',
+            type: 'question',
+            buttons: ['OK', 'Cancel'],
+            message: `Sending ${amount} ETH to address ${toAddress} from ${fromAddress}. 
+            Once this transaction is sent it cannot be reversed. 
+            Are you sure you want to send?`
+        }
+
+        electron.dialog.showMessageBox(Windows.main.window, options, async (res) => {
+            if (res === 0) {
+                const transactionId = wallet.sendTransaction({
+                    to: toAddress,
+                    from: fromAddress,
+                    amount: amount
+                })
+
+                resolve({ 
+                    success: true, 
+                    transactionId: transactionId
+                })
+            } else {
+                resolve({
+                    success: false,
+                    message: 'Cancelled'
+                })
+            }
+        })
+    })
+}
+
+export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, passphrase, encrypt_passphrase, secret_question_1, secret_answer_1, secret_question_2, secret_answer_2 }) => {
+    return new Promise(async (resolve) => {
+        const account = await Wallet.create(passphrase, 0)
+        const identity = await Wallet.create(passphrase, 10)
 
         DB.application.config.data.account = {
             ...DB.application.config.data.account,
             public_address: account.public_address,
-            secret_question_1: 'HIDDEN',
-            secret_answer_1: 'HIDDEN',
-            secret_question_2: 'HIDDEN',
-            secret_answer_2: 'HIDDEN',
-            encrypt_passphrase: false,
-            passphrase: account.passphrase,
+            secret_question_1: secret_question_1,
+            secret_question_2: secret_question_2,
+            encrypt_passphrase: encrypt_passphrase,
+            passphrase: encrypt_passphrase ? encrypt(passphrase, password) : passphrase,
             private_key: encrypt(account.private_key, password),
-            password: encrypt(secret_answer_1 + birthday, password),
+            password: encrypt(password, secret_answer_1 + birthday),
             email: encrypt(email, account.private_key),
             first_name: encrypt(first_name, account.private_key),
             last_name: encrypt(last_name, account.private_key),
@@ -584,8 +624,7 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
                     id: 1,
                     name: 'Default',
                     public_address: identity.public_address,
-                    passphrase: encrypt(identity.passphrase, account.passphrase),
-                    private_key: encrypt(identity.private_key, account.passphrase),
+                    private_key: encrypt(identity.private_key, password),
                 }
             ]
         }
@@ -605,9 +644,7 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
                 last_name: last_name,
                 birthday: birthday,
                 secret_question_1: secret_question_1,
-                secret_answer_1: secret_answer_1,
                 secret_question_2: secret_question_2,
-                secret_answer_2: secret_answer_2,
                 current_identity: {
                     id: 1
                 },
@@ -774,6 +811,14 @@ export const runCommand = async (cmd, meta = {}) => {
             const res = await getPassphraseRequest(cmd.data)
 
             return resolve(await sendCommand('getPassphraseResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'createTransactionRequest') {
+            const res = await createTransactionRequest(cmd.data)
+            
+            return resolve(await sendCommand('createTransactionResponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'sendTransactionRequest') {
+            const res = await sendTransactionRequest(cmd.data)
+
+            return resolve(await sendCommand('sendTransactionResponse', res, meta.client, cmd.requestId))
         } else if (cmd.key === 'showContextMenuRequest') {
             const electron = require('electron')
             const Menu = electron.Menu

@@ -169,7 +169,7 @@ export const initApp = () => {
 }
 
 export const initWallet = () => {
-  Wallet.ethereum.activeNetwork = config.IS_PRODUCTION ? 'mainnet' : 'development'
+  Wallet.ethereum.activeNetwork = config.IS_PRODUCTION ? 'ropsten' : 'development'
 }
 
 export const initUpdater = () => {
