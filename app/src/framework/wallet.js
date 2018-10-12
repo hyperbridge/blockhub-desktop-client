@@ -4,76 +4,74 @@ import contract from 'truffle-contract'
 import Bluebird from 'bluebird'
 import * as DB from '../db'
 
-const local = {
-    steemit: {
-        account: {
-            privateKey: null
-        }
+export const ethereum = {
+    infura: {
+        accessToken: 'q0dsZEe9ohtOnGy8V0cT',
+        endpoint: 'https://ropsten.infura.io/'
     },
-    ethereum: {
-        infura: {
-            accessToken: null,
-            endpoint: "https://ropsten.infura.io/"
+    activeNetwork: 'development',
+    networks: {
+        development: {
+            provider: function (passphrase, index) {
+                return new HDWalletProvider(
+                    passphrase,
+                    'http://localhost:8545',
+                    index
+                )
+            },
+            host: 'localhost',
+            port: 8545,
+            gas: 4500000,
+            gasPrice: 25000000000,
+            network_id: '*'
         },
-        activeNetwork: 'development',
-        networks: {
-            development: {
-                provider: function (passphrase) {
-                    return new HDWalletProvider(
-                        passphrase,
-                        "http://localhost:8545"
-                    )
-                },
-                host: 'localhost',
-                port: 8545,
-                gas: 4500000,
-                gasPrice: 25000000000,
-                network_id: '*'
+        kovan: {
+            provider: function (passphrase, index) {
+                return new HDWalletProvider(
+                    passphrase,
+                    'https://kovan.infura.io/' + ethereum.infura.accessToken,
+                    index
+                )
             },
-            kovan: {
-                provider: function (passphrase) {
-                    return new HDWalletProvider(
-                        passphrase,
-                        "https://kovan.infura.io/" + local.ethereum.infura.accessToken
-                    )
-                },
-                network_id: '*',
-                gas: 4500000,
-                gasPrice: 25000000000
+            network_id: '*',
+            gas: 4500000,
+            gasPrice: 25000000000
+        },
+        rinkeby: {
+            provider: function (passphrase, index) {
+                return new HDWalletProvider(
+                    passphrase,
+                    'https://rinkeby.infura.io/' + ethereum.infura.accessToken,
+                    index
+                )
             },
-            rinkeby: {
-                provider: function (passphrase) {
-                    return new HDWalletProvider(
-                        passphrase,
-                        "https://rinkeby.infura.io/" + local.ethereum.infura.accessToken
-                    )
-                },
-                network_id: '*',
-                gas: 4500000,
-                gasPrice: 25000000000
+            network_id: '*',
+            gas: 4500000,
+            gasPrice: 25000000000
+        },
+        mainnet: {
+            provider: function (passphrase, index) {
+                return new HDWalletProvider(
+                    passphrase,
+                    'https://mainnet.infura.io/' + ethereum.infura.accessToken,
+                    index
+                )
             },
-            mainnet: {
-                provider: function (passphrase) {
-                    return new HDWalletProvider(
-                        passphrase,
-                        "https://mainnet.infura.io/" + local.ethereum.infura.accessToken
-                    )
-                },
-                network_id: '*',
-                gas: 4500000,
-                gasPrice: 25000000000
+            network_id: '*',
+            gas: 4500000,
+            gasPrice: 25000000000
+        },
+        ropsten: {
+            provider: function (passphrase, index) {
+                return new HDWalletProvider(
+                    passphrase,
+                    'https://ropsten.infura.io/' + ethereum.infura.accessToken,
+                    index
+                )
             },
-            ropsten: {
-                provider: function (passphrase) {
-                    return new HDWalletProvider(
-                        passphrase,
-                        "https://ropsten.infura.io/" + local.ethereum.infura.accessToken
-                    )
-                },
-                network_id: 3,
-                gas: 4500000,
-                gasPrice: 25000000000
-            }
+            network_id: 3,
+            gas: 4500000,
+            gasPrice: 25000000000
         }
     }
 }
@@ -112,10 +110,10 @@ Bluebird.config({
 });
 
 // 'retreat attack lift winter amazing noodle interest dutch craft old solve save',
-export const create = async (passphrase) => {
+export const create = async (passphrase, index = 0) => {
     console.log('[BlockHub] Creating wallet...')
 
-    const provider = local.ethereum.networks[local.ethereum.activeNetwork].provider()
+    const provider = ethereum.networks[ethereum.activeNetwork].provider(passphrase, index)
     const web3 = new Web3(provider)
 
     provider.engine._providers[2].provider.timeout = 10
@@ -123,7 +121,7 @@ export const create = async (passphrase) => {
     Bluebird.promisifyAll(web3.eth, { suffix: 'Promise' })
 
     return new Promise(async (resolve, reject) => {
-        const account = await getCurrentAccount(web3)
+        const account = await getCurrentAccount(web3, index)
 
         resolve({
             web3,
@@ -133,5 +131,5 @@ export const create = async (passphrase) => {
     })
 
     // const myContract = contract(myABI)
-    // myContract.setProvider(local.ethereum.web3.currentProvider)
+    // myContract.setProvider(ethereum.web3.currentProvider)
 }

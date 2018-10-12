@@ -5,11 +5,13 @@ import * as DB from '../db'
 import * as Security from '../framework/security'
 import * as DesktopBridge from '../framework/bridge'
 import * as PeerService from '../framework/peer-service'
+import * as Wallet from '../framework/wallet'
 import * as Windows from './windows'
 import * as Updater from './updater'
 
 
 const config = require('../config')
+
 
 // Initial settings
 // Disable peer relaying by default (until we're somewhat stable)
@@ -166,6 +168,10 @@ export const initApp = () => {
   })
 }
 
+export const initWallet = () => {
+  Wallet.ethereum.activeNetwork = config.IS_PRODUCTION ? 'mainnet' : 'development'
+}
+
 export const initUpdater = () => {
   // Just place this code at the entry point of your application:
   // const updater = require('electron-simple-updater');
@@ -188,6 +194,7 @@ export const initIPC = () => {
 export const init = () => {
   initProcess()
   initIPC()
+  initWallet()
   initApp()
   initUpdater()
 }
