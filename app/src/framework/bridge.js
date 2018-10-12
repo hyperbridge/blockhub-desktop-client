@@ -386,11 +386,23 @@ export const updateAccountRequest = async (data) => {
     })
 }
 
+export const getPassphraseRequest = async (data) => {
+    return new Promise(async (resolve) => {
+        // TODO: use data.seed
+        let randomBytes = crypto.randomBytes(16) // 128 bits of seed is enough
+
+        // the 12 word phrase
+        let passphrase = bip39.entropyToMnemonic(randomBytes.toString('hex'))
+
+        resolve(passphrase)
+    })
+}
+
 export const readFile = (filepath) => {
     return new Promise(async (resolve, reject) => {
         fs.readFile(filepath, 'utf-8', function (err, data) {
             if (err) {
-                console.log("An error ocurred reading the file :" + err.message)
+                console.log('An error occurred reading the file: ' + err.message)
                 return reject(err)
             }
 
@@ -459,12 +471,12 @@ export const exportAccountFileRequest = async (data) => {
 
         electron.dialog.showSaveDialog((fileName) => {
             if (fileName === undefined) {
-                return reject("You didn't save the file")
+                return reject("The file wasn't saved")
             }
 
             fs.writeFile(fileName, content, (err) => {
                 if (err) {
-                    return reject("An error ocurred creating the file " + err.message)
+                    return reject("An error ocurred creating the file: " + err.message)
                 }
 
                 console.log("The account has been succesfully exported: " + fileName)
@@ -547,7 +559,7 @@ export const generateWallet = async () => {
 export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, secret_question_1, secret_answer_1, secret_question_2, secret_answer_2 }) => {
     return new Promise(async (resolve) => {
         const account = await generateWallet()
-        const identity = await generateWallet()
+        const identity = await Wallet.create(account.passphrase, 10)
 
         DB.application.config.data.account = {
             ...DB.application.config.data.account,
@@ -596,7 +608,6 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
                 secret_answer_1: secret_answer_1,
                 secret_question_2: secret_question_2,
                 secret_answer_2: secret_answer_2,
-                passphrase: account.passphrase,
                 current_identity: {
                     id: 1
                 },
@@ -759,6 +770,10 @@ export const runCommand = async (cmd, meta = {}) => {
             const res = await deleteAccountRequest(cmd.data)
 
             return resolve(await sendCommand('deleteAccountFesponse', res, meta.client, cmd.requestId))
+        } else if (cmd.key === 'getPassphraseRequest') {
+            const res = await getPassphraseRequest(cmd.data)
+
+            return resolve(await sendCommand('getPassphraseResponse', res, meta.client, cmd.requestId))
         } else if (cmd.key === 'showContextMenuRequest') {
             const electron = require('electron')
             const Menu = electron.Menu
