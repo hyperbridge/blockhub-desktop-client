@@ -162,7 +162,7 @@ export const initApp = () => {
 
   app.on('ready', () => {
     DB.init()
-    Windows.main.init(deeplinkUri, argv.dev, argv.tools)
+    Windows.main.init(deeplinkUri, !config.IS_PRODUCTION, argv.tools)
     DesktopBridge.init(Windows.main.window.webContents)
     Updater.checkForUpdates()
   })

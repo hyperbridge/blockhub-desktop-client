@@ -11,8 +11,7 @@ import * as Wallet from './wallet'
 import * as DB from '../db'
 import * as Windows from '../main/windows'
 
-export let config = {
-}
+const config = require('../config')
 
 const local = {
     requests: {},
@@ -823,7 +822,7 @@ export const runCommand = async (cmd, meta = {}) => {
             const electron = require('electron')
             const Menu = electron.Menu
 
-            const menu = Menu.buildFromTemplate([
+            const template = [
                 {
                     label: 'Back',
                     click() {
@@ -862,14 +861,19 @@ export const runCommand = async (cmd, meta = {}) => {
                 {
                     label: 'Select all',
                     role: 'selectall'
-                }, 
-                {
+                }
+            ]
+
+            if (!config.IS_PRODUCTION) {
+                template.push({
                     label: 'Inspect',
                     click() {
                         Windows.main.window.inspectElement(cmd.data.x, cmd.data.y)
                     }
-                }
-            ])
+                })
+            }
+
+            const menu = Menu.buildFromTemplate(template)
 
             menu.popup(Windows.main.window)
         } else if (cmd.key === 'setPasswordRequest') {

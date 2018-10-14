@@ -123,7 +123,8 @@ function isPortable() {
 }
 
 function isProduction() {
-    return process.env.NODE_ENV === 'production'
+    //return true //!process.defaultApp
+    //return process.env.NODE_ENV === 'production'
     // if (!process.versions.electron) {
     //     // Node.js process
     //     return false

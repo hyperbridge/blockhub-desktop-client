@@ -56,7 +56,6 @@
           "cookie_policy_accepted": false
         }
       },
-      "encrypt_passphrase": true,
       "public_address": null,
       "secret_question_1": null,
       "secret_answer_1": null,
