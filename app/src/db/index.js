@@ -20,7 +20,8 @@ export let marketplace = {
 }
 
 export let funding = {
-    projects: null
+    projects: null,
+    config: null
 }
 
 export let setInitCallback = (cb) => {
@@ -58,20 +59,13 @@ export const loadDefault = () => {
     funding.projects = loki.addCollection('fundingProjects');
     funding.config = loki.addCollection('fundingConfig');
 
-    data.marketplace['$loki'] = 1
-    data.funding['$loki'] = 1
-    data.application['$loki'] = 1
-    data.marketplace.id = '1'
-    data.funding.id = '1'
-    data.application.id = '1'
-
     try {
         updateCollection(application.config, data.application)
         updateCollection(marketplace.config, data.marketplace)
         updateCollection(marketplace.products, data.marketplace.products)
         updateCollection(marketplace.assets, data.marketplace.assets)
-        updateCollection(funding.projects, data.funding.projects)
         updateCollection(funding.config, data.funding)
+        updateCollection(funding.projects, data.funding.projects)
     }
     catch (e) {
         console.warn(e)

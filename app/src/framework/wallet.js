@@ -4,14 +4,16 @@ import contract from 'truffle-contract'
 import Bluebird from 'bluebird'
 import * as DB from '../db'
 
+
+
 export const ethereum = {
     infura: {
         accessToken: 'q0dsZEe9ohtOnGy8V0cT',
         endpoint: 'https://ropsten.infura.io/'
     },
-    activeNetwork: 'development',
+    activeNetwork: 'local',
     networks: {
-        development: {
+        local: {
             provider: function (passphrase, index) {
                 return new HDWalletProvider(
                     passphrase,
@@ -111,7 +113,7 @@ Bluebird.config({
 
 // 'retreat attack lift winter amazing noodle interest dutch craft old solve save',
 export const create = async (passphrase, index = 0) => {
-    console.log('[BlockHub] Creating wallet...')
+    console.log('[BlockHub] Initializing wallet...')
 
     const provider = ethereum.networks[ethereum.activeNetwork].provider(passphrase, index)
     const web3 = new Web3(provider)

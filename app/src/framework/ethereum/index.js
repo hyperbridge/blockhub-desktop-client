@@ -1,5 +1,5 @@
 const Web3 = require('web3')
-let tokenAbi = require('../../contracts/tokenContract.json')
+const Token = require('hyperbridge-token')
 
 // declare let require: any
 // declare let Promise: any
@@ -21,6 +21,7 @@ let tokenAbi = require('../../contracts/tokenContract.json')
 
 const local = {
     _account: null,
+    _provider: null,
     _web3: null,
     _tokenContract: null,
     _tokenContractAddress: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
@@ -33,9 +34,9 @@ export const init = () => {
     return new Promise((resolve, reject) => {
         if (typeof window.web3 !== 'undefined') {
             if (!local._web3) {
-                const provider = new window.web3.providers.HttpProvider("http://localhost:8545")
+                local._provider = new window.web3.providers.HttpProvider("http://localhost:8545")
                 // Use Mist/MetaMask's provider
-                local._web3 = new Web3(provider) //window.web3.currentProvider)
+                local._web3 = new Web3(local._provider) //window.web3.currentProvider)
             }
 
             // if (_web3.version !== "1.0.0-beta.34") {
@@ -53,7 +54,7 @@ export const init = () => {
 
                 clearTimeout(timeout)
 
-                local._tokenContract = new local._web3.eth.Contract(tokenAbi.abi, local._tokenContractAddress) //_web3.eth.contract(tokenAbi).at(_tokenContractAddress)
+                local._tokenContract = new local._web3.eth.Contract(Token.api.ethereum.contracts.Token, local._tokenContractAddress) //_web3.eth.contract(tokenAbi).at(_tokenContractAddress)
 
                 resolve()
             }, () => {

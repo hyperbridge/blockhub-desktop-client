@@ -47,6 +47,9 @@
       "target": [
         {
           "target": "nsis",
+          "platform": [
+            "win32"
+          ],
           "arch": [
             "x64",
             "ia32"

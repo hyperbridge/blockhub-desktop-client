@@ -1,12 +1,13 @@
 import fs from 'fs'
 import path from 'path'
+import Web3 from 'web3'
 import CryptoJS from 'crypto-js'
 import bip39 from 'bip39'
 import crypto from 'crypto'
 import electron from 'electron'
 import Token from 'hyperbridge-token'
-import FundingProtocol from 'funding-protocol'
-import MarketplaceProtocol from 'marketplace-protocol'
+import FundingProtocol from 'hyperbridge-funding-protocol'
+import MarketplaceProtocol from 'hyperbridge-marketplace-protocol'
 import * as Wallet from './wallet'
 import * as DB from '../db'
 import * as Windows from '../main/windows'
@@ -14,6 +15,7 @@ import * as Windows from '../main/windows'
 const config = require('../config')
 
 const local = {
+    provider: null,
     requests: {},
     account: {
         wallet: null
@@ -69,10 +71,10 @@ export const promptPasswordRequest = async (data = {}) => {
         // Decrypt the passphrase and use to set web3 provider
         try {
             let passphrase = null
-            if (DB.application.config.data.account.encrypt_passphrase) {
-                passphrase = decrypt(DB.application.config.data.account.passphrase, res.password)
+            if (DB.application.config.data[0].account.encrypt_passphrase) {
+                passphrase = decrypt(DB.application.config.data[0].account.passphrase, res.password)
             } else {
-                passphrase = DB.application.config.data.account.passphrase
+                passphrase = DB.application.config.data[0].account.passphrase
             }
 
             if (!passphrase) {
@@ -86,6 +88,11 @@ export const promptPasswordRequest = async (data = {}) => {
         }
 
         local.account.wallet = await Wallet.create(local.passphrase)
+
+        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'application' }))
+        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'funding' }))
+        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'marketplace' }))
+
 
         // Desktop sends back all non-sensitive account info
         await setAccountRequest()
@@ -112,16 +119,16 @@ export const getProtocolByName = (name) => {
 }
 
 export const setContractAddress = async ({ protocolName, contractName, address }) => {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
         let protocol = getProtocolByName(protocolName)
 
         protocol.api.ethereum
             .setContractAddress(contractName, address)
             .catch(() => {
-                resolve('Unable to deploy contract')
+                reject('Unable to deploy contract')
             })
             .then(() => {
-                resolve(null)
+                resolve()
             })
     })
 }
@@ -133,7 +140,7 @@ export const updateFundingProject = async ({ id, data }) => {
         const projectRegistrationContract = FundingProtocol.api.ethereum.state.contracts.ProjectRegistration.deployed
 
         // TODO
-        resolve(null, project)
+        resolve(project)
     })
 }
 
@@ -172,7 +179,7 @@ export const createFundingProject = async ({ title, description, about }) => {
                 }
             }
 
-            resolve(null, project)
+            resolve(project)
         })
 
         await projectRegistrationContract.createProject(
@@ -191,10 +198,19 @@ export const createFundingProject = async ({ title, description, about }) => {
 export const initProtocol = async ({ protocolName }) => {
     return new Promise(async (resolve) => {
         const protocol = getProtocolByName(protocolName)
-        const state = DB[protocolName].config.data
+        const state = DB[protocolName].config.data[0]
+        
+        //console.log(local.account.wallet.provider.engine._providers[2])
 
+        console.log(local.account.wallet, local.passphrase)
+        const provider = new Web3.providers.HttpProvider('http://localhost:8545')
+        const web3 = new Web3(provider)
+        // const account = web3.eth.accounts.privateKeyToAccount('0x' + local.account.wallet.private_key);
+        // web3.eth.accounts.wallet.add(account)
+// Exception Error: invalid address
         protocol.api.ethereum.init(
-            state.ethereum[state.current_ethereum_network].user_from_address,
+            provider,//local.account.wallet.provider,
+            local.account.wallet.public_address,
             state.ethereum[state.current_ethereum_network].user_to_address
         )
 
@@ -202,26 +218,31 @@ export const initProtocol = async ({ protocolName }) => {
             const contract = state.ethereum[state.current_ethereum_network].contracts[contractName]
 
             if (contract.address) {
-                await setContractAddress(protocolName, contractName, contract.address)
-                    .then((err) => {
-                        if (err) {
-                            state.ethereum[state.current_ethereum_network].contracts[contractName].address = null
-                            state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = null
-                        }
+                await setContractAddress({ protocolName, contractName, address: contract.address })
+                    .catch(() => {
+                        state.ethereum[state.current_ethereum_network].contracts[contractName].address = null
+                        state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = null
+                    })
+                    .then(() => {
+                        
                     })
             } else {
                 state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = null
             }
         }
 
-        resolve(null, state.ethereum[state.current_ethereum_network])
+        resolve({
+            currentNetwork: state.current_ethereum_network,
+            protocolName: protocolName,
+            config: state.ethereum[state.current_ethereum_network]
+        })
     })
 }
 
 export const deployContract = async ({ protocolName, contractName }) => {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
         const protocol = getProtocolByName(protocolName)
-        const state = DB[protocolName].config.data
+        const state = DB[protocolName].config.data[0]
         const links = []
         const params = []
 
@@ -247,7 +268,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
         }
 
         // Linking
-        if (protocol === 'funding') {
+        if (protocolName === 'funding') {
             if (contractName === 'ProjectBase') {
                 params = [
                     false
@@ -277,7 +298,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
             }
         }
 
-        if (protocol === 'application') {
+        if (protocolName === 'application') {
             if (payload.contractName !== 'EternalStorage') {
                 params = [
                     state.ethereum[state.current_ethereum_network].contracts.EternalStorage.address
@@ -287,14 +308,20 @@ export const deployContract = async ({ protocolName, contractName }) => {
 
         protocol.api.ethereum
             .deployContract(contractName, links, params)
-            .then(async (err, contract) => {
+            .then(async (contract) => {
+                // if (err)  {
+                //     console.error('[BlockHub] Error deploying contract',  err)
+                //     return reject()
+                // }
+
                 state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = Date.now()
                 state.ethereum[state.current_ethereum_network].contracts[contractName].address = contract.address
-
+console.log(state)
                 DB[protocolName].config.update(state)
                 DB.save()
+                //local.store.dispatch(protocolName + '/updateState')
 
-                if (protocol === 'funding' && contractName === 'ProjectRegistration') {
+                if (protocolName === 'funding' && contractName === 'ProjectRegistration') {
                     const blankAddress = 0x0000000000000000000000000000000000000000
                     const projectRegistrationContract = protocol.api.ethereum.state.contracts.ProjectRegistration.deployed
                     const fundingStorageContract = protocol.api.ethereum.state.contracts.FundingStorage.deployed
@@ -320,23 +347,15 @@ export const deployContract = async ({ protocolName, contractName }) => {
                     await developerContract.createDeveloper('Hyperbridge', { from: developerAccount })
                 }
 
-                resolve(null, state.ethereum[state.current_ethereum_network].contracts[contractName])
+                resolve(state.ethereum[state.current_ethereum_network].contracts[contractName])
             })
     })
 }
 
 
-export const handleDeployContract = async ({ protocolName, contractName }) => {
-    return new Promise(async (resolve) => {
-        const { err, contract } = deployContract(protocolName, contractName)
-
-        resolve(err, contract)
-    })
-}
-
 export const setAccountRequest = async () => {
     return new Promise(async (resolve) => {
-        const account = DB.application.config.data.account
+        const account = DB.application.config.data[0].account
         const decryptedPrivateKey = decrypt(account.private_key, local.password)
 
         const req = {
@@ -366,15 +385,15 @@ export const updateAccountRequest = async (data) => {
     return new Promise(async (resolve) => {
         if (data.encrypt_passphrase) {
             if (data.encrypt_passphrase) {
-                DB.application.config.data.account.passphrase = encrypt(DB.application.config.data.account.passphrase, local.password)
+                DB.application.config.data[0].account.passphrase = encrypt(DB.application.config.data[0].account.passphrase, local.password)
             } else {
                 // We're disabling when previously enabled
-                if (DB.application.config.data.account.encrypt_passphrase) {
-                    DB.application.config.data.account.passphrase = decrypt(DB.application.config.data.account.passphrase, local.password)
+                if (DB.application.config.data[0].account.encrypt_passphrase) {
+                    DB.application.config.data[0].account.passphrase = decrypt(DB.application.config.data[0].account.passphrase, local.password)
                 }
             }
 
-            DB.application.config.data.account.encrypt_passphrase = data.encrypt_passphrase
+            DB.application.config.data[0].account.encrypt_passphrase = data.encrypt_passphrase
 
             DB.save()
 
@@ -442,7 +461,7 @@ export const saveAccountFileRequest = async (data) => {
     return new Promise(async (resolve) => {
         const userDataPath = electron.app.getPath('userData')
 
-        await saveFile(path.join(userDataPath, 'account.json'), JSON.stringify(DB.application.config.data.account))
+        await saveFile(path.join(userDataPath, 'account.json'), JSON.stringify(DB.application.config.data[0].account))
     })
 }
 
@@ -466,7 +485,7 @@ export const importAccountFileRequest = async (data) => {
 
 export const exportAccountFileRequest = async (data) => {
     return new Promise(async (resolve, reject) => {
-        const content = JSON.stringify(DB.application.config.data.account)
+        const content = JSON.stringify(DB.application.config.data[0].account)
 
         electron.dialog.showSaveDialog((fileName) => {
             if (fileName === undefined) {
@@ -487,7 +506,7 @@ export const exportAccountFileRequest = async (data) => {
 
 export const deleteAccountRequest = async (data) => {
     return new Promise(async (resolve, reject) => {
-        const content = JSON.stringify(DB.application.config.data.account)
+        const content = JSON.stringify(DB.application.config.data[0].account)
 
         const options = {
             title: 'Delete Account?',
@@ -501,7 +520,7 @@ export const deleteAccountRequest = async (data) => {
                 const path = electron.app.getPath('userData')
                 removeFile(path + '/account.json')
 
-                DB.application.config.data.account = {
+                DB.application.config.data[0].account = {
                     public_address: null,
                     secret_question_1: null,
                     secret_answer_1: null,
@@ -519,7 +538,7 @@ export const deleteAccountRequest = async (data) => {
                 DB.save()
 
                 const req = {
-                    account: DB.application.config.data.account
+                    account: DB.application.config.data[0].account
                 }
 
                 await sendCommand('setAccountRequest', req)
@@ -532,7 +551,7 @@ export const saveAccountFile = async () => {
     return new Promise(async (resolve) => {
         const path = electron.app.getPath('userData')
 
-        saveFile(path + '/account.json', JSON.stringify(DB.application.config.data.account))
+        saveFile(path + '/account.json', JSON.stringify(DB.application.config.data[0].account))
 
         resolve()
     })
@@ -602,8 +621,8 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
         const account = await Wallet.create(passphrase, 0)
         const identity = await Wallet.create(passphrase, 10)
 
-        DB.application.config.data.account = {
-            ...DB.application.config.data.account,
+        DB.application.config.data[0].account = {
+            ...DB.application.config.data[0].account,
             public_address: account.public_address,
             secret_question_1: secret_question_1,
             secret_question_2: secret_question_2,
@@ -698,7 +717,7 @@ export const sendCommand = async (key, data = {}, peer = null, responseId = null
 }
 
 export const runCommand = async (cmd, meta = {}) => {
-    console.log('[DesktopBridge] Running command', cmd.key)
+    console.log('[DesktopBridge] Running command', cmd.key, cmd.data)
 
     return new Promise(async (resolve, reject) => {
         if (cmd.responseId) {
@@ -713,6 +732,9 @@ export const runCommand = async (cmd, meta = {}) => {
             return resolve()
         }
 
+        let resultKey = 'genericResponse'
+        let resultData = null
+
         if (cmd.key === 'init') {
             console.log('[BlockHub] Web initialized', cmd.data) // msg from web page
 
@@ -722,7 +744,7 @@ export const runCommand = async (cmd, meta = {}) => {
                 sendCommand('setMode', mode)
 
                 // Prompt password request if account exists but hasn't been unlocked
-                if (DB.application.config.data.account.passphrase) {
+                if (DB.application.config.data[0].account.passphrase) {
                     if (local.password) {
                         // Desktop sends back all non-sensitive account info
                         await setAccountRequest()
@@ -767,57 +789,44 @@ export const runCommand = async (cmd, meta = {}) => {
             //Windows.main.window.setSize(cmd.data.width, cmd.data.height)
             //Windows.main.window.center()
         } else if (cmd.key === 'createAccountRequest') {
-            const res = await handleCreateAccountRequest(cmd.data)
-
-            return resolve(await sendCommand('createAccountResponse', res, meta.client, cmd.requestId))
+            resultData = await handleCreateAccountRequest(cmd.data)
+            resultKey = 'createAccountResponse'
         } else if (cmd.key === 'getAccountRequest') {
-            const res = await handleGetAccountRequest(cmd.data)
-
-            return resolve(await sendCommand('getAccountResponse', res, meta.client, cmd.requestId))
+            resultData = await handleGetAccountRequest(cmd.data)
+            resultKey = 'getAccountResponse'
         } else if (cmd.key === 'setContractAddress') {
-            const res = await handleSetContractAddress(cmd.data)
-
-            return resolve(await sendCommand('setContractAddressResponse', res, meta.client, cmd.requestId))
+            resultData = await handleSetContractAddress(cmd.data)
+            resultKey = 'setContractAddressResponse'
         } else if (cmd.key === 'deployContract') {
-            const res = await handleDeployContract(cmd.data)
-
-            return resolve(await sendCommand('deployContractResponse', res, meta.client, cmd.requestId))
+            resultData = await deployContract(cmd.data)
+            resultKey = 'deployContractResponse'
         } else if (cmd.key === 'createFundingProject') {
-            const res = await createFundingProject(cmd.data)
-
-            return resolve(await sendCommand('createFundingProjectResponse', res, meta.client, cmd.requestId))
+            resultData = await createFundingProject(cmd.data)
+            resultKey = 'createFundingProjectResponse'
         } else if (cmd.key === 'updateAccountRequest') {
-            const res = await updateAccountRequest(cmd.data)
-
-            return resolve(await sendCommand('updateAccountRequestResponse', res, meta.client, cmd.requestId))
+            resultData = await updateAccountRequest(cmd.data)
+            resultKey = 'updateAccountRequestResponse'
         } else if (cmd.key === 'initProtocol') {
-            const res = await initProtocol(cmd.data)
-
-            return resolve(await sendCommand('initProtocolResponse', res, meta.client, cmd.requestId))
+            resultData = await initProtocol(cmd.data)
+            resultKey = 'initProtocolResponse'
         } else if (cmd.key === 'importAccountFileRequest') {
-            const res = await importAccountFileRequest(cmd.data)
-
-            return resolve(await sendCommand('importAccountFileResponse', res, meta.client, cmd.requestId))
+            resultData = await importAccountFileRequest(cmd.data)
+            resultKey = 'importAccountFileResponse'
         } else if (cmd.key === 'exportAccountFileRequest') {
-            const res = await exportAccountFileRequest(cmd.data)
-
-            return resolve(await sendCommand('exportAccountFileResponse', res, meta.client, cmd.requestId))
+            resultData = await exportAccountFileRequest(cmd.data)
+            resultKey = 'exportAccountFileResponse'
         } else if (cmd.key === 'deleteAccountRequest') {
-            const res = await deleteAccountRequest(cmd.data)
-
-            return resolve(await sendCommand('deleteAccountFesponse', res, meta.client, cmd.requestId))
+            resultData = await deleteAccountRequest(cmd.data)
+            resultKey = 'deleteAccountFesponse'
         } else if (cmd.key === 'getPassphraseRequest') {
-            const res = await getPassphraseRequest(cmd.data)
-
-            return resolve(await sendCommand('getPassphraseResponse', res, meta.client, cmd.requestId))
+            resultData = await getPassphraseRequest(cmd.data)
+            resultKey = 'getPassphraseResponse'
         } else if (cmd.key === 'createTransactionRequest') {
-            const res = await createTransactionRequest(cmd.data)
-            
-            return resolve(await sendCommand('createTransactionResponse', res, meta.client, cmd.requestId))
+            resultData = await createTransactionRequest(cmd.data)
+            resultKey = 'createTransactionResponse'
         } else if (cmd.key === 'sendTransactionRequest') {
-            const res = await sendTransactionRequest(cmd.data)
-
-            return resolve(await sendCommand('sendTransactionResponse', res, meta.client, cmd.requestId))
+            resultData = await sendTransactionRequest(cmd.data)
+            resultKey = 'sendTransactionResponse'
         } else if (cmd.key === 'showContextMenuRequest') {
             const electron = require('electron')
             const Menu = electron.Menu
@@ -880,16 +889,19 @@ export const runCommand = async (cmd, meta = {}) => {
             local.password = cmd.data.password
 
             // TODO: validate
-            const res = {
+            resultData = {
                 success: 1
             }
-
-            return resolve(await sendCommand('setPasswordResponse', res, meta.client, cmd.requestId))
+            resultKey = 'setPasswordResponse'
         } else {
             console.log('[DesktopBridge] Unhandled command:', cmd)
+
+            return reject()
         }
 
         emit(cmd.key, cmd.data ? cmd.data : undefined)
+
+        return resolve(await sendCommand(resultKey, resultData, meta.client, cmd.requestId))
     })
 }
 
