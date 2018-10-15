@@ -202,20 +202,31 @@ export const initProtocol = async ({ protocolName }) => {
         
         //console.log(local.account.wallet.provider.engine._providers[2])
 
-        console.log(local.account.wallet, local.passphrase)
         const provider = new Web3.providers.HttpProvider('http://localhost:8545')
         const web3 = new Web3(provider)
         // const account = web3.eth.accounts.privateKeyToAccount('0x' + local.account.wallet.private_key);
         // web3.eth.accounts.wallet.add(account)
 // Exception Error: invalid address
+        state.ethereum[state.current_ethereum_network].user_from_address = local.account.wallet.public_address
+
         protocol.api.ethereum.init(
             provider,//local.account.wallet.provider,
-            local.account.wallet.public_address,
+            state.ethereum[state.current_ethereum_network].user_from_address,
             state.ethereum[state.current_ethereum_network].user_to_address
         )
 
         for (let contractName in state.ethereum[state.current_ethereum_network].contracts) {
+            console.log('Hooking up protocol contract: ' + protocolName + ' - ' + contractName)
+            
             const contract = state.ethereum[state.current_ethereum_network].contracts[contractName]
+
+            if (protocol.api.ethereum.state.contracts[contractName].links) {
+                state.ethereum[state.current_ethereum_network].contracts[contractName].links = protocol.api.ethereum.state.contracts[contractName].links
+            }
+
+            // Metadata
+            state.ethereum[state.current_ethereum_network].contracts[contractName].name = contractName
+            state.ethereum[state.current_ethereum_network].contracts[contractName].link = 'https://github.com/hyperbridge/protocol/blob/master/packages/' + protocolName + '/smart-contracts/ethereum/contracts/' + contractName + '.sol'
 
             if (contract.address) {
                 await setContractAddress({ protocolName, contractName, address: contract.address })
@@ -224,7 +235,7 @@ export const initProtocol = async ({ protocolName }) => {
                         state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = null
                     })
                     .then(() => {
-                        
+
                     })
             } else {
                 state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = null
@@ -243,8 +254,8 @@ export const deployContract = async ({ protocolName, contractName }) => {
     return new Promise(async (resolve, reject) => {
         const protocol = getProtocolByName(protocolName)
         const state = DB[protocolName].config.data[0]
-        const links = []
-        const params = []
+        let links = []
+        let params = []
 
         if (!state.ethereum[state.current_ethereum_network].contracts[contractName]) {
             state.ethereum[state.current_ethereum_network].contracts[contractName] = {
@@ -253,58 +264,76 @@ export const deployContract = async ({ protocolName, contractName }) => {
             }
         }
 
+        if (!protocol.api.ethereum.state.contracts[contractName]) {
+            throw "That contract doesn't exist"
+        }
+
         if (protocol.api.ethereum.state.contracts[contractName].links) {
             links = protocol.api.ethereum.state.contracts[contractName].links
 
             for (let i in links) {
-                links[i].address = state.ethereum[state.current_ethereum_network].contracts[links[i].name].address
-
-                if (!links[i].address) {
+                if (!state.ethereum[state.current_ethereum_network].contracts[links[i].name].address) {
                     await deployContract(protocolName, links[i].name)
-
-                    links[i].address = state.ethereum[state.current_ethereum_network].contracts[links[i].name].address
                 }
+
+                links[i].address = state.ethereum[state.current_ethereum_network].contracts[links[i].name].address
+            }
+        }
+
+        if (protocol.api.ethereum.state.contracts[contractName].params) {
+            params = protocol.api.ethereum.state.contracts[contractName].params
+
+            for (let i in params) {
+                // this is a contract
+                if (state.ethereum[state.current_ethereum_network].contracts[params[i]]) {
+                    if (!state.ethereum[state.current_ethereum_network].contracts[params[i]].address) {
+                        await deployContract(protocolName, params[i])
+                    }
+
+                    params[i] = state.ethereum[state.current_ethereum_network].contracts[params[i]].address
+                }
+
             }
         }
 
         // Linking
-        if (protocolName === 'funding') {
-            if (contractName === 'ProjectBase') {
-                params = [
-                    false
-                ]
-            }
+        // if (protocolName === 'funding') {
+        //     if (contractName === 'ProjectBase') {
+        //         params = [
+        //             false
+        //         ]
+        //     }
 
-            if (contractName === 'FundingVault') {
-                params = [
-                    state.ethereum[state.current_ethereum_network].contracts.FundingStorage.address
-                ]
-            }
+        //     if (contractName === 'FundingVault') {
+        //         params = [
+        //             state.ethereum[state.current_ethereum_network].contracts.FundingStorage.address
+        //         ]
+        //     }
 
-            if (contractName === 'Contribution'
-                || contractName === 'Curation'
-                || contractName === 'Developer'
-                || contractName === 'ProjectContributionTier'
-                || contractName === 'ProjectMilestoneCompletion'
-                || contractName === 'ProjectMilestoneCompletionVoting'
-                || contractName === 'ProjectRegistration'
-                || contractName === 'ProjectTimeline'
-                || contractName === 'ProjectTimelineProposal'
-                || contractName === 'ProjectTimelineProposalVoting') {
-                params = [
-                    state.ethereum[state.current_ethereum_network].contracts.FundingStorage.address,
-                    false
-                ]
-            }
-        }
+        //     if (contractName === 'Contribution'
+        //         || contractName === 'Curation'
+        //         || contractName === 'Developer'
+        //         || contractName === 'ProjectContributionTier'
+        //         || contractName === 'ProjectMilestoneCompletion'
+        //         || contractName === 'ProjectMilestoneCompletionVoting'
+        //         || contractName === 'ProjectRegistration'
+        //         || contractName === 'ProjectTimeline'
+        //         || contractName === 'ProjectTimelineProposal'
+        //         || contractName === 'ProjectTimelineProposalVoting') {
+        //         params = [
+        //             state.ethereum[state.current_ethereum_network].contracts.FundingStorage.address,
+        //             false
+        //         ]
+        //     }
+        // }
 
-        if (protocolName === 'application') {
-            if (payload.contractName !== 'EternalStorage') {
-                params = [
-                    state.ethereum[state.current_ethereum_network].contracts.EternalStorage.address
-                ]
-            }
-        }
+        // if (protocolName === 'application') {
+        //     if (contractName !== 'EternalStorage') {
+        //         params = [
+        //             state.ethereum[state.current_ethereum_network].contracts.EternalStorage.address
+        //         ]
+        //     }
+        // }
 
         protocol.api.ethereum
             .deployContract(contractName, links, params)
@@ -316,7 +345,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
 
                 state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = Date.now()
                 state.ethereum[state.current_ethereum_network].contracts[contractName].address = contract.address
-console.log(state)
+
                 DB[protocolName].config.update(state)
                 DB.save()
                 //local.store.dispatch(protocolName + '/updateState')
