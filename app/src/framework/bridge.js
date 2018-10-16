@@ -106,6 +106,21 @@ export const promptPasswordRequest = async (data = {}) => {
     })
 }
 
+export const createIdentityRequest = () => {
+    return new Promise(async (resolve, reject) => {
+        const id = DB.application.config.data[0].account.identity_index || 1
+        const identity = await Wallet.create(local.passphrase, id)
+
+        DB.application.config.data[0].account.identity_index = id + 1
+        DB.save()
+
+        resolve({
+            id: id,
+            public_address: identity.public_address
+        })
+    })
+}
+
 export const getProtocolByName = (name) => {
     if (name === 'funding') {
         return FundingProtocol
@@ -273,7 +288,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
 
             for (let i in links) {
                 if (!state.ethereum[state.current_ethereum_network].contracts[links[i].name].address) {
-                    await deployContract(protocolName, links[i].name)
+                    await deployContract({ protocolName, contractName: links[i].name })
                 }
 
                 links[i].address = state.ethereum[state.current_ethereum_network].contracts[links[i].name].address
@@ -287,7 +302,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
                 // this is a contract
                 if (state.ethereum[state.current_ethereum_network].contracts[params[i]]) {
                     if (!state.ethereum[state.current_ethereum_network].contracts[params[i]].address) {
-                        await deployContract(protocolName, params[i])
+                        await deployContract({ protocolName, contractName: params[i] })
                     }
 
                     params[i] = state.ethereum[state.current_ethereum_network].contracts[params[i]].address
@@ -663,6 +678,7 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
             first_name: encrypt(first_name, account.private_key),
             last_name: encrypt(last_name, account.private_key),
             birthday: encrypt(birthday, account.private_key),
+            identity_index: 1,
             current_identity: {
                 id: 1
             },
@@ -856,6 +872,9 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'sendTransactionRequest') {
             resultData = await sendTransactionRequest(cmd.data)
             resultKey = 'sendTransactionResponse'
+        } else if (cmd.key === 'createIdentityRequest') {
+            resultData = await createIdentityRequest(cmd.data)
+            resultKey = 'createIdentityResponse'
         } else if (cmd.key === 'showContextMenuRequest') {
             const electron = require('electron')
             const Menu = electron.Menu

@@ -13,7 +13,8 @@
     "publish": "ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true electron-builder --publish"
   },
   "postinstall": "electron-builder install-app-deps",
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
     "electron": "^2.0.8",
     "electron-builder": "^20.28.4"
@@ -23,7 +24,6 @@
     "appId": "gg.blockhub.BlockHub",
     "productName": "BlockHub",
     "copyright": "Entertainment 🎮  by Hyperbridge",
-    "asar": false,
     "removePackageScripts": false,
     "generateUpdatesFilesForAllChannels": true,
     "detectUpdateChannel": true,
@@ -43,16 +43,16 @@
       ]
     },
     "win": {
+      "asar": true,
+      "asarUnpack": [
+        "app/node_modules/scrypt/build/Release/scrypt.node"
+      ],
       "icon": "static/Icon-512.ico",
       "target": [
         {
           "target": "nsis",
-          "platform": [
-            "win32"
-          ],
           "arch": [
-            "x64",
-            "ia32"
+            "x64"
           ]
         }
       ]

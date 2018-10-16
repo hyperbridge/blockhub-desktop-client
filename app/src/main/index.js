@@ -56,8 +56,8 @@ export const installWindows = () => {
 export const uninstallWindows = () => { }
 
 
-export const log = (msg) => {
-  console.log(msg)
+export const log = (msg, msg2, msg3) => {
+  console.log(msg, msg2, msg3)
 
   if (Windows.main && Windows.main.webContents) {
     // Anything executed my be sanitized
