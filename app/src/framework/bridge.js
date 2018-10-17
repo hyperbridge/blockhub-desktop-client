@@ -5,9 +5,10 @@ import CryptoJS from 'crypto-js'
 import bip39 from 'bip39'
 import crypto from 'crypto'
 import electron from 'electron'
-import Token from 'hyperbridge-token'
-import FundingProtocol from 'hyperbridge-funding-protocol'
-import MarketplaceProtocol from 'hyperbridge-marketplace-protocol'
+import TokenAPI from 'hyperbridge-token'
+import ReserveAPI from 'hyperbridge-reserve'
+import FundingAPI from 'hyperbridge-funding-protocol'
+import MarketplaceAPI from 'hyperbridge-marketplace-protocol'
 import * as Wallet from './wallet'
 import * as DB from '../db'
 import * as Windows from '../main/windows'
@@ -123,11 +124,11 @@ export const createIdentityRequest = () => {
 
 export const getProtocolByName = (name) => {
     if (name === 'funding') {
-        return FundingProtocol
+        return FundingAPI
     } else if (name === 'marketplace') {
-        return MarketplaceProtocol
+        return MarketplaceAPI
     } else if (name === 'application') { // TODO: add a protocolToModule translator?
-        return Token
+        return TokenAPI
     }
 
     throw new Error('[DesktopBridge] Unknown protocol requested: ' + name)
@@ -152,7 +153,7 @@ export const updateFundingProject = async ({ id, data }) => {
     const project = DB.funding.projects.findOne({ 'id': id })
 
     return new Promise(async (resolve, reject) => {
-        const projectRegistrationContract = FundingProtocol.api.ethereum.state.contracts.ProjectRegistration.deployed
+        const projectRegistrationContract = FundingAPI.api.ethereum.state.contracts.ProjectRegistration.deployed
 
         // TODO
         resolve(project)
@@ -172,7 +173,7 @@ export const createFundingProject = async ({ title, description, about }) => {
     }
 
     return new Promise(async (resolve, reject) => {
-        const projectRegistrationContract = FundingProtocol.api.ethereum.state.contracts.ProjectRegistration.deployed
+        const projectRegistrationContract = FundingAPI.api.ethereum.state.contracts.ProjectRegistration.deployed
 
         projectRegistrationContract.ProjectCreated().watch((err, res) => {
             if (err) {
@@ -269,6 +270,48 @@ export const deployContract = async ({ protocolName, contractName }) => {
     return new Promise(async (resolve, reject) => {
         const protocol = getProtocolByName(protocolName)
         const state = DB[protocolName].config.data[0]
+
+        if (protocolName === 'reserve' && contractName === 'TokenSale') {
+            let token = TokenAPI.api.ethereum.state.contracts.Token.at(DB.application.config.data[0].ethereum[state.current_ethereum_network].contracts.Token)
+            const eternalStorage =TokenAPI.api.ethereum.state.contracts.EternalStorage.at(DB.application.config.data[0].ethereum[state.current_ethereum_network].contracts.EternalStorage)
+            const hbxToken = TokenAPI.api.ethereum.state.contracts.TokenDelegate.at(DB.application.config.data[0].ethereum[state.current_ethereum_network].contracts.TokenDelegate)
+            const tokenLib = TokenAPI.api.ethereum.state.contracts.TokenLib.at(DB.application.config.data[0].ethereum[state.current_ethereum_network].contracts.TokenLib)
+
+            await eternalStorage.addAdmin(hbxToken.address, { from: local.account.wallet.public_address })
+            await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address })
+
+            token = { ...TokenAPI.api.ethereum.state.contracts.TokenDelegate.at(hbxToken.address), token }
+
+            // await token.setTotalSupply(tokenSupply, {from: owner3})
+            await token.mint(tokenWallet, tokenSupply, { from: local.account.wallet.public_address })
+
+            const openingTime = latestTime() + duration.weeks(1)
+            const closingTime = openingTime + duration.weeks(1)
+            const beforeEndTime = closingTime - duration.hours(1)
+            const afterClosingTime = closingTime + duration.hours(1)
+
+            // uint256 _rate, address _wallet, ERC20 _token, address _tokenWallet, uint256 _cap, uint256 _startTime, uint256 _endTime
+            const tokensale = await ReserveAPI.api.ethereum.state.contracts.TokenSale.new(
+                rate, 
+                wallet, 
+                hbxToken.address, 
+                tokenWallet, 
+                cap, 
+                openingTime, 
+                closingTime
+            )
+
+            await token.approve(tokensale.address, tokenAllowance, { from: local.account.wallet.public_address })
+
+            const created_at = Date.now()
+            const address = tokensale.address
+
+            return resolve({
+                created_at,
+                address
+            })
+        }
+
         let links = []
         let params = []
 
@@ -557,7 +600,7 @@ export const deleteAccountRequest = async (data) => {
             type: 'question',
             buttons: ['OK', 'Cancel'],
             message: 'Are you sure you would like to delete your account? Make sure you have a backup, as this will delete the file on this computer and it cannot be undone.'
-        };
+        }
 
         electron.dialog.showMessageBox(Windows.main.window, options, async (res) => {
             if (res === 0) {

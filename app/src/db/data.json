@@ -176,17 +176,6 @@
               "name": "Contribution",
               "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/Contribution.sol"
             },
-            "ProjectBase": {
-              "created_at": null,
-              "address": null,
-              "links": [
-                { "name": "ProjectStorageAccess", "address": null },
-                { "name": "DeveloperStorageAccess", "address": null },
-                { "name": "ContributionStorageAccess", "address": null }
-              ],
-              "name": "ProjectBase",
-              "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ProjectBase.sol"
-            },
             "ProjectTimeline": {
               "created_at": null,
               "address": null,
