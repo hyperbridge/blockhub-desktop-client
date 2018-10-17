@@ -1,16 +1,24 @@
 {
   "name": "blockhub-desktop-client",
   "productName": "BlockHub",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "BlockHub Desktop Client",
+  "author": {
+    "name": "Hyperbridge",
+    "email": "hello@hyperbridge.org",
+    "url": "https://github.com/hyperbridge"
+  },
   "license": "SEE LICENSE IN LICENSE.md",
-  "main": "index.js",
   "scripts": {
     "build": "cd app && npm run build && cd .. && rm -rf build && cp -R app/ build",
     "copy-web": "cd ../blockhub-web-client && NODE_ENV=production npm run build && rm -rf ../blockhub-desktop-client/app/web && cp -R dist/ ../blockhub-desktop-client/app/web && cd ../blockhub-desktop-client",
-    "package": "rm -rf dist/packages && npm run build && ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true electron-builder --mac --win --linux",
-    "package-test": "rm -rf dist/packages && npm run build && ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true electron-builder --mac",
-    "publish": "ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true electron-builder --publish"
+    "package": "rm -rf dist/packages && npm run build && ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true npm run build-all",
+    "package-test": "rm -rf dist/packages && npm run build && ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true npm run build-mac",
+    "publish": "electron-builder --publish",
+    "build-all": "electron-builder --mac --win --linux",
+    "build-linux": "rm -rf dist/packages && npm run build && electron-builder --linux",
+    "build-mac": "rm -rf dist/packages && npm run build && electron-builder --mac",
+    "build-windows": "rm -rf dist/packages && rm -rf app/node_modules && rm -rf build && cp -R app/ build && electron-builder --win"
   },
   "postinstall": "electron-builder install-app-deps",
   "dependencies": {
@@ -26,8 +34,10 @@
     "copyright": "Entertainment 🎮  by Hyperbridge",
     "removePackageScripts": false,
     "generateUpdatesFilesForAllChannels": true,
+    "buildDependenciesFromSource": false,
+    "nodeGypRebuild": false,
     "detectUpdateChannel": true,
-    "compression": "normal",
+    "compression": "store",
     "directories": {
       "app": "build",
       "buildResources": "static",
@@ -43,10 +53,8 @@
       ]
     },
     "win": {
-      "asar": true,
-      "asarUnpack": [
-        "app/node_modules/scrypt/build/Release/scrypt.node"
-      ],
+      "asar": false,
+      "asarUnpack": "**\\*.node2",
       "icon": "static/Icon-512.ico",
       "target": [
         {
@@ -84,7 +92,16 @@
       "synopsis": "BlockHub",
       "category": "Entertainment"
     },
+    "appx": {
+      "identityName": "Blockhub",
+      "publisher": "CN=Hyperbridge Technology Inc, O=Hyperbridge Technology Inc, L=Talinn, S=Talinn, C=EE",
+      "publisherDisplayName": "Hyperbridge Technology Inc",
+      "backgroundColor": "#34262A"
+    },
     "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": "true",
+      "deleteAppDataOnUninstall": "true",
       "createDesktopShortcut": "always",
       "installerIcon": "static/Icon-512.ico",
       "perMachine": true,
@@ -98,5 +115,20 @@
         "repo": "blockhub-desktop-client"
       }
     ]
+  },
+  "config": {
+    "forge": {
+      "electronPackagerConfig": {
+        "icon": "static/Icon-512.ico",
+        "prune": true,
+        "ignore": [
+          ".*node_modules/fsevents/build.*",
+          "scripts",
+          ".vscode"
+        ],
+        "afterPrune": [
+        ]
+      }
+    }
   }
 }

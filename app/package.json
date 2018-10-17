@@ -1,6 +1,6 @@
 {
     "name": "blockhub-desktop-client",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "description": "BlockHub Desktop Client",
     "license": "SEE LICENSE IN LICENSE.md",
     "author": {
@@ -23,10 +23,10 @@
         "crypto": "^1.0.1",
         "electron-updater": "^3.1.2",
         "express": "^4.16.4",
-        "hyperbridge-crowdsale": "^1.0.6",
-        "hyperbridge-funding-protocol": "^1.0.6",
-        "hyperbridge-marketplace-protocol": "^1.0.7",
-        "hyperbridge-token": "^1.0.6",
+        "hyperbridge-funding-protocol": "^1.0.10",
+        "hyperbridge-marketplace-protocol": "^1.0.10",
+        "hyperbridge-reserve": "^1.0.10",
+        "hyperbridge-token": "^1.0.10",
         "json-beautify": "^1.0.1",
         "lokijs": "^1.5.5",
         "minimist": "^1.2.0",
@@ -52,7 +52,7 @@
         "@babel/preset-env": "^7.0.0",
         "@babel/preset-stage-1": "^7.0.0",
         "@babel/register": "^7.0.0",
-        "buble": "^0.19.4",
+        "buble": "^0.19.5",
         "electron": "^2.0.8"
     },
     "optionalDependencies": {}
