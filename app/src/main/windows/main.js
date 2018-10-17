@@ -428,6 +428,7 @@ export const init = (deeplinkUri, devMode, showTools) => {
         server.listen(9999, () => console.log('App is running on port 9999'))
 
         window.loadURL('http://localhost:9999/')
+        //window.loadURL(`file://${__dirname}/../../../web/index.html`)
     }
 
     if (showTools) {
