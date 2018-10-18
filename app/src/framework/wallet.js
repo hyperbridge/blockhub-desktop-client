@@ -91,12 +91,18 @@ export const getCurrentAccount = async (web3) => {
     return new Promise(async (resolve, reject) => {
         // TODO: timeout if the remote isnt online
 
-        const currentAccounts = await withTimeout(5000, web3.eth.getAccountsPromise(), reject)
+        try {
+            //const currentAccounts = await withTimeout(5000, web3.eth.getAccountsPromise(), reject)
 
-        resolve({
-            public_address: currentAccounts[0],
-            private_key: web3.currentProvider.wallets[currentAccounts[0].toLowerCase()]._privKey.toString('hex')
-        })
+            web3.eth.getAccounts((err, currentAccounts) => {
+                resolve({
+                    public_address: currentAccounts[0],
+                    private_key: web3.currentProvider.wallets[currentAccounts[0].toLowerCase()]._privKey.toString('hex')
+                })
+            })
+        } catch(e) {
+            console.log(e)
+        }
     })
 }
 
@@ -118,13 +124,15 @@ export const create = async (passphrase, index = 0) => {
     const provider = ethereum.networks[ethereum.activeNetwork].provider(passphrase, index)
     const web3 = new Web3(provider)
 
+    //provider.engine.stop()
     provider.engine._providers[2].provider.timeout = 10
+    //provider.engine._providers = [provider.engine._providers[0], provider.engine._providers[2]]
 
     Bluebird.promisifyAll(web3.eth, { suffix: 'Promise' })
 
     return new Promise(async (resolve, reject) => {
         const account = await getCurrentAccount(web3, index)
-
+        console.log(3333, account)
         resolve({
             web3,
             provider,
