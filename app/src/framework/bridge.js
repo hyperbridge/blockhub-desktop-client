@@ -5,6 +5,7 @@ import CryptoJS from 'crypto-js'
 import bip39 from 'bip39'
 import crypto from 'crypto'
 import electron from 'electron'
+// import electron, { app, BrowserWindow, Menu, ipcMain, shell, webFrame } from 'electron'
 import TokenAPI from 'hyperbridge-token'
 import ReserveAPI from 'hyperbridge-reserve'
 import FundingAPI from 'hyperbridge-funding-protocol'
@@ -91,7 +92,8 @@ export const promptPasswordRequest = async (data = {}) => {
                 data = { error: { message: 'Password was incorrect', code: 1 } }
             }
         }
-
+        console.log('passphrase')
+        console.log(local.passphrase)
         local.account.wallet = await Wallet.create(local.passphrase)
 
         // // Desktop sends back all non-sensitive account info
@@ -133,18 +135,6 @@ export const getProtocolByName = (name) => {
     }
 
     throw new Error('[DesktopBridge] Unknown protocol requested: ' + name)
-}
-
-export const getModuleByProtocol = (name) => {
-    if (name === 'funding') {
-        return 'funding'
-    } else if (name === 'marketplace') {
-        return 'marketplace'
-    } else if (name === 'reserve') {
-        return 'application'
-    } else if (name === 'token') {
-        return 'application'
-    }
 }
 
 export const setContractAddress = async ({ protocolName, contractName, address }) => {
@@ -225,15 +215,16 @@ export const createFundingProject = async ({ title, description, about }) => {
 }
 
 export const initProtocol = async ({ protocolName }) => {
+    console.log('[BlockHub] Initializing protocol: ' + protocolName)
+
     return new Promise(async (resolve) => {
         const protocol = getProtocolByName(protocolName)
-        const moduleName = getModuleByProtocol(protocolName)
-        const state = DB[moduleName].config.data[0]
+        const state = DB.application.config.data[0]
         const currentNetwork = state.current_ethereum_network
-        const config = state.ethereum[currentNetwork]
+        const config = state.ethereum[currentNetwork].packages[protocolName]
         
         const provider = new Web3.providers.HttpProvider('http://localhost:8545')
-        const web3 = new Web3(provider)
+        //const web3 = new Web3(provider)
         // const account = web3.eth.accounts.privateKeyToAccount('0x' + local.account.wallet.private_key);
         // web3.eth.accounts.wallet.add(account)
 // Exception Error: invalid address
@@ -278,47 +269,79 @@ export const initProtocol = async ({ protocolName }) => {
 
         resolve({
             currentNetwork,
-            moduleName,
             protocolName,
             config,
         })
     })
 }
 
+export const duration = {
+    seconds: function (val) { return val; },
+    minutes: function (val) { return val * this.seconds(60); },
+    hours: function (val) { return val * this.minutes(60); },
+    days: function (val) { return val * this.hours(24); },
+    weeks: function (val) { return val * this.days(7); },
+    years: function (val) { return val * this.days(365); },
+}
+
+
+
 export const deployContract = async ({ protocolName, contractName }) => {
     return new Promise(async (resolve, reject) => {
         const protocol = getProtocolByName(protocolName)
-        const state = DB[protocolName].config.data[0]
+        const state = DB.application.config.data[0]
+        const currentNetwork = state.current_ethereum_network
+        const config = state.ethereum[currentNetwork].packages[protocolName]
+        const web3 = local.account.wallet.web3
 
         if (protocolName === 'reserve' && contractName === 'TokenSale') {
-            let token = TokenAPI.api.ethereum.state.contracts.Token.at(DB.application.config.data[0].ethereum[state.current_ethereum_network].contracts.Token)
-            const eternalStorage =TokenAPI.api.ethereum.state.contracts.EternalStorage.at(DB.application.config.data[0].ethereum[state.current_ethereum_network].contracts.EternalStorage)
-            const hbxToken = TokenAPI.api.ethereum.state.contracts.TokenDelegate.at(DB.application.config.data[0].ethereum[state.current_ethereum_network].contracts.TokenDelegate)
-            const tokenLib = TokenAPI.api.ethereum.state.contracts.TokenLib.at(DB.application.config.data[0].ethereum[state.current_ethereum_network].contracts.TokenLib)
+            let token = TokenAPI.api.ethereum.state.contracts.Token.deployed
+            const eternalStorage = TokenAPI.api.ethereum.state.contracts.EternalStorage.deployed
+            const hbxToken = TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed
+            const tokenLib = TokenAPI.api.ethereum.state.contracts.TokenLib.deployed
 
             await eternalStorage.addAdmin(hbxToken.address, { from: local.account.wallet.public_address })
-            await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address })
 
-            token = { ...TokenAPI.api.ethereum.state.contracts.TokenDelegate.at(hbxToken.address), token }
+            await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address }).catch(() => {})
+
+            token = { ...TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed, token }
+
+            const tokenWallet = await Wallet.create(local.passphrase, 1000)
+            const saleWallet = await Wallet.create(local.passphrase, 1001)
+
+            const tokenSupply = web3._extend.utils.toBigNumber('1e22')
+            const tokenAllowance = web3._extend.utils.toBigNumber('1e22')
 
             // await token.setTotalSupply(tokenSupply, {from: owner3})
-            await token.mint(tokenWallet, tokenSupply, { from: local.account.wallet.public_address })
+            await token.mint(tokenWallet.public_address, tokenSupply, { from: local.account.wallet.public_address })
 
-            const openingTime = latestTime() + duration.weeks(1)
+            const latestBlock = await web3.eth.getBlockPromise('latest')
+            const openingTime = latestBlock.timestamp + duration.weeks(1)
             const closingTime = openingTime + duration.weeks(1)
             const beforeEndTime = closingTime - duration.hours(1)
             const afterClosingTime = closingTime + duration.hours(1)
+            const rate = web3._extend.utils.toBigNumber(1)
+            const cap = web3._extend.utils.toBigNumber(web3._extend.utils.toWei(100, 'ether'))
 
             // uint256 _rate, address _wallet, ERC20 _token, address _tokenWallet, uint256 _cap, uint256 _startTime, uint256 _endTime
-            const tokensale = await ReserveAPI.api.ethereum.state.contracts.TokenSale.new(
-                rate, 
-                wallet, 
-                hbxToken.address, 
-                tokenWallet, 
-                cap, 
-                openingTime, 
+            const tokensale = await ReserveAPI.api.ethereum.deployContract('TokenSale', [], [
+                rate,
+                saleWallet.public_address,
+                hbxToken.address,
+                tokenWallet.public_address,
+                cap,
+                openingTime,
                 closingTime
-            )
+            ])
+            // const tokensale = await ReserveAPI.api.ethereum.state.contracts.TokenSale.new(
+            //     rate, 
+            //     saleWallet.public_address, 
+            //     hbxToken.address, 
+            //     tokenWallet.public_address, 
+            //     cap, 
+            //     openingTime, 
+            //     closingTime
+            // )
 
             await token.approve(tokensale.address, tokenAllowance, { from: local.account.wallet.public_address })
 
@@ -326,6 +349,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
             const address = tokensale.address
 
             return resolve({
+                name: contractName,
                 created_at,
                 address
             })
@@ -334,8 +358,9 @@ export const deployContract = async ({ protocolName, contractName }) => {
         let links = []
         let params = []
 
-        if (!state.ethereum[state.current_ethereum_network].contracts[contractName]) {
-            state.ethereum[state.current_ethereum_network].contracts[contractName] = {
+        if (!config.contracts[contractName]) {
+            config.contracts[contractName] = {
+                name: contractName,
                 created_at: null,
                 address: null
             }
@@ -349,11 +374,11 @@ export const deployContract = async ({ protocolName, contractName }) => {
             links = protocol.api.ethereum.state.contracts[contractName].links
 
             for (let i in links) {
-                if (!state.ethereum[state.current_ethereum_network].contracts[links[i].name].address) {
+                if (!config.contracts[links[i].name].address) {
                     await deployContract({ protocolName, contractName: links[i].name })
                 }
 
-                links[i].address = state.ethereum[state.current_ethereum_network].contracts[links[i].name].address
+                links[i].address = config.contracts[links[i].name].address
             }
         }
 
@@ -362,12 +387,12 @@ export const deployContract = async ({ protocolName, contractName }) => {
 
             for (let i in params) {
                 // this is a contract
-                if (state.ethereum[state.current_ethereum_network].contracts[params[i]]) {
-                    if (!state.ethereum[state.current_ethereum_network].contracts[params[i]].address) {
+                if (config.contracts[params[i]]) {
+                    if (!config.contracts[params[i]].address) {
                         await deployContract({ protocolName, contractName: params[i] })
                     }
 
-                    params[i] = state.ethereum[state.current_ethereum_network].contracts[params[i]].address
+                    params[i] = config.contracts[params[i]].address
                 }
 
             }
@@ -383,7 +408,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
 
         //     if (contractName === 'FundingVault') {
         //         params = [
-        //             state.ethereum[state.current_ethereum_network].contracts.FundingStorage.address
+        //             state.contracts.FundingStorage.address
         //         ]
         //     }
 
@@ -398,7 +423,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
         //         || contractName === 'ProjectTimelineProposal'
         //         || contractName === 'ProjectTimelineProposalVoting') {
         //         params = [
-        //             state.ethereum[state.current_ethereum_network].contracts.FundingStorage.address,
+        //             state.contracts.FundingStorage.address,
         //             false
         //         ]
         //     }
@@ -407,7 +432,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
         // if (protocolName === 'application') {
         //     if (contractName !== 'EternalStorage') {
         //         params = [
-        //             state.ethereum[state.current_ethereum_network].contracts.EternalStorage.address
+        //             state.contracts.EternalStorage.address
         //         ]
         //     }
         // }
@@ -420,10 +445,10 @@ export const deployContract = async ({ protocolName, contractName }) => {
                 //     return reject()
                 // }
 
-                state.ethereum[state.current_ethereum_network].contracts[contractName].created_at = Date.now()
-                state.ethereum[state.current_ethereum_network].contracts[contractName].address = contract.address
+                config.contracts[contractName].created_at = Date.now()
+                config.contracts[contractName].address = contract.address
 
-                DB[protocolName].config.update(state)
+                DB.application.config.update(state)
                 DB.save()
                 //local.store.dispatch(protocolName + '/updateState')
 
@@ -440,7 +465,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
                     await developerContract.initialize()
 
                     let developerId = null
-                    const developerAccount = state.ethereum[state.current_ethereum_network].user_from_address
+                    const developerAccount = state.user_from_address
 
                     developerContract.DeveloperCreated().watch((err, res) => {
                         if (err) {
@@ -453,7 +478,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
                     await developerContract.createDeveloper('Hyperbridge', { from: developerAccount })
                 }
 
-                resolve(state.ethereum[state.current_ethereum_network].contracts[contractName])
+                resolve(config.contracts[contractName])
             })
     })
 }
@@ -985,6 +1010,77 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'createIdentityRequest') {
             resultData = await createIdentityRequest(cmd.data)
             resultKey = 'createIdentityResponse'
+        } else if (cmd.key === 'fetchFrameData') {
+            const { url, script } = cmd.data
+
+
+            function onWindowLoad() {
+                const script = document.createElement("script");
+                script.src = "https://code.jquery.com/jquery-2.2.4.min.js";
+                script.type = 'text/javascript';
+
+                script.onload = script.onreadystatechange = function () {
+                    console.log("script loaded!");
+
+                    exec(script)
+                    // if ($(".track-list").length) {
+                    //     console.log("Got content we want!");
+                    //     $(".track-list li").each(function () {
+                    //         console.log($(this).text());
+                    //     });
+
+                    //     console.log("Rebooting tor and refreshing...");
+
+                    //     exec("killall -HUP tor", (error, stdout, stderr) => {
+                    //         setTimeout(() => location.reload(), 5000);
+                    //     });
+                    // } else {
+                    //     console.log("Got a captcha...waiting for input...");
+                    //     $("body").append("<audio id='chome'><source src='http://code.setfive.com/scraper_demo/ding.mp3' type='audio/mpeg'></audio>");
+                    //     $("#chome").get(0).play();
+                    // }
+
+                };
+            }
+
+                document.body.appendChild(script);
+
+            const requestedWindow = new BrowserWindow({
+                width: 0,
+                height: 0,
+                minWidth: 0,
+                minHeight: 0,
+                resizable: false,
+                frame: false,
+                show: false,
+                backgroundColor: '#30314c',
+                webPreferences: {
+                    preload: path.join(__dirname, '../main/preload.js'),
+                    experimentalFeatures: false,
+                    nodeIntegration: false,
+                    nodeIntegrationInWorker: false,
+                    webSecurity: false
+                }
+            })
+
+            const onHeadersReceived = (d, c) => {
+                if (d.responseHeaders['x-frame-options']) {
+                    delete d.responseHeaders['x-frame-options']
+                }
+
+                c({ cancel: false, responseHeaders: d.responseHeaders })
+            }
+
+            requestedWindow.webContents.session.webRequest.onHeadersReceived({ urls: [] }, onHeadersReceived)
+
+            requestedWindow.webContents.once('did-finish-load', () => {
+                mainWindow.webContents.executeJavaScript(onWindowLoad.toString() + '; onWindowLoad();')
+            })
+
+            requestedWindow.webContents.loadURL(url)
+
+
+            //<iframe src="https://bittrex.com/Home/Markets" width="0" height="0" ref={(ref) => this.marketFrameRef = ref}></iframe>
         } else if (cmd.key === 'showContextMenuRequest') {
             const electron = require('electron')
             const Menu = electron.Menu

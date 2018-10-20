@@ -72,6 +72,7 @@ export const initApp = () => {
   powerSaveBlocker.start('prevent-app-suspension')
 
   app.commandLine.appendSwitch('page-visibility')
+  app.commandLine.appendSwitch('disable-web-security')
   app.commandLine.appendSwitch('disable-renderer-backgrounding')
   app.commandLine.appendSwitch('disable-background-timer-throttling')
   app.commandLine.appendSwitch('force-color-profile', 'srgb')
@@ -149,7 +150,7 @@ export const initApp = () => {
       if (deeplinkUri.startsWith('go')) {
 
       } else {
-        Windows.main.loadURL('http://localhost:8000/' + deeplinkUri)
+        Windows.main.webContents.loadURL('http://localhost:8000/' + deeplinkUri)
       }
     })
   }
