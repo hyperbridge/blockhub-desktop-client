@@ -404,17 +404,33 @@ export const init = (deeplinkUri, devMode, showTools) => {
         minHeight: 500,
         resizable: true,
         frame: false,
+        show: false,
         icon: __dirname + 'static/Icon-512.icns',
         scrollBounce: true,
+        backgroundColor: '#30314c',
         webPreferences: {
             preload: path.join(__dirname, '../preload.js'),
             zoomFactor: 0,
-            experimentalFeatures: true
+            experimentalFeatures: true,
+            nodeIntegration: false,
+            webSecurity: false
         }
     })
 
     window.webContents.on('will-navigate', ensureLinksOpenInBrowser)
     window.webContents.on('new-window', ensureLinksOpenInBrowser)
+
+
+    window.webContents.once('did-finish-load', () => {
+        initMenu()
+        window.setMenu(null)
+        window.setTitle('BlockHub')
+
+        //if (config.IS_PRODUCTION) {
+            window.show()
+            window.focus()
+        //}
+    })
 
     if (devMode) {
         window.webContents.loadURL('http://localhost:8000/')
@@ -432,19 +448,8 @@ export const init = (deeplinkUri, devMode, showTools) => {
     }
 
     if (showTools) {
-        window.webContents.openDevTools()
+        window.webContents.openDevTools({ mode: "detach" })
     }
-
-    window.webContents.on('did-finish-load', () => {
-        initMenu()
-        window.setMenu(null)
-        window.setTitle('BlockHub')
-
-        if (config.IS_PRODUCTION) {
-            window.show()
-            window.focus()
-        }
-    })
 
     // Emitted when the window is closed.
     window.on('closed', function () {
@@ -453,6 +458,12 @@ export const init = (deeplinkUri, devMode, showTools) => {
         // when you should delete the corresponding element.
         window = null
     })
+
+    
+    // window.on('ready-to-show', function () {
+    //     mainWindow.show()
+    //     mainWindow.focus()
+    // })
     // window.once('ready-to-show', () => {
     //     window.webContents.setZoomFactor(1.01);
     // })
