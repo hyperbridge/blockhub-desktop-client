@@ -110,11 +110,18 @@ export const promptPasswordRequest = async (data = {}) => {
 
 export const createIdentityRequest = () => {
     return new Promise(async (resolve, reject) => {
-        const id = DB.application.config.data[0].account.identity_index || 1
+        const id = (DB.application.config.data[0].account.identity_index || 10) +1
         const identity = await Wallet.create(local.passphrase, id)
 
-        DB.application.config.data[0].account.identity_index = id + 1
+        DB.application.config.data[0].account.identities.push({
+            id,
+            public_address: identity.public_address
+        })
+
+        DB.application.config.data[0].account.identity_index = id
         DB.save()
+
+        await saveAccountFile()
 
         resolve({
             id: id,
@@ -214,6 +221,41 @@ export const createFundingProject = async ({ title, description, about }) => {
     })
 }
 
+export const createMarketplaceProduct = async (product) => {
+    return new Promise(async (resolve, reject) => {
+        const productRegistrationContract = MarketplaceAPI.api.ethereum.state.contracts.ProductRegistration.deployed
+
+        productRegistrationContract.ProductCreated().watch((err, res) => {
+            if (err) {
+                console.warn('[BlockHub][Marketplace] Error', err)
+
+                return reject(err)
+            }
+
+            product.$loki = undefined
+            product.id = res.args.productId.toNumber()
+
+            try {
+                DB.marketplace.products.insert(product)
+            } catch (e) {
+                try {
+                    DB.marketplace.products.update(product)
+                } catch (e) {
+                    reject(e)
+                }
+            }
+
+            resolve(product)
+        })
+
+        await productRegistrationContract.createProduct(
+            product.name,
+            product.type,
+            product.content
+        )
+    })
+}
+
 export const initProtocol = async ({ protocolName }) => {
     console.log('[BlockHub] Initializing protocol: ' + protocolName)
 
@@ -299,11 +341,11 @@ export const deployContract = async ({ protocolName, contractName }) => {
             const eternalStorage = TokenAPI.api.ethereum.state.contracts.EternalStorage.deployed
             const hbxToken = TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed
             const tokenLib = TokenAPI.api.ethereum.state.contracts.TokenLib.deployed
-
+console.log(555)
             await eternalStorage.addAdmin(hbxToken.address, { from: local.account.wallet.public_address })
-
+            console.log(666)
             await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address }).catch(() => {})
-
+            console.log(777)
             token = { ...TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed, token }
 
             const tokenWallet = await Wallet.create(local.passphrase, 1000)
@@ -311,7 +353,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
 
             const tokenSupply = web3._extend.utils.toBigNumber('1e22')
             const tokenAllowance = web3._extend.utils.toBigNumber('1e22')
-
+            console.log(888)
             // await token.setTotalSupply(tokenSupply, {from: owner3})
             await token.mint(tokenWallet.public_address, tokenSupply, { from: local.account.wallet.public_address })
 
@@ -322,7 +364,7 @@ export const deployContract = async ({ protocolName, contractName }) => {
             const afterClosingTime = closingTime + duration.hours(1)
             const rate = web3._extend.utils.toBigNumber(1)
             const cap = web3._extend.utils.toBigNumber(web3._extend.utils.toWei(100, 'ether'))
-
+            console.log(999)
             // uint256 _rate, address _wallet, ERC20 _token, address _tokenWallet, uint256 _cap, uint256 _startTime, uint256 _endTime
             const tokensale = await ReserveAPI.api.ethereum.deployContract('TokenSale', [], [
                 rate,
@@ -347,6 +389,12 @@ export const deployContract = async ({ protocolName, contractName }) => {
 
             const created_at = Date.now()
             const address = tokensale.address
+
+            config.contracts[contractName].created_at = created_at
+            config.contracts[contractName].address = address
+
+            DB.application.config.update(state)
+            DB.save()
 
             return resolve({
                 name: contractName,
@@ -739,23 +787,47 @@ export const sendTransactionRequest = async ({ fromAddress, toAddress, amount, t
             title: 'Confirm Transaction',
             type: 'question',
             buttons: ['OK', 'Cancel'],
-            message: `Sending ${amount} ETH to address ${toAddress} from ${fromAddress}. 
-            Once this transaction is sent it cannot be reversed. 
-            Are you sure you want to send?`
+            message: `Sending: ${amount} ETH
+
+From: ${fromAddress}
+
+To: ${toAddress}
+
+Once this transaction is sent it cannot be reversed. 
+
+Are you sure you want to send?`
         }
 
         electron.dialog.showMessageBox(Windows.main.window, options, async (res) => {
             if (res === 0) {
-                const transactionHash = await local.account.wallet.web3.eth.sendTransactionPromise({
+                console.log(fromAddress.toLowerCase())
+                console.log(DB.application.config.data[0].account.identities)
+                
+                const walletIndex = DB.application.config.data[0].account.identities.find((identity) => fromAddress.toLowerCase() === identity.public_address.toLowerCase()).id
+                console.log(walletIndex, local.passphrase)
+                const wallet = await Wallet.create(local.passphrase, walletIndex)
+                const web3 = wallet.web3
+
+                web3.eth.sendTransaction({
                     to: toAddress,
                     from: fromAddress,
-                    value: web3.toWei(amount, 'ether')
-                })
+                    value: web3._extend.utils.toWei(amount, 'ether')
+                }, (err, transactionHash) => {
+                    if (err) {
+                        return resolve({
+                            success: false,
+                            message: 'Error occurred: ' + err
+                        })
+                    }
 
-                resolve({
-                    success: true,
-                    transactionHash: transactionHash
+                    resolve({
+                        success: true,
+                        transactionHash: transactionHash
+                    })
                 })
+                    // .catch((e) => {
+                    
+                    // })
             } else {
                 resolve({
                     success: false,
@@ -784,13 +856,13 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
             first_name: encrypt(first_name, account.private_key),
             last_name: encrypt(last_name, account.private_key),
             birthday: encrypt(birthday, account.private_key),
-            identity_index: 1,
+            identity_index: 10,
             current_identity: {
-                id: 1
+                id: 10
             },
             identities: [
                 {
-                    id: 1,
+                    id: 10,
                     name: 'Default',
                     public_address: identity.public_address,
                     private_key: encrypt(identity.private_key, password),
@@ -816,11 +888,11 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
                 secret_question_1: secret_question_1,
                 secret_question_2: secret_question_2,
                 current_identity: {
-                    id: 1
+                    id: 10
                 },
                 identities: [
                     {
-                        id: 1,
+                        id: 10,
                         name: 'Default',
                         public_address: identity.public_address
                     }
@@ -877,7 +949,7 @@ export const maximizeWindow = () => {
 }
 
 export const runCommand = async (cmd, meta = {}) => {
-    console.log('[DesktopBridge] Running command', cmd.key, cmd.data)
+    console.log('[DesktopBridge] Running command', cmd.key, cmd)
 
     return new Promise(async (resolve, reject) => {
         if (cmd.responseId) {
@@ -1010,46 +1082,72 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'createIdentityRequest') {
             resultData = await createIdentityRequest(cmd.data)
             resultKey = 'createIdentityResponse'
-        } else if (cmd.key === 'fetchFrameData') {
-            const { url, script } = cmd.data
+        } else if (cmd.key === 'createMarketplaceProductRequest') {
+            resultData = await createMarketplaceProduct(cmd.data)
+            resultKey = 'createMarketplaceProductResponse'
+        } else if (cmd.key === 'createFundingProjectRequest') {
+            resultData = await createFundingProject(cmd.data)
+            resultKey = 'createFundingProjectResponse'
+        } else if (cmd.key === 'error') {
+            console.log('[BlockHub] Web Error: ', cmd.data)
 
+            resultData = {}
+            resultKey = 'errorResponse'
+        } else if (cmd.key === 'getWebData') {
+            const { url } = cmd.data
 
-            function onWindowLoad() {
-                const script = document.createElement("script");
-                script.src = "https://code.jquery.com/jquery-2.2.4.min.js";
+            function onWindowLoad(requestId) {
+                const script = document.createElement('script');
+                script.src = 'https://code.jquery.com/jquery-2.2.4.min.js';
                 script.type = 'text/javascript';
 
                 script.onload = script.onreadystatechange = function () {
-                    console.log("script loaded!");
+                    let fetchers = {
+                        steam: () => {
+                            return {
+                                productTitle: $('.apphub_AppName').text(),
+                                productDescription: $('.game_description_snippet').text(),
+                                developers: $('.developers_list'),
+                                publishers: []
+                            }
+                        },
+                        gog: () => {
 
-                    exec(script)
-                    // if ($(".track-list").length) {
-                    //     console.log("Got content we want!");
-                    //     $(".track-list li").each(function () {
-                    //         console.log($(this).text());
-                    //     });
+                        },
+                        itch: () => {
 
-                    //     console.log("Rebooting tor and refreshing...");
+                        }
+                    }
 
-                    //     exec("killall -HUP tor", (error, stdout, stderr) => {
-                    //         setTimeout(() => location.reload(), 5000);
-                    //     });
-                    // } else {
-                    //     console.log("Got a captcha...waiting for input...");
-                    //     $("body").append("<audio id='chome'><source src='http://code.setfive.com/scraper_demo/ding.mp3' type='audio/mpeg'></audio>");
-                    //     $("#chome").get(0).play();
-                    // }
+                    let fetcherType = null
 
+                    if (window.location.hostname.indexOf('steampowered.com'))
+                        fetcherType = 'steam'
+                    else if (window.location.hostname.indexOf('gog.com'))
+                        fetcherType = 'gog'
+                    else if (window.location.hostname.indexOf('itch.io'))
+                        fetcherType = 'itch'
+                    else {
+                        // fail
+                    }
+
+                    const fetcher = fetchers[fetcherType]
+
+                    const cmd = {
+                        key: 'resolveCallback',
+                        responseId: requestId,
+                        data: fetcher()
+                    }
+
+                    window.desktopBridge.send('command', JSON.stringify(cmd))
                 };
-            }
 
                 document.body.appendChild(script);
+            }
 
-            const requestedWindow = new BrowserWindow({
+            const requestedWindow = new electron.BrowserWindow({
                 width: 0,
                 height: 0,
-                minWidth: 0,
-                minHeight: 0,
                 resizable: false,
                 frame: false,
                 show: false,
@@ -1063,10 +1161,25 @@ export const runCommand = async (cmd, meta = {}) => {
                 }
             })
 
+            requestedWindow.webContents.session.webRequest.onBeforeSendHeaders({ urls: [] }, (details, callback) => {
+                details.requestHeaders['Connection'] = 'keep-alive'
+                details.requestHeaders['Pragma'] = 'no-cache'
+                details.requestHeaders['Cache-Control'] = 'no-cache'
+                details.requestHeaders['Upgrade-Insecure-Requests'] = '1'
+                details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
+                details.requestHeaders['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
+                details.requestHeaders['Accept-Encoding'] = 'gzip, deflate, br'
+                details.requestHeaders['Accept-Language'] = 'en-US,en;q=0.9'
+                // No Cookie?
+
+                callback({ cancel: false, requestHeaders: details.requestHeaders })
+            })
+
             const onHeadersReceived = (d, c) => {
-                if (d.responseHeaders['x-frame-options']) {
+                if (d.responseHeaders['x-frame-options'])
                     delete d.responseHeaders['x-frame-options']
-                }
+                if (d.responseHeaders['Content-Security-Policy'])
+                    delete d.responseHeaders['Content-Security-Policy']
 
                 c({ cancel: false, responseHeaders: d.responseHeaders })
             }
@@ -1074,13 +1187,25 @@ export const runCommand = async (cmd, meta = {}) => {
             requestedWindow.webContents.session.webRequest.onHeadersReceived({ urls: [] }, onHeadersReceived)
 
             requestedWindow.webContents.once('did-finish-load', () => {
-                mainWindow.webContents.executeJavaScript(onWindowLoad.toString() + '; onWindowLoad();')
+                requestedWindow.webContents.executeJavaScript(`(${onWindowLoad.toString()})("${cmd.requestId}");`)
             })
 
             requestedWindow.webContents.loadURL(url)
 
+            //requestedWindow.webContents.openDevTools({ mode: "detach" })
 
-            //<iframe src="https://bittrex.com/Home/Markets" width="0" height="0" ref={(ref) => this.marketFrameRef = ref}></iframe>
+            local.requests[cmd.requestId] = {
+                resolve: async (data) => {
+                    requestedWindow.close()
+
+                    return resolve(await sendCommand('getWebDataResponse', data, meta.client, cmd.requestId))
+                },
+                reject
+            }
+
+            return // Return unresolved, let the injected script resolve
+        } else if (cmd.key === 'resolveCallback') {
+            local.requests[cmd.responseId].resolve(cmd.data)
         } else if (cmd.key === 'showContextMenuRequest') {
             const electron = require('electron')
             const Menu = electron.Menu

@@ -125,14 +125,14 @@ export const create = async (passphrase, index = 0) => {
     const web3 = new Web3(provider)
 
     //provider.engine.stop()
-    provider.engine._providers[2].provider.timeout = 10
+    //provider.engine._providers[2].provider.timeout = 10
     //provider.engine._providers = [provider.engine._providers[0], provider.engine._providers[2]]
 
     Bluebird.promisifyAll(web3.eth, { suffix: 'Promise' })
 
     return new Promise(async (resolve, reject) => {
         const account = await getCurrentAccount(web3, index)
-        console.log(3333, account)
+
         resolve({
             web3,
             provider,

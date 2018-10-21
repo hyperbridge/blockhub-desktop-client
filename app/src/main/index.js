@@ -1,5 +1,5 @@
 import path from 'path'
-import { app, BrowserWindow, Menu, ipcMain, shell, webFrame } from 'electron'
+import { app, BrowserWindow, Menu, ipcMain, shell, webFrame, session } from 'electron'
 
 import * as DB from '../db'
 import * as Security from '../framework/security'
@@ -162,6 +162,14 @@ export const initApp = () => {
   app.setName('BlockHub')
 
   app.on('ready', () => {
+    session.defaultSession.webRequest.onBeforeRequest({}, (details, callback) => {
+      if (details.url.indexOf('7accc8730b0f99b5e7c0702ea89d1fa7c17bfe33') !== -1) {
+        callback({ redirectURL: details.url.replace('7accc8730b0f99b5e7c0702ea89d1fa7c17bfe33', '57c9d07b416b5a2ea23d28247300e4af36329bdc') });
+      } else {
+        callback({ cancel: false });
+      }
+    });
+
     DB.init()
     Windows.main.init(deeplinkUri, !config.IS_PRODUCTION, argv.tools)
     DesktopBridge.init(Windows.main.window.webContents)

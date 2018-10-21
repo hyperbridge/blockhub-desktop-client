@@ -8,6 +8,12 @@ function init() {
     delete window.require
     delete window.exports
     delete window.module
+
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     window.desktopBridge.send('command', JSON.stringify({
+    //         key: 'ready'
+    //     }))
+    // });
 }
 
 init()
