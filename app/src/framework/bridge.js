@@ -256,6 +256,26 @@ export const createMarketplaceProduct = async (product) => {
     })
 }
 
+export const createDeveloperRequest = async (profile) => {
+    return new Promise(async (resolve, reject) => {
+        const developerContract = MarketplaceAPI.api.ethereum.state.contracts.Developer.deployed
+        
+        let watcher = developerContract.DeveloperCreated().watch(function (error, result) {
+            watcher.stopWatching()
+
+            if (!error) {
+                developerId = result.args.developerId.toNumber()
+
+                resolve(developerId)
+            }
+            
+            reject()
+        })
+
+        developerContract.createDeveloper(profile.name, { from: profile.public_address })
+    })
+}
+
 export const initProtocol = async ({ protocolName }) => {
     console.log('[BlockHub] Initializing protocol: ' + protocolName)
 
@@ -499,6 +519,15 @@ console.log(555)
                 DB.application.config.update(state)
                 DB.save()
                 //local.store.dispatch(protocolName + '/updateState')
+
+                if (protocolName === 'marketplace' && contractName === 'Developer') {
+                    const blankAddress = 0x0000000000000000000000000000000000000000
+                    const developerContract = protocol.api.ethereum.state.contracts.Developer.deployed
+                    const marketplaceStorage = protocol.api.ethereum.state.contracts.MarketplaceStorage.deployed
+                    console.log(developerContract.address)
+                    await marketplaceStorage.registerContract("Developer", blankAddress, developerContract.address)
+                    await developerContract.initialize()
+                }
 
                 if (protocolName === 'funding' && contractName === 'ProjectRegistration') {
                     const blankAddress = 0x0000000000000000000000000000000000000000
@@ -1088,12 +1117,15 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'createFundingProjectRequest') {
             resultData = await createFundingProject(cmd.data)
             resultKey = 'createFundingProjectResponse'
+        } else if (cmd.key === 'createDeveloperRequest') {
+            resultData = await createDeveloperRequest(cmd.data)
+            resultKey = 'createDeveloperResponse'
         } else if (cmd.key === 'error') {
             console.log('[BlockHub] Web Error: ', cmd.data)
 
             resultData = {}
             resultKey = 'errorResponse'
-        } else if (cmd.key === 'getWebData') {
+        } else if (cmd.key === 'fetchPageDataRequest') {
             const { url } = cmd.data
 
             function onWindowLoad(requestId) {
@@ -1198,7 +1230,7 @@ export const runCommand = async (cmd, meta = {}) => {
                 resolve: async (data) => {
                     requestedWindow.close()
 
-                    return resolve(await sendCommand('getWebDataResponse', data, meta.client, cmd.requestId))
+                    return resolve(await sendCommand('fetchPageDataResponse', data, meta.client, cmd.requestId))
                 },
                 reject
             }

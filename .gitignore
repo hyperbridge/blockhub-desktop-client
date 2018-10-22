@@ -2,6 +2,8 @@
 
 app/account.json
 
+.node-xmlhttprequest-*
+
 # dependencies
 node_modules
 

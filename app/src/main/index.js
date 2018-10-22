@@ -29,7 +29,7 @@ export const onException = (err) => {
     return
   }
 
-  DesktopBridge.sendCommand('systemError', err.stack || err)
+  DesktopBridge.sendCommand('systemError', err.toString().slice(0, 50))
 }
 
 export const initProcess = () => {
