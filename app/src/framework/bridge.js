@@ -108,7 +108,7 @@ export const promptPasswordRequest = async (data = {}) => {
     })
 }
 
-export const createIdentityRequest = () => {
+export const createIdentityRequest = (identity) => {
     return new Promise(async (resolve, reject) => {
         const id = (DB.application.config.data[0].account.identity_index || 10) +1
         const identity = await Wallet.create(local.passphrase, id)
@@ -129,6 +129,21 @@ export const createIdentityRequest = () => {
         })
     })
 }
+
+export const saveIdentityRequest = (identity) => {
+    return new Promise(async (resolve, reject) => {
+        const origIdentity = DB.application.config.data[0].account.identities.find(i => i.id === identity.id)
+
+        origIdentity.name = identity.name
+        
+        DB.save()
+
+        await saveAccountFile()
+
+        resolve(origIdentity)
+    })
+}
+
 
 export const getProtocolByName = (name) => {
     if (name === 'funding') {
@@ -256,23 +271,62 @@ export const createMarketplaceProduct = async (product) => {
     })
 }
 
-export const createDeveloperRequest = async (profile) => {
+export const createDeveloperRequest = async (identity) => {
     return new Promise(async (resolve, reject) => {
+        const web3 = local.account.wallet.web3
         const developerContract = MarketplaceAPI.api.ethereum.state.contracts.Developer.deployed
-        
+
+        identity = DB.application.config.data[0].account.identities.filter(i => i.id === identity.id)[0]
+
         let watcher = developerContract.DeveloperCreated().watch(function (error, result) {
-            watcher.stopWatching()
-
             if (!error) {
-                developerId = result.args.developerId.toNumber()
+                identity.developer_id = result.args.developerId.toNumber()
 
-                resolve(developerId)
+                DB.save()
+
+
+                saveAccountFile().then()
+
+                return resolve(identity.developer_id)
             }
             
-            reject()
+            return reject(error)
         })
 
-        developerContract.createDeveloper(profile.name, { from: profile.public_address })
+        try {
+            await developerContract.createDeveloper(identity.name, { from: identity.public_address })
+
+            watcher.stopWatching(() => {
+                // Must be async or tries to launch nasty process
+            })
+        } catch (error) {
+            watcher.stopWatching(() => {
+                // Must be async or tries to launch nasty process
+            })
+
+            if (error.toString().indexOf('already a developer') !== -1) {
+                console.log("Already a developer, finding ID")
+
+                const developerContract = MarketplaceAPI.api.ethereum.state.contracts.Developer.deployed
+                const marketplaceStorage = MarketplaceAPI.api.ethereum.state.contracts.MarketplaceStorage.deployed //await developerContract.marketplaceStorage()
+
+                let developerId = await marketplaceStorage.getUint(web3.sha3(web3._extend.utils.toHex("developer.developerMap") + identity.public_address.replace('0x', ''), { encoding: 'hex' }));
+
+                if (developerId && developerId.toNumber()) {
+                    identity.developer_id = developerId.toNumber()
+
+                    DB.save()
+
+                    await saveAccountFile()
+
+                    return resolve(identity.developer_id)
+                } else {
+                    return reject(error.toString())
+                }
+            }
+
+            return reject(error.toString())
+        }
     })
 }
 
@@ -584,7 +638,8 @@ export const setAccountRequest = async () => {
                 identities: account.identities.map(identity => ({
                     id: identity.id,
                     name: identity.name,
-                    public_address: identity.public_address
+                    public_address: identity.public_address,
+                    developer_id: identity.developer_id
                 }))
             }
         } else {
@@ -777,6 +832,8 @@ export const deleteAccountRequest = async (data) => {
 export const saveAccountFile = async () => {
     return new Promise(async (resolve) => {
         const path = electron.app.getPath('userData')
+
+        console.log(DB.application.config.data[0].account)
 
         saveFile(path + '/account.json', JSON.stringify(DB.application.config.data[0].account))
 
@@ -1111,6 +1168,9 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'createIdentityRequest') {
             resultData = await createIdentityRequest(cmd.data)
             resultKey = 'createIdentityResponse'
+        } else if (cmd.key === 'saveIdentityRequest') {
+            resultData = await saveIdentityRequest(cmd.data)
+            resultKey = 'saveIdentityResponse'
         } else if (cmd.key === 'createMarketplaceProductRequest') {
             resultData = await createMarketplaceProduct(cmd.data)
             resultKey = 'createMarketplaceProductResponse'
