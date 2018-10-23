@@ -398,10 +398,10 @@ export const ensureLinksOpenInBrowser = (event, url) => {
 
 export const init = (deeplinkUri, devMode, showTools) => {
     window = new BrowserWindow({
-        width: 500,
-        height: 700,
-        minWidth: 1200,
-        minHeight: 500,
+        width: 1200,
+        height: 800,
+        minWidth: 420,
+        minHeight: 300,
         resizable: true,
         frame: false,
         show: false,

@@ -236,7 +236,7 @@ export const createFundingProject = async ({ title, description, about }) => {
     })
 }
 
-export const createMarketplaceProduct = async (product) => {
+export const createMarketplaceProductRequest = async ({ profile, product }) => {
     return new Promise(async (resolve, reject) => {
         const productRegistrationContract = MarketplaceAPI.api.ethereum.state.contracts.ProductRegistration.deployed
 
@@ -266,8 +266,13 @@ export const createMarketplaceProduct = async (product) => {
         await productRegistrationContract.createProduct(
             product.name,
             product.type,
-            product.content
+            product.content,
+            { from: profile.public_address }
         )
+
+        watcher.stopWatching(() => {
+            // Must be async or tries to launch nasty process
+        })
     })
 }
 
@@ -578,9 +583,21 @@ console.log(555)
                     const blankAddress = 0x0000000000000000000000000000000000000000
                     const developerContract = protocol.api.ethereum.state.contracts.Developer.deployed
                     const marketplaceStorage = protocol.api.ethereum.state.contracts.MarketplaceStorage.deployed
-                    console.log(developerContract.address)
+
                     await marketplaceStorage.registerContract("Developer", blankAddress, developerContract.address)
                     await developerContract.initialize()
+                }
+
+                if (protocolName === 'marketplace' && contractName === 'ProductRegistration') {
+                    const blankAddress = 0x0000000000000000000000000000000000000000
+                    const marketplaceStorage = protocol.api.ethereum.state.contracts.MarketplaceStorage.deployed
+                    const productRegistrationContract = protocol.api.ethereum.state.contracts.ProductRegistration.deployed
+
+                    await marketplaceStorage.registerContract("ProductRegistration", blankAddress, productRegistrationContract.address);
+                    await productRegistrationContract.initialize();
+
+                    const developerContract = protocol.api.ethereum.state.contracts.Developer.deployed
+                    await marketplaceStorage.registerContract("Developer", blankAddress, developerContract.address);
                 }
 
                 if (protocolName === 'funding' && contractName === 'ProjectRegistration') {
@@ -902,7 +919,7 @@ Are you sure you want to send?`
                     if (err) {
                         return resolve({
                             success: false,
-                            message: 'Error occurred: ' + err
+                            message: err
                         })
                     }
 
@@ -1078,8 +1095,10 @@ export const runCommand = async (cmd, meta = {}) => {
                         await promptPasswordRequest()
 
                     } else {
-                        // Passphrase was already decrypted
-                        local.passphrase = DB.application.config.data[0].account.passphrase
+                        // Passphrase was already decrypted and not already set (incase reloading page)
+                        if (!local.passphrase) {
+                            local.passphrase = DB.application.config.data[0].account.passphrase
+                        }
                     }
 
                     maximizeWindow()
@@ -1172,7 +1191,7 @@ export const runCommand = async (cmd, meta = {}) => {
             resultData = await saveIdentityRequest(cmd.data)
             resultKey = 'saveIdentityResponse'
         } else if (cmd.key === 'createMarketplaceProductRequest') {
-            resultData = await createMarketplaceProduct(cmd.data)
+            resultData = await createMarketplaceProductRequest(cmd.data)
             resultKey = 'createMarketplaceProductResponse'
         } else if (cmd.key === 'createFundingProjectRequest') {
             resultData = await createFundingProject(cmd.data)
@@ -1186,63 +1205,15 @@ export const runCommand = async (cmd, meta = {}) => {
             resultData = {}
             resultKey = 'errorResponse'
         } else if (cmd.key === 'fetchPageDataRequest') {
-            const { url } = cmd.data
+            const { url, script } = cmd.data
 
-            function onWindowLoad(requestId) {
-                const script = document.createElement('script');
-                script.src = 'https://code.jquery.com/jquery-2.2.4.min.js';
-                script.type = 'text/javascript';
-
-                script.onload = script.onreadystatechange = function () {
-                    let fetchers = {
-                        steam: () => {
-                            return {
-                                productTitle: $('.apphub_AppName').text(),
-                                productDescription: $('.game_description_snippet').text(),
-                                developers: $('.developers_list'),
-                                publishers: []
-                            }
-                        },
-                        gog: () => {
-
-                        },
-                        itch: () => {
-
-                        }
-                    }
-
-                    let fetcherType = null
-
-                    if (window.location.hostname.indexOf('steampowered.com'))
-                        fetcherType = 'steam'
-                    else if (window.location.hostname.indexOf('gog.com'))
-                        fetcherType = 'gog'
-                    else if (window.location.hostname.indexOf('itch.io'))
-                        fetcherType = 'itch'
-                    else {
-                        // fail
-                    }
-
-                    const fetcher = fetchers[fetcherType]
-
-                    const cmd = {
-                        key: 'resolveCallback',
-                        responseId: requestId,
-                        data: fetcher()
-                    }
-
-                    window.desktopBridge.send('command', JSON.stringify(cmd))
-                };
-
-                document.body.appendChild(script);
-            }
 
             const requestedWindow = new electron.BrowserWindow({
-                width: 0,
-                height: 0,
+                width: 330,
+                height: 330,
                 resizable: false,
                 frame: false,
-                show: false,
+                show: true,
                 backgroundColor: '#30314c',
                 webPreferences: {
                     preload: path.join(__dirname, '../main/preload.js'),
@@ -1278,13 +1249,13 @@ export const runCommand = async (cmd, meta = {}) => {
 
             requestedWindow.webContents.session.webRequest.onHeadersReceived({ urls: [] }, onHeadersReceived)
 
-            requestedWindow.webContents.once('did-finish-load', () => {
-                requestedWindow.webContents.executeJavaScript(`(${onWindowLoad.toString()})("${cmd.requestId}");`)
+            requestedWindow.webContents.once('did-finish-load', () => {console.log("FINISHED LOAD");
+                requestedWindow.webContents.executeJavaScript(`(${script})("${cmd.requestId}");`)
             })
 
             requestedWindow.webContents.loadURL(url)
 
-            //requestedWindow.webContents.openDevTools({ mode: "detach" })
+            requestedWindow.webContents.openDevTools({ mode: "detach" })
 
             local.requests[cmd.requestId] = {
                 resolve: async (data) => {
