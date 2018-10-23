@@ -144,6 +144,22 @@ export const saveIdentityRequest = (identity) => {
     })
 }
 
+export const removeIdentityRequest = (identity) => {
+    return new Promise(async (resolve, reject) => {
+        const origIdentity = DB.application.config.data[0].account.identities.find(i => i.id === identity.id)
+
+        const index = DB.application.config.data[0].account.identities.indexOf(origIdentity)
+        DB.application.config.data[0].account.identities.splice(index, 1)
+
+        DB.save()
+
+        await saveAccountFile()
+
+        resolve()
+    })
+}
+
+
 
 export const getProtocolByName = (name) => {
     if (name === 'funding') {
