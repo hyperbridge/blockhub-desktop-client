@@ -1297,6 +1297,18 @@ export const runCommand = async (cmd, meta = {}) => {
                     }
                 },
                 {
+                    label: 'Forward',
+                    click() {
+                        Windows.main.window.webContents.goForward()
+                    }
+                },
+                {
+                    label: 'Reload',
+                    click() {
+                        Windows.main.window.webContents.reloadIgnoringCache()
+                    }
+                },
+                {
                     type: 'separator'
                 },
                 {
@@ -1332,6 +1344,10 @@ export const runCommand = async (cmd, meta = {}) => {
             ]
 
             if (!config.IS_PRODUCTION) {
+                template.push({
+                    type: 'separator'
+                })
+
                 template.push({
                     label: 'Inspect',
                     click() {
