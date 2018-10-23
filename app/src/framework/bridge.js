@@ -1206,6 +1206,9 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'saveIdentityRequest') {
             resultData = await saveIdentityRequest(cmd.data)
             resultKey = 'saveIdentityResponse'
+        } else if (cmd.key === 'removeIdentityRequest') {
+            resultData = await removeIdentityRequest(cmd.data)
+            resultKey = 'removeIdentityResponse'
         } else if (cmd.key === 'createMarketplaceProductRequest') {
             resultData = await createMarketplaceProductRequest(cmd.data)
             resultKey = 'createMarketplaceProductResponse'
