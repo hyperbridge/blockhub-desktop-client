@@ -804,7 +804,7 @@ export const exportAccountFileRequest = async (data) => {
     return new Promise(async (resolve, reject) => {
         const content = JSON.stringify(DB.application.config.data[0].account)
 
-        electron.dialog.showSaveDialog((fileName) => {
+        electron.dialog.showSaveDialog({ defaultPath: "*/account.json" }, (fileName) => {
             if (fileName === undefined) {
                 return reject("The file wasn't saved")
             }
