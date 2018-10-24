@@ -113,6 +113,8 @@ export const clean = () => {
 }
 
 const updateCollection = (collection, data) => {
+    if (!data) return
+    
     collection.data = data
   // let obj = collection.findObject({
   //   'id': data.id

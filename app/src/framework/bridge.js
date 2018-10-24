@@ -256,7 +256,13 @@ export const createMarketplaceProductRequest = async ({ profile, product }) => {
     return new Promise(async (resolve, reject) => {
         const productRegistrationContract = MarketplaceAPI.api.ethereum.state.contracts.ProductRegistration.deployed
 
+        let created = false
+
         const watcher = productRegistrationContract.ProductCreated().watch((err, res) => {
+            if (created) return
+
+            created = true
+
             if (err) {
                 console.warn('[BlockHub][Marketplace] Error', err)
 
@@ -265,9 +271,10 @@ export const createMarketplaceProductRequest = async ({ profile, product }) => {
 
             product.$loki = undefined
             product.id = res.args.productId.toNumber()
-
+console.log('before', product.id)
             try {
                 DB.marketplace.products.insert(product)
+                console.log('after', product.id)
             } catch (e) {
                 try {
                     DB.marketplace.products.update(product)
@@ -279,9 +286,9 @@ export const createMarketplaceProductRequest = async ({ profile, product }) => {
             resolve(product)
         })
 
-        product.name = 'test'
-        product.type = 'game'
-        product.content = 'test'
+        // product.name = 'test'
+        // product.type = 'game'
+        // product.content = 'test'
 
         await productRegistrationContract.createProduct(
             product.name,
@@ -644,6 +651,7 @@ export const setAccountRequest = async () => {
                 first_name: decrypt(account.first_name, decryptedPrivateKey),
                 last_name: decrypt(account.last_name, decryptedPrivateKey),
                 birthday: decrypt(account.birthday, decryptedPrivateKey),
+                current_identity: account.current_identity,
                 identities: account.identities.map(identity => ({
                     id: identity.id,
                     name: identity.name,
@@ -665,6 +673,7 @@ export const setAccountRequest = async () => {
                 first_name: null,
                 last_name: null,
                 birthday: null,
+                current_identity: { id: null },
                 identities: []
             }
         }
