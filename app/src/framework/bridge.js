@@ -256,7 +256,7 @@ export const createMarketplaceProductRequest = async ({ profile, product }) => {
     return new Promise(async (resolve, reject) => {
         const productRegistrationContract = MarketplaceAPI.api.ethereum.state.contracts.ProductRegistration.deployed
 
-        productRegistrationContract.ProductCreated().watch((err, res) => {
+        const watcher = productRegistrationContract.ProductCreated().watch((err, res) => {
             if (err) {
                 console.warn('[BlockHub][Marketplace] Error', err)
 
@@ -279,6 +279,10 @@ export const createMarketplaceProductRequest = async ({ profile, product }) => {
             resolve(product)
         })
 
+        product.name = 'test'
+        product.type = 'game'
+        product.content = 'test'
+
         await productRegistrationContract.createProduct(
             product.name,
             product.type,
@@ -291,6 +295,33 @@ export const createMarketplaceProductRequest = async ({ profile, product }) => {
         })
     })
 }
+
+export const getAllProducts = async () => {
+    var filter = web3.eth.filter({toBlock:'pending'});
+    filter.watch(function (error, log) {
+        console.log(log); //  {"address":"0x0000000000000000000000000000000000000000", "data":"0x0000000000000000000000000000000000000000000000000000000000000000", ...}
+    });
+    // get all past logs again.
+    var myResults = filter.get(function(error, logs){  
+        // do things
+
+    });
+
+    // stops and uninstalls the filter
+    filter.stopWatching();
+
+    //await marketplaceStorage.getUint(web3.sha3(web3._extend.utils.toHex("developer.developerMap") + identity.public_address.replace('0x', ''), { encoding: 'hex' }));
+}
+
+//this.products = await getAllProducts()
+
+
+//this.identities = await getAllIdentities()
+
+
+//this.projects = await getAllProjects()
+
+
 
 export const createDeveloperRequest = async (identity) => {
     return new Promise(async (resolve, reject) => {
@@ -423,7 +454,7 @@ export const duration = {
 
 
 
-export const deployContract = async ({ protocolName, contractName }) => {
+export const deployContract = async ({ protocolName, contractName, oldContractAddress }) => {
     return new Promise(async (resolve, reject) => {
         const protocol = getProtocolByName(protocolName)
         const state = DB.application.config.data[0]
@@ -436,11 +467,11 @@ export const deployContract = async ({ protocolName, contractName }) => {
             const eternalStorage = TokenAPI.api.ethereum.state.contracts.EternalStorage.deployed
             const hbxToken = TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed
             const tokenLib = TokenAPI.api.ethereum.state.contracts.TokenLib.deployed
-console.log(555)
+
             await eternalStorage.addAdmin(hbxToken.address, { from: local.account.wallet.public_address })
-            console.log(666)
+
             await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address }).catch(() => {})
-            console.log(777)
+
             token = { ...TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed, token }
 
             const tokenWallet = await Wallet.create(local.passphrase, 1000)
@@ -448,7 +479,7 @@ console.log(555)
 
             const tokenSupply = web3._extend.utils.toBigNumber('1e22')
             const tokenAllowance = web3._extend.utils.toBigNumber('1e22')
-            console.log(888)
+
             // await token.setTotalSupply(tokenSupply, {from: owner3})
             await token.mint(tokenWallet.public_address, tokenSupply, { from: local.account.wallet.public_address })
 
@@ -459,7 +490,7 @@ console.log(555)
             const afterClosingTime = closingTime + duration.hours(1)
             const rate = web3._extend.utils.toBigNumber(1)
             const cap = web3._extend.utils.toBigNumber(web3._extend.utils.toWei(100, 'ether'))
-            console.log(999)
+
             // uint256 _rate, address _wallet, ERC20 _token, address _tokenWallet, uint256 _cap, uint256 _startTime, uint256 _endTime
             const tokensale = await ReserveAPI.api.ethereum.deployContract('TokenSale', [], [
                 rate,
@@ -517,11 +548,13 @@ console.log(555)
             links = protocol.api.ethereum.state.contracts[contractName].links
 
             for (let i in links) {
-                if (!config.contracts[links[i].name].address) {
-                    await deployContract({ protocolName, contractName: links[i].name })
+                const contractName = links[i].name
+
+                if (!config.contracts[contractName].address) {
+                    await deployContract({ protocolName, contractName })
                 }
 
-                links[i].address = config.contracts[links[i].name].address
+                links[i].address = config.contracts[contractName].address
             }
         }
 
@@ -529,79 +562,42 @@ console.log(555)
             params = protocol.api.ethereum.state.contracts[contractName].params
 
             for (let i in params) {
-                // this is a contract
-                if (config.contracts[params[i]]) {
-                    if (!config.contracts[params[i]].address) {
-                        await deployContract({ protocolName, contractName: params[i] })
+                const contractName = params[i]
+
+                if (config.contracts[contractName]) {
+                    if (!config.contracts[contractName].address) {
+                        await deployContract({ protocolName, contractName })
                     }
 
-                    params[i] = config.contracts[params[i]].address
+                    params[i] = config.contracts[contractName].address
                 }
 
             }
         }
 
-        // Linking
-        // if (protocolName === 'funding') {
-        //     if (contractName === 'ProjectBase') {
-        //         params = [
-        //             false
-        //         ]
-        //     }
-
-        //     if (contractName === 'FundingVault') {
-        //         params = [
-        //             state.contracts.FundingStorage.address
-        //         ]
-        //     }
-
-        //     if (contractName === 'Contribution'
-        //         || contractName === 'Curation'
-        //         || contractName === 'Developer'
-        //         || contractName === 'ProjectContributionTier'
-        //         || contractName === 'ProjectMilestoneCompletion'
-        //         || contractName === 'ProjectMilestoneCompletionVoting'
-        //         || contractName === 'ProjectRegistration'
-        //         || contractName === 'ProjectTimeline'
-        //         || contractName === 'ProjectTimelineProposal'
-        //         || contractName === 'ProjectTimelineProposalVoting') {
-        //         params = [
-        //             state.contracts.FundingStorage.address,
-        //             false
-        //         ]
-        //     }
-        // }
-
-        // if (protocolName === 'application') {
-        //     if (contractName !== 'EternalStorage') {
-        //         params = [
-        //             state.contracts.EternalStorage.address
-        //         ]
-        //     }
-        // }
-
         protocol.api.ethereum
             .deployContract(contractName, links, params)
             .then(async (contract) => {
-                // if (err)  {
-                //     console.error('[BlockHub] Error deploying contract',  err)
-                //     return reject()
-                // }
-
                 config.contracts[contractName].created_at = Date.now()
                 config.contracts[contractName].address = contract.address
 
                 DB.application.config.update(state)
                 DB.save()
-                //local.store.dispatch(protocolName + '/updateState')
 
                 if (protocolName === 'marketplace' && contractName === 'Developer') {
-                    const blankAddress = 0x0000000000000000000000000000000000000000
                     const developerContract = protocol.api.ethereum.state.contracts.Developer.deployed
                     const marketplaceStorage = protocol.api.ethereum.state.contracts.MarketplaceStorage.deployed
 
-                    await marketplaceStorage.registerContract("Developer", blankAddress, developerContract.address)
-                    await developerContract.initialize()
+                    if (!oldContractAddress) {
+                        oldContractAddress = 0x0000000000000000000000000000000000000000
+                    }
+
+                    try {
+                        await marketplaceStorage.registerContract("Developer", oldContractAddress, developerContract.address)
+                        await developerContract.initialize()
+                    } catch(e) {
+                        console.log('Tried to register ' + contractName + ' but its probably already registered')
+                    }
                 }
 
                 if (protocolName === 'marketplace' && contractName === 'ProductRegistration') {
@@ -609,11 +605,8 @@ console.log(555)
                     const marketplaceStorage = protocol.api.ethereum.state.contracts.MarketplaceStorage.deployed
                     const productRegistrationContract = protocol.api.ethereum.state.contracts.ProductRegistration.deployed
 
-                    await marketplaceStorage.registerContract("ProductRegistration", blankAddress, productRegistrationContract.address);
-                    await productRegistrationContract.initialize();
-
-                    const developerContract = protocol.api.ethereum.state.contracts.Developer.deployed
-                    await marketplaceStorage.registerContract("Developer", blankAddress, developerContract.address);
+                    await marketplaceStorage.registerContract("ProductRegistration", blankAddress, productRegistrationContract.address)
+                    await productRegistrationContract.initialize()
                 }
 
                 if (protocolName === 'funding' && contractName === 'ProjectRegistration') {
@@ -623,23 +616,6 @@ console.log(555)
 
                     await fundingStorageContract.registerContract('ProjectRegistration', blankAddress, projectRegistrationContract.address)
                     await projectRegistrationContract.initialize()
-
-                    const developerContract = protocol.api.ethereum.state.contracts.Developer.deployed
-                    await fundingStorageContract.registerContract('Developer', blankAddress, developerContract.address)
-                    await developerContract.initialize()
-
-                    let developerId = null
-                    const developerAccount = state.user_from_address
-
-                    developerContract.DeveloperCreated().watch((err, res) => {
-                        if (err) {
-                            console.warn('[BlockHub][Funding] Error', err)
-                        }
-
-                        developerId = res.args.developerId
-                    })
-
-                    await developerContract.createDeveloper('Hyperbridge', { from: developerAccount })
                 }
 
                 resolve(config.contracts[contractName])
