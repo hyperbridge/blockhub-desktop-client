@@ -421,7 +421,9 @@
             "id": 27,
             "public_address": "0x256ccc75d87bb39528809e4d14cecd2adee0f370",
             "name": "Default"
-          }
+          },
+          { "id": 28, "public_address": "0x1a8e399974ce5d69516d8aa85a53937852331a0c" },
+          { "id": 29, "public_address": "0x6f64291028c66404a221214f81d52d535df694a5" }
         ],
         "settings": {
           "client": {
@@ -446,7 +448,7 @@
         "encrypt_passphrase": true,
         "balance": null,
         "current_identity": { "id": 1 },
-        "identity_index": 27
+        "identity_index": 29
       },
       "simulator_mode": false,
       "desktop_mode": null,
