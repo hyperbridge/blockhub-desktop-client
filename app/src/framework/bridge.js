@@ -67,6 +67,10 @@ export const encrypt = (data, key) => {
 
 export const promptPasswordRequest = async (data = {}) => {
     return new Promise(async (resolve) => {
+        const mainScreen = electron.screen.getPrimaryDisplay()
+        Windows.main.window.setSize(500, 700)
+        Windows.main.window.center()
+
         while (!local.passphrase && !local.password) {
             // Web sends back password prompt response
             const res = await sendCommand('promptPasswordRequest', data)
@@ -96,13 +100,8 @@ export const promptPasswordRequest = async (data = {}) => {
         console.log(local.passphrase)
         local.account.wallet = await Wallet.create(local.passphrase)
 
-        // // Desktop sends back all non-sensitive account info
-        // await setAccountRequest()
-
-        // Check the wallet exists in the accounts contract
-        // If not, prompt to add it
-        // If no ETH, let them know they need it
-        // Sync any changes from smart contract
+        Windows.main.window.setSize(1440, 800)
+        Windows.main.window.center()
 
         resolve()
     })
@@ -1094,15 +1093,12 @@ export const runCommand = async (cmd, meta = {}) => {
                     if (DB.application.config.data[0].account.encrypt_passphrase && !local.password) {
                         // Desktop asks to prompt password
                         await promptPasswordRequest()
-
                     } else {
                         // Passphrase was already decrypted and not already set (incase reloading page)
                         if (!local.passphrase) {
                             local.passphrase = DB.application.config.data[0].account.passphrase
                         }
                     }
-
-                    maximizeWindow()
 
                     // Tell web all non-sensitive account info
                     await setAccountRequest()
@@ -1113,8 +1109,6 @@ export const runCommand = async (cmd, meta = {}) => {
                     await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'funding' }))
                     await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'marketplace' }))
                 } else {
-                    maximizeWindow()
-
                     // Tell web to reset account
                     await setAccountRequest()
                 }
