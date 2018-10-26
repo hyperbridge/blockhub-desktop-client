@@ -1381,6 +1381,7 @@ export const initHeartbeat = () => {
 // If doesn't exist, prompt web to create account
 export const init = (bridge) => {
     console.log('[DesktopBridge] Initializing')
+    DB.application.config.data[0].current_ethereum_network = config.IS_PRODUCTION ? 'ropsten' : 'local'
 
     local.bridge = bridge
 }

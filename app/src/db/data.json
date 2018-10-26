@@ -315,7 +315,7 @@
           "user_to_address": null
         }
       },
-      "current_ethereum_network": "local",
+      "current_ethereum_network": null,
       "user_submitted_connection_messages": [
         {
           "id": "1",
@@ -328,103 +328,7 @@
       "account": {
         "notifications": [],
         "wallets": [],
-        "identities": [
-          {
-            "id": 1,
-            "name": "Default",
-            "public_address": "0xd55Ae8B1AcaE26b3878419DbD5E055Cad33bcE08",
-            "private_key": "U2FsdGVkX1+1LsDcRiHrUxOm+d9biHss0yCqQIzChg+OBucrGMdb1Z2ffvfgxwywO1ZB5H77MS1wa/S5nGiHMS4sb2fDCdRq8lNwp6mI/hbiK/UIw8vXaCY/5HZgofD+",
-            "developer_id": 2
-          },
-          {
-            "id": 11,
-            "public_address": "0x54400492833814e2036abb669fccffbb5b1cfa74",
-            "name": "Defaultss"
-          },
-          {
-            "id": 12,
-            "public_address": "0x4da3a4a7514a7e6fd1b9493a3525be8154125542",
-            "name": "Default"
-          },
-          {
-            "id": 13,
-            "public_address": "0x1a7fa8a289c702ff0b107c5797c8224ae77d379a",
-            "name": "Default"
-          },
-          {
-            "id": 14,
-            "public_address": "0xeb1705c345b4329d4368d09441205c2ce0dee988",
-            "name": "Default"
-          },
-          {
-            "id": 15,
-            "public_address": "0x22fafca189f20138ab8ad30425dc87363c5d5a7d",
-            "name": "Default"
-          },
-          {
-            "id": 16,
-            "public_address": "0x1e93aa574fb6f38d5d8df42aa1e8815df471f6ef",
-            "name": "Default"
-          },
-          { "id": 17, "public_address": "0x99ee26bd123240a7d2e874d8c213812f4373d6d0" },
-          {
-            "id": 18,
-            "public_address": "0xa053cecadd1e4c04b852f4e84aaafe16c1b424f3",
-            "name": "Default"
-          },
-          {
-            "id": 19,
-            "public_address": "0xccccdb7845c8de54738186fdf36a6f4db85f8a32",
-            "name": "Default"
-          },
-          {
-            "id": 20,
-            "public_address": "0xcdd1fbe9db23b1bddc0955ea94373884877f298a",
-            "name": "Default",
-            "developer_id": 4
-          },
-          {
-            "id": 21,
-            "public_address": "0x8d635c3672fc032be15a448ddec064824da40c94",
-            "name": "Default11",
-            "developer_id": 2
-          },
-          {
-            "id": 22,
-            "public_address": "0xd30fe9e7f69918b31f0da9df38dab19f6d5bf9da",
-            "name": "Default",
-            "developer_id": 2
-          },
-          {
-            "id": 23,
-            "public_address": "0xbf3cda2fdc60318abe2738e522bbf2ad073996f2",
-            "name": "Default22",
-            "developer_id": 1
-          },
-          {
-            "id": 24,
-            "public_address": "0x2f070ef4df30c090a8a6134fe5afc341a52f8089",
-            "name": "22Default",
-            "developer_id": 3
-          },
-          {
-            "id": 25,
-            "public_address": "0x37046cdd5c7b62e102cd3b05202f9046688c11b6",
-            "name": "Default444"
-          },
-          {
-            "id": 26,
-            "public_address": "0x0a93e179d4696adbaa9a1058f5e4244402a2077e",
-            "name": "Default111"
-          },
-          {
-            "id": 27,
-            "public_address": "0x256ccc75d87bb39528809e4d14cecd2adee0f370",
-            "name": "Default"
-          },
-          { "id": 28, "public_address": "0x1a8e399974ce5d69516d8aa85a53937852331a0c" },
-          { "id": 29, "public_address": "0x6f64291028c66404a221214f81d52d535df694a5" }
-        ],
+        "identities": [],
         "settings": {
           "client": {
             "animations": true,
@@ -433,22 +337,22 @@
             "cookie_policy_accepted": false
           }
         },
-        "public_address": "0xB6b508E614Eb3238D2180cB048FFd1F563fB7c4F",
-        "secret_question_1": "first_name_favorite_aunt_uncle",
+        "public_address": null,
+        "secret_question_1": null,
         "secret_answer_1": null,
-        "secret_question_2": "first_name_favorite_aunt_uncle",
+        "secret_question_2": null,
         "secret_answer_2": null,
-        "passphrase": "U2FsdGVkX19c+KvcwOz46rjgD5lNo4wEaPQG2iH36jtEdqLe18SGOR5QHKb5ENkRAv7Q4HI3uB/DpmbUvNut5qf7w1eiySxHyLVnJvVSVjkYF7gB7HFTKSXwSkr73im8wUexRem9OL523uY558U3qQ==",
-        "private_key": "U2FsdGVkX1+X1J6yMvbMBE1CNoPDGRDo5uVA2GfLOveZGCrWNtgAeuAfzgvdcVk0N7u2i+5tEhDvyNk/Ixk2bBiBsseScGEnJX7q6uW3GWHgHO32NxDWVMj99b2cyrQv",
-        "password": "U2FsdGVkX19hzc6wLyQBMwJUg7fEh6UiQzRkDYX/qlU=",
-        "email": "U2FsdGVkX1+UhFWvkCzQkWOiid6bG5VICONZvOlbpzA=",
-        "first_name": "U2FsdGVkX1+gDOEM1FO2BSjSPtCBD6sIVivDe+ZL8Dc=",
-        "last_name": "U2FsdGVkX19k2fI2PTpvK53UMHRg3s/3bbiualaORNw=",
-        "birthday": "U2FsdGVkX18y0dppVS5fuKTMIyqoozhbWiH4Gmg909Y=",
+        "passphrase": null,
+        "private_key": null,
+        "password": null,
+        "email": null,
+        "first_name": null,
+        "last_name": null,
+        "birthday": null,
         "encrypt_passphrase": true,
         "balance": null,
-        "current_identity": { "id": 1 },
-        "identity_index": 29
+        "current_identity": { "id": null },
+        "identity_index": 1
       },
       "simulator_mode": false,
       "desktop_mode": null,
