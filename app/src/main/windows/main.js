@@ -435,8 +435,8 @@ export const init = (deeplinkUri, devMode, showTools) => {
         window.setTitle('BlockHub')
 
         //if (config.IS_PRODUCTION) {
-            window.show()
-            window.focus()
+        window.show()
+        window.focus()
         //}
     })
 
@@ -453,7 +453,7 @@ export const init = (deeplinkUri, devMode, showTools) => {
         // }
 
         // const https = require('https')
-        const http = require('http')
+        //const http = require('http')
 
         const app = express()
 
@@ -463,7 +463,7 @@ export const init = (deeplinkUri, devMode, showTools) => {
         })
 
         //const server = https.createServer(options, app).listen(9999, () => console.log('App is running on port 9999'))
-        const server = http.createServer(options, app).listen(9999, () => console.log('App is running on port 9999'))
+        const server = app.listen(9999, () => console.log('App is running on port 9999'))
 
         window.loadURL('http://localhost:9999/')
         //window.loadURL(`file://${__dirname}/../../../web/index.html`)
@@ -481,7 +481,7 @@ export const init = (deeplinkUri, devMode, showTools) => {
         window = null
     })
 
-    
+
     // window.on('ready-to-show', function () {
     //     mainWindow.show()
     //     mainWindow.focus()
