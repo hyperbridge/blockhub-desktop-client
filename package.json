@@ -14,10 +14,10 @@
     "copy-web": "cd ../blockhub-web-client && NODE_ENV=production npm run build && rm -rf ../blockhub-desktop-client/app/web && cp -R dist/ ../blockhub-desktop-client/app/web && cd ../blockhub-desktop-client",
     "package": "ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true npm run build-all",
     "publish": "electron-builder --publish",
-    "build-all": "cd app && npm run build && cd .. && rm -rf dist/packages && rm -rf build && cp -R app/ build && electron-builder --mac --win --linux",
-    "build-linux": "cd app && npm run build && cd .. && rm -rf dist/packages && rm -rf build && cp -R app/ build && electron-builder --linux",
-    "build-mac": "cd app && npm run build && cd .. && rm -rf dist/packages && rm -rf build && cp -R app/ build && electron-builder --mac",
-    "build-windows": "cd app && npm run build && cd .. && rm -rf dist/packages && rm -rf build && cp -R app/ build && electron-builder --win"
+    "build-all": "npm run copy-web && cd app && npm run build && cd .. && rm -rf dist/packages && rm -rf build && cp -R app/ build && electron-builder --mac --win --linux",
+    "build-linux": "npm run copy-web && cd app && npm run build && cd .. && rm -rf dist/packages && rm -rf build && cp -R app/ build && electron-builder --linux",
+    "build-mac": "npm run copy-web && cd app && npm run build && cd .. && rm -rf dist/packages && rm -rf build && cp -R app/ build && electron-builder --mac",
+    "build-windows": "npm run copy-web && cd app && npm run build && cd .. && rm -rf dist/packages && rm -rf build && cp -R app/ build && electron-builder --win"
   },
   "postinstall": "electron-builder install-app-deps",
   "dependencies": {
