@@ -386,7 +386,7 @@ export const isSafeURL = (url) => {
 }
 
 export const isBlockHubURL = (url) => {
-    return url.startsWith('http://localhost') || url.startsWith('https://blockhub.gg')
+    return url.startsWith('https://localhost') || url.startsWith('http://localhost') || url.startsWith('https://blockhub.gg')
 }
 
 export const ensureLinksOpenInBrowser = (event, url) => {
@@ -417,6 +417,14 @@ export const init = (deeplinkUri, devMode, showTools) => {
         }
     })
 
+
+    window.webContents.session.webRequest.onBeforeSendHeaders({ urls: [] }, (details, callback) => {
+        details.requestHeaders['Origin'] = 'https://blockhub.gg'
+        details.requestHeaders['Referer'] = 'https://blockhub.gg'
+
+        callback({ cancel: false, requestHeaders: details.requestHeaders })
+    })
+
     window.webContents.on('will-navigate', ensureLinksOpenInBrowser)
     window.webContents.on('new-window', ensureLinksOpenInBrowser)
 
@@ -435,13 +443,27 @@ export const init = (deeplinkUri, devMode, showTools) => {
     if (devMode) {
         window.webContents.loadURL('http://localhost:8000/')
     } else {
-        const server = express()
-        server.use('/static', express.static(path.join(__dirname, '/../../../web/static')))
-        server.get('/', function (req, res) {
+        // const fs = require('fs')
+
+        // const options = {
+        //     key: fs.readFileSync(path.join(__dirname, './key.pem')),
+        //     cert: fs.readFileSync(path.join(__dirname, './cert.pem')),
+        //     requestCert: false,
+        //     rejectUnauthorized: false
+        // }
+
+        // const https = require('https')
+        const http = require('http')
+
+        const app = express()
+
+        app.use('/static', express.static(path.join(__dirname, '/../../../web/static')))
+        app.get('/', function (req, res) {
             res.sendFile(path.join(__dirname + '/../../../web/index.html'))
         })
 
-        server.listen(9999, () => console.log('App is running on port 9999'))
+        //const server = https.createServer(options, app).listen(9999, () => console.log('App is running on port 9999'))
+        const server = http.createServer(options, app).listen(9999, () => console.log('App is running on port 9999'))
 
         window.loadURL('http://localhost:9999/')
         //window.loadURL(`file://${__dirname}/../../../web/index.html`)

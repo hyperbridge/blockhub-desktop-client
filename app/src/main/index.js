@@ -150,7 +150,8 @@ export const initApp = () => {
       if (deeplinkUri.startsWith('go')) {
 
       } else {
-        Windows.main.webContents.loadURL('http://localhost:8000/' + deeplinkUri)
+        const baseUrl = config.IS_PRODUCTION ? 'http://localhost:9999/' : 'http://localhost:8000/'
+        Windows.main.webContents.loadURL(baseUrl + deeplinkUri)
       }
     })
   }
@@ -160,15 +161,26 @@ export const initApp = () => {
   }
 
   app.setName('BlockHub')
+  // SSL/TSL: this is the self signed certificate support
+  app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+    // On certificate error we disable default behaviour (stop loading the page)
+    // and we then say "it is all fine - true" to the callback
+    console.log("Insecure cert: ", url)
+
+    if (url.slice(0, 22) === 'https://localhost:9999') {
+      event.preventDefault()
+      callback(true)
+    }
+  })
 
   app.on('ready', () => {
     session.defaultSession.webRequest.onBeforeRequest({}, (details, callback) => {
       if (details.url.indexOf('7accc8730b0f99b5e7c0702ea89d1fa7c17bfe33') !== -1) {
-        callback({ redirectURL: details.url.replace('7accc8730b0f99b5e7c0702ea89d1fa7c17bfe33', '57c9d07b416b5a2ea23d28247300e4af36329bdc') });
+        callback({ redirectURL: details.url.replace('7accc8730b0f99b5e7c0702ea89d1fa7c17bfe33', '57c9d07b416b5a2ea23d28247300e4af36329bdc') })
       } else {
-        callback({ cancel: false });
+        callback({ cancel: false })
       }
-    });
+    })
 
     DB.init()
     Windows.main.init(deeplinkUri, !config.IS_PRODUCTION, argv.tools)

@@ -1231,6 +1231,8 @@ export const runCommand = async (cmd, meta = {}) => {
                 details.requestHeaders['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
                 details.requestHeaders['Accept-Encoding'] = 'gzip, deflate, br'
                 details.requestHeaders['Accept-Language'] = 'en-US,en;q=0.9'
+                details.requestHeaders['Origin'] = 'https://blockhub.gg'
+                details.requestHeaders['Referer'] = 'https://blockhub.gg'
                 // No Cookie?
 
                 callback({ cancel: false, requestHeaders: details.requestHeaders })
