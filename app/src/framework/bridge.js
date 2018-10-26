@@ -68,7 +68,7 @@ export const encrypt = (data, key) => {
 export const promptPasswordRequest = async (data = {}) => {
     return new Promise(async (resolve) => {
         const mainScreen = electron.screen.getPrimaryDisplay()
-        Windows.main.window.setSize(500, 700)
+        Windows.main.window.setSize(500, 800)
         Windows.main.window.center()
 
         while (!local.passphrase && !local.password) {
@@ -941,6 +941,26 @@ Are you sure you want to send?`
     })
 }
 
+export const recoverPasswordRequest = async ({ secret_question_1, secret_answer_1, birthday }) => {
+    return new Promise(async (resolve) => {
+        let password = null
+
+        try {
+            password = decrypt(DB.application.config.data[0].account.password, secret_answer_1 + birthday)
+
+            if (!password) {
+                throw new Error()
+            }
+        } catch (e) {
+            console.log(e)
+
+            return resolve({ error: { message: 'Incorrect secret answer or birthday', code: 1 } })
+        }
+
+        resolve({ password })
+    })
+}
+
 export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, passphrase, encrypt_passphrase, secret_question_1, secret_answer_1, secret_question_2, secret_answer_2 }) => {
     return new Promise(async (resolve) => {
         const account = await Wallet.create(passphrase, 0)
@@ -1092,7 +1112,7 @@ export const runCommand = async (cmd, meta = {}) => {
                 if (DB.application.config.data[0].account.passphrase) {
                     if (DB.application.config.data[0].account.encrypt_passphrase && !local.password) {
                         // Desktop asks to prompt password
-                        await promptPasswordRequest()
+                        await promptPasswordRequest({ secret_question_1: DB.application.config.data[0].account.secret_question_1 })
                     } else {
                         // Passphrase was already decrypted and not already set (incase reloading page)
                         if (!local.passphrase) {
@@ -1197,6 +1217,9 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'createDeveloperRequest') {
             resultData = await createDeveloperRequest(cmd.data)
             resultKey = 'createDeveloperResponse'
+        } else if (cmd.key === 'recoverPasswordRequest') {
+            resultData = await recoverPasswordRequest(cmd.data)
+            resultKey = 'recoverPasswordResponse'
         } else if (cmd.key === 'error') {
             console.log('[BlockHub] Web Error: ', cmd.data)
 
