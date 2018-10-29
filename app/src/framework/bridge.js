@@ -327,6 +327,66 @@ export const getAllProducts = async () => {
 
 //this.projects = await getAllProjects()
 
+// Do same as Developer, but just save as curator_id instead
+export const createCuratorRequest = async (identity) => {
+    return new Promise(async (resolve, reject) => {
+        const web3 = local.account.wallet.web3
+        const developerContract = MarketplaceAPI.api.ethereum.state.contracts.Developer.deployed
+
+        identity = DB.application.config.data[0].account.identities.filter(i => i.id === identity.id)[0]
+
+        let watcher = developerContract.DeveloperCreated().watch(function (error, result) {
+            if (!error) {
+                identity.curator_id = result.args.developerId.toNumber()
+
+                DB.save()
+
+
+                saveAccountFile().then()
+
+                return resolve(identity.curator_id)
+            }
+
+            return reject(error)
+        })
+
+        try {
+            await developerContract.createDeveloper(identity.name, { from: identity.public_address })
+
+            watcher.stopWatching(() => {
+                // Must be async or tries to launch nasty process
+            })
+        } catch (error) {
+            watcher.stopWatching(() => {
+                // Must be async or tries to launch nasty process
+            })
+
+            if (error.toString().indexOf('already a developer') !== -1) {
+                console.log("Already a developer, finding ID")
+
+                const developerContract = MarketplaceAPI.api.ethereum.state.contracts.Developer.deployed
+                const marketplaceStorage = MarketplaceAPI.api.ethereum.state.contracts.MarketplaceStorage.deployed //await developerContract.marketplaceStorage()
+
+                let developerId = await marketplaceStorage.getUint(web3.sha3(web3._extend.utils.toHex("developer.developerMap") + identity.public_address.replace('0x', ''), { encoding: 'hex' }));
+
+                if (developerId && developerId.toNumber()) {
+                    identity.curator_id = developerId.toNumber()
+
+                    DB.save()
+
+                    await saveAccountFile()
+
+                    return resolve(identity.curator_id)
+                } else {
+                    return reject(error.toString())
+                }
+            }
+
+            return reject(error.toString())
+        }
+    })
+}
+
 
 
 export const createDeveloperRequest = async (identity) => {
@@ -990,6 +1050,7 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
             first_name: encrypt(first_name, account.private_key),
             last_name: encrypt(last_name, account.private_key),
             birthday: encrypt(birthday, account.private_key),
+            versonCreated: config.APP_VERSION,
             identity_index: 10,
             current_identity: {
                 id: 10
@@ -1228,6 +1289,9 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'createDeveloperRequest') {
             resultData = await createDeveloperRequest(cmd.data)
             resultKey = 'createDeveloperResponse'
+        } else if (cmd.key === 'createCuratorRequest') {
+            resultData = await createCuratorRequest(cmd.data)
+            resultKey = 'createCuratorResponse'
         } else if (cmd.key === 'recoverPasswordRequest') {
             resultData = await recoverPasswordRequest(cmd.data)
             resultKey = 'recoverPasswordResponse'
