@@ -775,11 +775,22 @@ export const importAccountFileRequest = async (data) => {
                 return reject("No file selected")
             }
 
-            saveFile(path.join(userDataPath, 'account.json'), await readFile(fileNames[0]))
+            const options = {
+                title: 'Replace Account?',
+                type: 'question',
+                buttons: ['OK', 'Cancel'],
+                message: 'Are you sure you want to replace your existing account? Make sure you have a backup, as this will delete the file the old file on this computer and it cannot be undone.'
+            }
 
-            console.log("The account has been succesfully imported: " + userDataPath + '/account.json')
+            electron.dialog.showMessageBox(Windows.main.window, options, async (res) => {
+                if (res === 0) {
+                    saveFile(path.join(userDataPath, 'account.json'), await readFile(fileNames[0]))
 
-            resolve()
+                    console.log("The account has been succesfully imported: " + userDataPath + '/account.json')
+
+                    resolve()
+                }
+            })
         })
     })
 }
