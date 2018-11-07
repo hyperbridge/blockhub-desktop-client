@@ -387,7 +387,29 @@ export const createCuratorRequest = async (identity) => {
     })
 }
 
+export const registerUsernameRequest = async (identity) => {
+    return new Promise(async (resolve, reject) => {
+        const web3 = local.account.wallet.web3
+        const developerContract = DomainAPI.api.ethereum.state.contracts.DomainManager.deployed
 
+        identity = DB.application.config.data[0].account.identities.filter(i => i.id === identity.id)[0]
+
+        let watcher = developerContract.DeveloperCreated().watch(function (error, result) {
+            if (!error) {
+                identity.curator_id = result.args.developerId.toNumber()
+
+                DB.save()
+
+
+                saveAccountFile().then()
+
+                return resolve(identity.curator_id)
+            }
+
+            return reject(error)
+        })
+    })
+}
 
 export const createDeveloperRequest = async (identity) => {
     return new Promise(async (resolve, reject) => {
@@ -448,6 +470,20 @@ export const createDeveloperRequest = async (identity) => {
     })
 }
 
+const getWebProvider = (network) => {
+    if (network === 'local') {
+        return new Web3.providers.HttpProvider('http://localhost:8545')
+    } else if (network === 'kovan') {
+        return new Web3.providers.HttpProvider('https://kovan.infura.io/q0dsZEe9ohtOnGy8V0cT')
+    } else if (network === 'rinkeby') {
+        return new Web3.providers.HttpProvider('https://rinkeby.infura.io/q0dsZEe9ohtOnGy8V0cT')
+    } else if (network === 'mainnet') {
+        return new Web3.providers.HttpProvider('https://mainnet.infura.io/q0dsZEe9ohtOnGy8V0cT')
+    } else if (network === 'ropsten') {
+        return new Web3.providers.HttpProvider('https://ropsten.infura.io/q0dsZEe9ohtOnGy8V0cT')
+    }
+}
+
 export const initProtocol = async ({ protocolName }) => {
     console.log('[BlockHub] Initializing protocol: ' + protocolName)
 
@@ -455,14 +491,15 @@ export const initProtocol = async ({ protocolName }) => {
         const protocol = getProtocolByName(protocolName)
         const state = DB.application.config.data[0]
         const currentNetwork = state.current_ethereum_network
+
         const config = state.ethereum[currentNetwork].packages[protocolName]
         
-        const provider = new Web3.providers.HttpProvider('http://localhost:8545')
+        const provider = getWebProvider(currentNetwork)
         //const web3 = new Web3(provider)
         // const account = web3.eth.accounts.privateKeyToAccount('0x' + local.account.wallet.private_key);
         // web3.eth.accounts.wallet.add(account)
 // Exception Error: invalid address
-        config.user_from_address = local.account.wallet.public_address
+        config.user_from_address = DB.application.config.data[0].account.public_address
 
         protocol.api.ethereum.init(
             provider,//local.account.wallet.provider,
@@ -1012,6 +1049,46 @@ Are you sure you want to send?`
     })
 }
 
+export const setEnvironmentMode = async (environmentMode) => {
+    return new Promise(async (resolve) => {
+        config.IS_PRODUCTION = environmentMode === 'production'
+
+        DB.application.config.data[0].environment_mode = environmentMode
+
+        let networkOptions = {
+            'production': 'mainnet',
+            'staging': 'ropsten',
+            'beta': 'ropsten',
+            'preview': 'local',
+            'local': 'local'
+        }
+
+        DB.application.config.data[0].current_ethereum_network = networkOptions[environmentMode]
+
+        Wallet.ethereum.activeNetwork = networkOptions[environmentMode]
+
+        console.log('[BlockHub] Setting environment mode: ', environmentMode)
+        console.log('[BlockHub] Setting active network: ', networkOptions[environmentMode])
+
+        await sendCommand('updateState', {
+            module: 'application',
+            state: {
+                environment_mode: environmentMode,
+                current_ethereum_network: networkOptions[environmentMode]
+            }
+        })
+
+        // Tell web protocol config data
+        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'token' }))
+        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'reserve' }))
+        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'funding' }))
+        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'marketplace' }))
+
+        resolve()
+    })
+}
+
+
 export const recoverPasswordRequest = async ({ secret_question_1, secret_answer_1, birthday }) => {
     return new Promise(async (resolve) => {
         let password = null
@@ -1295,6 +1372,12 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'recoverPasswordRequest') {
             resultData = await recoverPasswordRequest(cmd.data)
             resultKey = 'recoverPasswordResponse'
+        } else if (cmd.key === 'registerUsernameRequest') {
+            resultData = await registerUsernameRequest(cmd.data)
+            resultKey = 'registerUsernameResponse'
+        } else if (cmd.key === 'setEnvironmentMode') {
+            resultData = await setEnvironmentMode(cmd.data)
+            resultKey = 'setEnvironmentModeResponse'
         } else if (cmd.key === 'error') {
             console.log('[BlockHub] Web Error: ', cmd.data)
 
@@ -1481,7 +1564,8 @@ export const initHeartbeat = () => {
 // If doesn't exist, prompt web to create account
 export const init = (bridge) => {
     console.log('[DesktopBridge] Initializing')
-    DB.application.config.data[0].current_ethereum_network = config.IS_PRODUCTION ? 'ropsten' : 'local'
 
     local.bridge = bridge
+
+    setEnvironmentMode(DB.application.config.data[0].environment_mode).then()
 }

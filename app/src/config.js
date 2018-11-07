@@ -21,7 +21,6 @@ module.exports = {
     ANNOUNCEMENT_URL: 'https://blockhub.gg/desktop/announcement',
     AUTO_UPDATE_URL: 'https://blockhub.gg/desktop/update',
     CRASH_REPORT_URL: 'https://blockhub.gg/desktop/crash-report',
-    TELEMETRY_URL: 'https://blockhub.gg/desktop/telemetry',
 
     APP_COPYRIGHT: 'Copyright © 2017-2018 ' + APP_TEAM,
     APP_FILE_ICON: path.join(__dirname, '..', 'static', 'Icon-512'),
