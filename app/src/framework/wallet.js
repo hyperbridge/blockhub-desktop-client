@@ -129,6 +129,7 @@ export const create = async (passphrase, index = 0) => {
     //provider.engine._providers = [provider.engine._providers[0], provider.engine._providers[2]]
 
     Bluebird.promisifyAll(web3.eth, { suffix: 'Promise' })
+    //Bluebird.promisifyAll(web3.eth.accounts, { suffix: 'Promise' })
 
     return new Promise(async (resolve, reject) => {
         const account = await getCurrentAccount(web3, index)

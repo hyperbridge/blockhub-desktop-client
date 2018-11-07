@@ -494,15 +494,16 @@ export const initProtocol = async ({ protocolName }) => {
 
         const config = state.ethereum[currentNetwork].packages[protocolName]
         
-        const provider = getWebProvider(currentNetwork)
-        //const web3 = new Web3(provider)
-        // const account = web3.eth.accounts.privateKeyToAccount('0x' + local.account.wallet.private_key);
-        // web3.eth.accounts.wallet.add(account)
-// Exception Error: invalid address
+        //const provider = getWebProvider(currentNetwork)
+
+        // local.account.wallet.web3.eth.accounts.privateKeyToAccount('0x' + local.account.private_key, (err, account) => {
+        //     local.account.wallet.web3.eth.accounts.wallet.add(account, () => { })
+        // })
+
         config.user_from_address = DB.application.config.data[0].account.public_address
 
         protocol.api.ethereum.init(
-            provider,//local.account.wallet.provider,
+            local.account.wallet.provider,
             config.user_from_address,
             config.user_to_address
         )
@@ -1079,10 +1080,12 @@ export const setEnvironmentMode = async (environmentMode) => {
         })
 
         // Tell web protocol config data
-        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'token' }))
-        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'reserve' }))
-        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'funding' }))
-        await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'marketplace' }))
+        if (local.account.wallet) {
+            await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'token' }))
+            await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'reserve' }))
+            await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'funding' }))
+            await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'marketplace' }))
+        }
 
         resolve()
     })
