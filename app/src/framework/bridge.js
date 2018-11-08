@@ -303,23 +303,29 @@ console.log('before', product.id)
 }
 
 export const getAllProducts = async () => {
-    var filter = web3.eth.filter({toBlock:'pending'});
-    filter.watch(function (error, log) {
-        console.log(log); //  {"address":"0x0000000000000000000000000000000000000000", "data":"0x0000000000000000000000000000000000000000000000000000000000000000", ...}
-    });
-    // get all past logs again.
-    var myResults = filter.get(function(error, logs){  
-        // do things
+    return new Promise(async (resolve, reject) => {
+        console.log('[BlockHub] Filtering Ethereum logs for production creation events')
+        const web3 = local.account.wallet.web3
+        const filter = web3.eth.filter({ toBlock: 'pending' })
 
-    });
+        filter.watch((error, log) => {
+            console.log(444, log) //  {"address":"0x0000000000000000000000000000000000000000", "data":"0x0000000000000000000000000000000000000000000000000000000000000000", ...}
+        })
 
-    // stops and uninstalls the filter
-    filter.stopWatching();
+        // get all past logs again.
+        const results = filter.get((error, logs) => {
+            // do things
+            console.log(555, logs)
+        })
 
-    //await marketplaceStorage.getUint(web3.sha3(web3._extend.utils.toHex("developer.developerMap") + identity.public_address.replace('0x', ''), { encoding: 'hex' }));
+        // stops and uninstalls the filter
+        filter.stopWatching(() => {
+            // Must be async or tries to launch nasty process
+        })
+
+        //await marketplaceStorage.getUint(web3.sha3(web3._extend.utils.toHex("developer.developerMap") + identity.public_address.replace('0x', ''), { encoding: 'hex' }));
+    })
 }
-
-//this.products = await getAllProducts()
 
 
 //this.identities = await getAllIdentities()
@@ -501,6 +507,8 @@ export const initProtocol = async ({ protocolName }) => {
         // })
 
         config.user_from_address = DB.application.config.data[0].account.public_address
+        
+        console.log('[BlockHub] Initializing protocol, with public address: ', config.user_from_address)
 
         protocol.api.ethereum.init(
             local.account.wallet.provider,
@@ -1066,12 +1074,15 @@ export const setEnvironmentMode = async (environmentMode) => {
 
         DB.application.config.data[0].current_ethereum_network = networkOptions[environmentMode]
 
+        DB.save()
+
         Wallet.ethereum.activeNetwork = networkOptions[environmentMode]
+        Wallet.ethereum.fromAddress = DB.application.config.data[0].account.public_address
 
         console.log('[BlockHub] Setting environment mode: ', environmentMode)
         console.log('[BlockHub] Setting active network: ', networkOptions[environmentMode])
 
-        await sendCommand('updateState', {
+        sendCommand('updateState', {
             module: 'application',
             state: {
                 environment_mode: environmentMode,
@@ -1284,6 +1295,10 @@ export const runCommand = async (cmd, meta = {}) => {
                     // Tell web to reset account
                     await setAccountRequest()
                 }
+
+                // Initialize local data
+                const products = await getAllProducts()
+                console.log(products)
 
                 // If exists, prompt web to require password
                 // Web sends back response (requirePasswordResponse)
@@ -1565,10 +1580,10 @@ export const initHeartbeat = () => {
 // If no ETH, let them know they need it
 // Sync any changes from smart contract
 // If doesn't exist, prompt web to create account
-export const init = (bridge) => {
+export const init = async (bridge) => {
     console.log('[DesktopBridge] Initializing')
 
     local.bridge = bridge
 
-    setEnvironmentMode(DB.application.config.data[0].environment_mode).then()
+    await setEnvironmentMode(DB.application.config.data[0].environment_mode)
 }
