@@ -1123,6 +1123,15 @@ export const recoverPasswordRequest = async ({ secret_question_1, secret_answer_
     })
 }
 
+
+export const writeToClipboard = async (data) => {
+    return new Promise(async (resolve) => {
+        electron.clipboard.writeText(data, 'selection')
+
+        resolve()
+    })
+}
+
 export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, passphrase, encrypt_passphrase, secret_question_1, secret_answer_1, secret_question_2, secret_answer_2 }) => {
     return new Promise(async (resolve) => {
         const account = await Wallet.create(passphrase, 0)
@@ -1396,6 +1405,9 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'setEnvironmentMode') {
             resultData = await setEnvironmentMode(cmd.data)
             resultKey = 'setEnvironmentModeResponse'
+        } else if (cmd.key === 'writeToClipboard') {
+            resultData = await writeToClipboard(cmd.data)
+            resultKey = 'writeToClipboardResponse'
         } else if (cmd.key === 'error') {
             console.log('[BlockHub] Web Error: ', cmd.data)
 
