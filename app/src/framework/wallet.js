@@ -23,8 +23,8 @@ export const ethereum = {
             },
             host: 'localhost',
             port: 8545,
-            gas: 4500000,
-            gasPrice: 25000000000,
+            gas: 6500000,
+            gasPrice: 10e9,
             network_id: '*'
         },
         kovan: {
@@ -36,8 +36,8 @@ export const ethereum = {
                 )
             },
             network_id: '*',
-            gas: 4500000,
-            gasPrice: 25000000000
+            gas: 6500000,
+            gasPrice: 10e9
         },
         rinkeby: {
             provider: function (passphrase, index) {
@@ -48,8 +48,8 @@ export const ethereum = {
                 )
             },
             network_id: '*',
-            gas: 4500000,
-            gasPrice: 25000000000
+            gas: 6500000,
+            gasPrice: 10e9
         },
         mainnet: {
             provider: function (passphrase, index) {
@@ -60,8 +60,8 @@ export const ethereum = {
                 )
             },
             network_id: '*',
-            gas: 4500000,
-            gasPrice: 25000000000
+            gas: 6500000,
+            gasPrice: 10e9
         },
         ropsten: {
             provider: function (passphrase, index) {
@@ -72,8 +72,8 @@ export const ethereum = {
                 )
             },
             network_id: 3,
-            gas: 4500000,
-            gasPrice: 25000000000
+            gas: 6500000,
+            gasPrice: 10e9
         }
     }
 }

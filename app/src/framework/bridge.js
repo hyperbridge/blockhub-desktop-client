@@ -96,8 +96,9 @@ export const promptPasswordRequest = async (data = {}) => {
                 data = { error: { message: 'Password was incorrect', code: 1 } }
             }
         }
-        console.log('passphrase')
-        console.log(local.passphrase)
+
+        console.log('passphrase', local.passphrase)
+
         local.account.wallet = await Wallet.create(local.passphrase)
 
         Windows.main.window.setSize(1440, 800)
@@ -174,6 +175,8 @@ export const getProtocolByName = (name) => {
     throw new Error('[DesktopBridge] Unknown protocol requested: ' + name)
 }
 
+
+
 export const setContractAddress = async ({ protocolName, contractName, address }) => {
     return new Promise(async (resolve, reject) => {
         let protocol = getProtocolByName(protocolName)
@@ -186,6 +189,16 @@ export const setContractAddress = async ({ protocolName, contractName, address }
             .then(() => {
                 resolve()
             })
+
+        // update saved contract address
+        // 0x05b3dc72dbda198bc8434993c4feb0f20c179a58
+        const state = DB.application.config.data[0]
+        const currentNetwork = state.current_ethereum_network
+
+        const config = state.ethereum[currentNetwork].packages[protocolName]
+        config.contracts[contractName].address = address
+
+        DB.save()
     })
 }
 
@@ -270,7 +283,7 @@ export const createMarketplaceProductRequest = async ({ profile, product }) => {
 
             product.$loki = undefined
             product.id = res.args.productId.toNumber()
-console.log('before', product.id)
+
             try {
                 DB.marketplace.products.insert(product)
                 console.log('after', product.id)
@@ -326,12 +339,6 @@ export const getAllProducts = async () => {
         //await marketplaceStorage.getUint(web3.sha3(web3._extend.utils.toHex("developer.developerMap") + identity.public_address.replace('0x', ''), { encoding: 'hex' }));
     })
 }
-
-
-//this.identities = await getAllIdentities()
-
-
-//this.projects = await getAllProjects()
 
 // Do same as Developer, but just save as curator_id instead
 export const createCuratorRequest = async (identity) => {
@@ -574,73 +581,6 @@ export const deployContract = async ({ protocolName, contractName, oldContractAd
         const config = state.ethereum[currentNetwork].packages[protocolName]
         const web3 = local.account.wallet.web3
 
-        if (protocolName === 'reserve' && contractName === 'TokenSale') {
-            let token = TokenAPI.api.ethereum.state.contracts.Token.deployed
-            const eternalStorage = TokenAPI.api.ethereum.state.contracts.EternalStorage.deployed
-            const hbxToken = TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed
-            const tokenLib = TokenAPI.api.ethereum.state.contracts.TokenLib.deployed
-
-            await eternalStorage.addAdmin(hbxToken.address, { from: local.account.wallet.public_address })
-
-            await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address }).catch(() => {})
-
-            token = { ...TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed, token }
-
-            const tokenWallet = await Wallet.create(local.passphrase, 1000)
-            const saleWallet = await Wallet.create(local.passphrase, 1001)
-
-            const tokenSupply = web3._extend.utils.toBigNumber('1e22')
-            const tokenAllowance = web3._extend.utils.toBigNumber('1e22')
-
-            // await token.setTotalSupply(tokenSupply, {from: owner3})
-            await token.mint(tokenWallet.public_address, tokenSupply, { from: local.account.wallet.public_address })
-
-            const latestBlock = await web3.eth.getBlockPromise('latest')
-            const openingTime = latestBlock.timestamp + duration.weeks(1)
-            const closingTime = openingTime + duration.weeks(1)
-            const beforeEndTime = closingTime - duration.hours(1)
-            const afterClosingTime = closingTime + duration.hours(1)
-            const rate = web3._extend.utils.toBigNumber(1)
-            const cap = web3._extend.utils.toBigNumber(web3._extend.utils.toWei(100, 'ether'))
-
-            // uint256 _rate, address _wallet, ERC20 _token, address _tokenWallet, uint256 _cap, uint256 _startTime, uint256 _endTime
-            const tokensale = await ReserveAPI.api.ethereum.deployContract('TokenSale', [], [
-                rate,
-                saleWallet.public_address,
-                hbxToken.address,
-                tokenWallet.public_address,
-                cap,
-                openingTime,
-                closingTime
-            ])
-            // const tokensale = await ReserveAPI.api.ethereum.state.contracts.TokenSale.new(
-            //     rate, 
-            //     saleWallet.public_address, 
-            //     hbxToken.address, 
-            //     tokenWallet.public_address, 
-            //     cap, 
-            //     openingTime, 
-            //     closingTime
-            // )
-
-            await token.approve(tokensale.address, tokenAllowance, { from: local.account.wallet.public_address })
-
-            const created_at = Date.now()
-            const address = tokensale.address
-
-            config.contracts[contractName].created_at = created_at
-            config.contracts[contractName].address = address
-
-            DB.application.config.update(state)
-            DB.save()
-
-            return resolve({
-                name: contractName,
-                created_at,
-                address
-            })
-        }
-
         let links = []
         let params = []
 
@@ -687,51 +627,123 @@ export const deployContract = async ({ protocolName, contractName, oldContractAd
             }
         }
 
-        protocol.api.ethereum
-            .deployContract(contractName, links, params)
-            .then(async (contract) => {
-                config.contracts[contractName].created_at = Date.now()
-                config.contracts[contractName].address = contract.address
+        console.log('[BlockHub] Deploying contract ' + contractName + ' with params ' + params + ' and links ' + links)
+        
 
-                DB.application.config.update(state)
-                DB.save()
+        if (protocolName === 'reserve' && contractName === 'TokenSale') {
+            let token = TokenAPI.api.ethereum.state.contracts.Token.deployed
+            const eternalStorage = TokenAPI.api.ethereum.state.contracts.EternalStorage.deployed
+            const hbxToken = TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed
+            const tokenLib = TokenAPI.api.ethereum.state.contracts.TokenLib.deployed
 
-                if (protocolName === 'marketplace' && contractName === 'Developer') {
-                    const developerContract = protocol.api.ethereum.state.contracts.Developer.deployed
-                    const marketplaceStorage = protocol.api.ethereum.state.contracts.MarketplaceStorage.deployed
+            await eternalStorage.addAdmin(hbxToken.address, { from: local.account.wallet.public_address })
 
-                    if (!oldContractAddress) {
-                        oldContractAddress = 0x0000000000000000000000000000000000000000
+            await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address }).catch(() => { })
+
+            token = { ...TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed, ...token }
+
+            const tokenWallet = await Wallet.create(local.passphrase, 1000) // this should be a semi-secure wallet - metamask
+            const saleWallet = await Wallet.create(local.passphrase, 1001) // this should be secure wallet - hardware
+
+            const decimals = web3._extend.utils.toBigNumber(18)
+            const totalAmount = web3._extend.utils.toBigNumber(1000000000)
+            const saleAmount = web3._extend.utils.toBigNumber(300000000)
+
+            const tokenSupply = totalAmount.times(web3._extend.utils.toBigNumber(10).pow(decimals))
+            const tokenAllowance = saleAmount.times(web3._extend.utils.toBigNumber(10).pow(decimals))
+
+            //web3._extend.utils.toBigNumber('1e22') // 1^9 x 10^18
+            // await token.setTotalSupply(tokenSupply, {from: owner3})
+            await token.mint(tokenWallet.public_address, tokenSupply, { from: local.account.wallet.public_address })
+
+            const latestBlock = await web3.eth.getBlockPromise('latest')
+            console.log(8888, latestBlock.timestamp)
+            const openingTime = latestBlock.timestamp + 200 //latestBlock.timestamp + duration.weeks(1) // nov 10 is 1541862000
+            const closingTime = 1544454000 //openingTime + duration.weeks(1)
+
+            const rate = web3._extend.utils.toBigNumber(210.39 / 0.055) // 3825 timbits per wei
+            const cap = web3._extend.utils.toBigNumber(web3._extend.utils.toWei(18500000 / 210.39, 'ether'))
+
+            // uint256 _rate, address _wallet, ERC20 _token, address _tokenWallet, uint256 _cap, uint256 _startTime, uint256 _endTime
+            const tokensale = await ReserveAPI.api.ethereum.deployContract('TokenSale', [], [
+                rate,
+                saleWallet.public_address,
+                hbxToken.address,
+                tokenWallet.public_address,
+                cap,
+                openingTime,
+                closingTime
+            ])
+
+            config.contracts[contractName].created_at = Date.now()
+            config.contracts[contractName].address = tokensale.address
+
+            DB.application.config.update(state)
+            DB.save()
+            
+            const originalProvider = TokenAPI.api.ethereum.state.provider
+
+            TokenAPI.api.ethereum.state.contracts.Token.contract.setProvider(tokenWallet.provider)
+            TokenAPI.api.ethereum.state.contracts.Token.contract.provider = tokenWallet.provider
+            TokenAPI.api.ethereum.state.contracts.TokenDelegate.contract.setProvider(tokenWallet.provider)
+            let tokenDelegateHolder = await TokenAPI.api.ethereum.state.contracts.TokenDelegate.contract.at(hbxToken.address)
+            let tokenWalletHolder = await TokenAPI.api.ethereum.state.contracts.Token.contract.at(token.address)
+            tokenWalletHolder = { ...tokenDelegateHolder, ...tokenWalletHolder }
+
+            await tokenWalletHolder.approve(tokensale.address, tokenAllowance, { from: tokenWallet.public_address })
+
+            TokenAPI.api.ethereum.state.contracts.Token.contract.setProvider(originalProvider)
+            TokenAPI.api.ethereum.state.contracts.TokenDelegate.contract.setProvider(originalProvider)
+
+            return resolve(config.contracts[contractName])
+        } else {
+            protocol.api.ethereum
+                .deployContract(contractName, links, params)
+                .then(async (contract) => {
+                    config.contracts[contractName].created_at = Date.now()
+                    config.contracts[contractName].address = contract.address
+
+                    DB.application.config.update(state)
+                    DB.save()
+
+                    if (protocolName === 'marketplace' && contractName === 'Developer') {
+                        const developerContract = protocol.api.ethereum.state.contracts.Developer.deployed
+                        const marketplaceStorage = protocol.api.ethereum.state.contracts.MarketplaceStorage.deployed
+
+                        if (!oldContractAddress) {
+                            oldContractAddress = 0x0000000000000000000000000000000000000000
+                        }
+
+                        try {
+                            await marketplaceStorage.registerContract("Developer", oldContractAddress, developerContract.address)
+                            await developerContract.initialize()
+                        } catch (e) {
+                            console.log('Tried to register ' + contractName + ' but its probably already registered')
+                        }
                     }
 
-                    try {
-                        await marketplaceStorage.registerContract("Developer", oldContractAddress, developerContract.address)
-                        await developerContract.initialize()
-                    } catch(e) {
-                        console.log('Tried to register ' + contractName + ' but its probably already registered')
+                    if (protocolName === 'marketplace' && contractName === 'ProductRegistration') {
+                        const blankAddress = 0x0000000000000000000000000000000000000000
+                        const marketplaceStorage = protocol.api.ethereum.state.contracts.MarketplaceStorage.deployed
+                        const productRegistrationContract = protocol.api.ethereum.state.contracts.ProductRegistration.deployed
+
+                        await marketplaceStorage.registerContract("ProductRegistration", blankAddress, productRegistrationContract.address)
+                        await productRegistrationContract.initialize()
                     }
-                }
 
-                if (protocolName === 'marketplace' && contractName === 'ProductRegistration') {
-                    const blankAddress = 0x0000000000000000000000000000000000000000
-                    const marketplaceStorage = protocol.api.ethereum.state.contracts.MarketplaceStorage.deployed
-                    const productRegistrationContract = protocol.api.ethereum.state.contracts.ProductRegistration.deployed
+                    if (protocolName === 'funding' && contractName === 'ProjectRegistration') {
+                        const blankAddress = 0x0000000000000000000000000000000000000000
+                        const projectRegistrationContract = protocol.api.ethereum.state.contracts.ProjectRegistration.deployed
+                        const fundingStorageContract = protocol.api.ethereum.state.contracts.FundingStorage.deployed
 
-                    await marketplaceStorage.registerContract("ProductRegistration", blankAddress, productRegistrationContract.address)
-                    await productRegistrationContract.initialize()
-                }
+                        await fundingStorageContract.registerContract('ProjectRegistration', blankAddress, projectRegistrationContract.address)
+                        await projectRegistrationContract.initialize()
+                    }
 
-                if (protocolName === 'funding' && contractName === 'ProjectRegistration') {
-                    const blankAddress = 0x0000000000000000000000000000000000000000
-                    const projectRegistrationContract = protocol.api.ethereum.state.contracts.ProjectRegistration.deployed
-                    const fundingStorageContract = protocol.api.ethereum.state.contracts.FundingStorage.deployed
+                    resolve(config.contracts[contractName])
+                })
+        }
 
-                    await fundingStorageContract.registerContract('ProjectRegistration', blankAddress, projectRegistrationContract.address)
-                    await projectRegistrationContract.initialize()
-                }
-
-                resolve(config.contracts[contractName])
-            })
     })
 }
 
@@ -1024,7 +1036,7 @@ Are you sure you want to send?`
                 console.log(DB.application.config.data[0].account.identities)
                 
                 const walletIndex = DB.application.config.data[0].account.identities.find((identity) => fromAddress.toLowerCase() === identity.public_address.toLowerCase()).id
-                console.log(walletIndex, local.passphrase)
+
                 const wallet = await Wallet.create(local.passphrase, walletIndex)
                 const web3 = wallet.web3
 
@@ -1309,6 +1321,10 @@ export const runCommand = async (cmd, meta = {}) => {
                 const products = await getAllProducts()
                 console.log(products)
 
+                //this.identities = await getAllIdentities()
+                //this.projects = await getAllProjects()
+
+
                 // If exists, prompt web to require password
                 // Web sends back response (requirePasswordResponse)
                 // Decrypt the passphrase and use to set web3 provider
@@ -1343,7 +1359,7 @@ export const runCommand = async (cmd, meta = {}) => {
             resultData = await handleGetAccountRequest(cmd.data)
             resultKey = 'getAccountResponse'
         } else if (cmd.key === 'setContractAddress') {
-            resultData = await handleSetContractAddress(cmd.data)
+            resultData = await setContractAddress(cmd.data)
             resultKey = 'setContractAddressResponse'
         } else if (cmd.key === 'deployContract') {
             resultData = await deployContract(cmd.data)
@@ -1408,6 +1424,11 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'writeToClipboard') {
             resultData = await writeToClipboard(cmd.data)
             resultKey = 'writeToClipboardResponse'
+        } else if (cmd.key === 'timmy') {
+            const web3 = local.account.wallet.web3
+            const capBob = web3._extend.utils.toBigNumber(web3._extend.utils.toWei(45000 / 210.39, 'ether'))
+            const bob = '0x40D68278b83F13d0310DA1560ecCF18d6Aa11c9e'
+            await ReserveAPI.api.ethereum.state.contracts.TokenSale.deployed.setGroupCap([bob], capBob);
         } else if (cmd.key === 'error') {
             console.log('[BlockHub] Web Error: ', cmd.data)
 
@@ -1416,13 +1437,12 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'fetchPageDataRequest') {
             const { url, script } = cmd.data
 
-
             const requestedWindow = new electron.BrowserWindow({
                 width: 330,
                 height: 330,
                 resizable: false,
                 frame: false,
-                show: true,
+                show: false,
                 backgroundColor: '#30314c',
                 webPreferences: {
                     preload: path.join(__dirname, '../main/preload.js'),
@@ -1466,7 +1486,7 @@ export const runCommand = async (cmd, meta = {}) => {
 
             requestedWindow.webContents.loadURL(url)
 
-            requestedWindow.webContents.openDevTools({ mode: "detach" })
+            //requestedWindow.webContents.openDevTools({ mode: "detach" })
 
             local.requests[cmd.requestId] = {
                 resolve: async (data) => {
