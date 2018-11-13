@@ -1,6 +1,6 @@
 {
     "name": "blockhub-desktop-client",
-    "version": "0.7.0",
+    "version": "0.7.1",
     "description": "BlockHub Desktop Client",
     "license": "SEE LICENSE IN LICENSE.md",
     "author": {
@@ -15,6 +15,7 @@
         "dev": "npm run build && ./node_modules/.bin/electron . --dev --tools"
     },
     "dependencies": {
+        "@babel/runtime-corejs2": "^7.1.5",
         "application-config": "^1.0.0",
         "arch": "^2.0.0",
         "bignumber.js": "^7.2.1",

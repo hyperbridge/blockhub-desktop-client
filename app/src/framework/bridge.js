@@ -78,10 +78,10 @@ export const promptPasswordRequest = async (data = {}) => {
             // Decrypt the passphrase and use to set web3 provider
             try {
                 let passphrase = null
-                if (DB.application.config.data[0].account.encrypt_passphrase) {
-                    passphrase = decrypt(DB.application.config.data[0].account.passphrase, res.password)
+                if (local.account.encrypt_passphrase) {
+                    passphrase = decrypt(local.account.passphrase, res.password)
                 } else {
-                    passphrase = DB.application.config.data[0].account.passphrase
+                    passphrase = local.account.passphrase
                 }
 
                 if (!passphrase) {
@@ -99,7 +99,7 @@ export const promptPasswordRequest = async (data = {}) => {
 
         console.log('passphrase', local.passphrase)
 
-        local.account.wallet = await Wallet.create(local.passphrase)
+        local.wallet = await Wallet.create(local.passphrase)
 
         Windows.main.window.setSize(1440, 800)
         Windows.main.window.center()
@@ -110,16 +110,15 @@ export const promptPasswordRequest = async (data = {}) => {
 
 export const createIdentityRequest = (identity) => {
     return new Promise(async (resolve, reject) => {
-        const id = (DB.application.config.data[0].account.identity_index || 10) +1
+        const id = (local.account.identity_index || 10) +1
         const identity = await Wallet.create(local.passphrase, id)
 
-        DB.application.config.data[0].account.identities.push({
+        local.account.identities.push({
             id,
             public_address: identity.public_address
         })
 
-        DB.application.config.data[0].account.identity_index = id
-        DB.save()
+        local.account.identity_index = id
 
         await saveAccountFile()
 
@@ -132,11 +131,9 @@ export const createIdentityRequest = (identity) => {
 
 export const saveIdentityRequest = (identity) => {
     return new Promise(async (resolve, reject) => {
-        const origIdentity = DB.application.config.data[0].account.identities.find(i => i.id === identity.id)
+        const origIdentity = local.account.identities.find(i => i.id === identity.id)
 
         origIdentity.name = identity.name
-        
-        DB.save()
 
         await saveAccountFile()
 
@@ -146,12 +143,10 @@ export const saveIdentityRequest = (identity) => {
 
 export const removeIdentityRequest = (identity) => {
     return new Promise(async (resolve, reject) => {
-        const origIdentity = DB.application.config.data[0].account.identities.find(i => i.id === identity.id)
+        const origIdentity = local.account.identities.find(i => i.id === identity.id)
 
-        const index = DB.application.config.data[0].account.identities.indexOf(origIdentity)
-        DB.application.config.data[0].account.identities.splice(index, 1)
-
-        DB.save()
+        const index = local.account.identities.indexOf(origIdentity)
+        local.account.identities.splice(index, 1)
 
         await saveAccountFile()
 
@@ -261,6 +256,15 @@ export const createFundingProject = async ({ title, description, about }) => {
             project.noRefunds,
             project.noTimeline
         )
+
+        watcher.stopWatching()
+
+        await projectRegistrationContract.setProjectContributionGoals(projectId, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, { from: developerAccount });
+        await projectRegistrationContract.setProjectTerms(projectId, noRefunds, noTimeline, { from: developerAccount });
+
+        const project = await projectRegistrationContract.getProject(projectId);
+
+        console.log(project)
     })
 }
 
@@ -318,7 +322,7 @@ export const createMarketplaceProductRequest = async ({ profile, product }) => {
 export const getAllProducts = async () => {
     return new Promise(async (resolve, reject) => {
         console.log('[BlockHub] Filtering Ethereum logs for production creation events')
-        const web3 = local.account.wallet.web3
+        const web3 = local.wallet.web3
         const filter = web3.eth.filter({ toBlock: 'pending' })
 
         filter.watch((error, log) => {
@@ -343,10 +347,10 @@ export const getAllProducts = async () => {
 // Do same as Developer, but just save as curator_id instead
 export const createCuratorRequest = async (identity) => {
     return new Promise(async (resolve, reject) => {
-        const web3 = local.account.wallet.web3
+        const web3 = local.wallet.web3
         const developerContract = MarketplaceAPI.api.ethereum.state.contracts.Developer.deployed
 
-        identity = DB.application.config.data[0].account.identities.filter(i => i.id === identity.id)[0]
+        identity = local.account.identities.filter(i => i.id === identity.id)[0]
 
         let watcher = developerContract.DeveloperCreated().watch(function (error, result) {
             if (!error) {
@@ -402,10 +406,10 @@ export const createCuratorRequest = async (identity) => {
 
 export const registerUsernameRequest = async (identity) => {
     return new Promise(async (resolve, reject) => {
-        const web3 = local.account.wallet.web3
+        const web3 = local.wallet.web3
         const developerContract = DomainAPI.api.ethereum.state.contracts.DomainManager.deployed
 
-        identity = DB.application.config.data[0].account.identities.filter(i => i.id === identity.id)[0]
+        identity = local.account.identities.filter(i => i.id === identity.id)[0]
 
         let watcher = developerContract.DeveloperCreated().watch(function (error, result) {
             if (!error) {
@@ -426,10 +430,10 @@ export const registerUsernameRequest = async (identity) => {
 
 export const createDeveloperRequest = async (identity) => {
     return new Promise(async (resolve, reject) => {
-        const web3 = local.account.wallet.web3
+        const web3 = local.wallet.web3
         const developerContract = MarketplaceAPI.api.ethereum.state.contracts.Developer.deployed
 
-        identity = DB.application.config.data[0].account.identities.filter(i => i.id === identity.id)[0]
+        identity = local.account.identities.filter(i => i.id === identity.id)[0]
 
         let watcher = developerContract.DeveloperCreated().watch(function (error, result) {
             if (!error) {
@@ -509,16 +513,16 @@ export const initProtocol = async ({ protocolName }) => {
         
         //const provider = getWebProvider(currentNetwork)
 
-        // local.account.wallet.web3.eth.accounts.privateKeyToAccount('0x' + local.account.private_key, (err, account) => {
-        //     local.account.wallet.web3.eth.accounts.wallet.add(account, () => { })
+        // local.wallet.web3.eth.accounts.privateKeyToAccount('0x' + local.account.private_key, (err, account) => {
+        //     local.wallet.web3.eth.accounts.wallet.add(account, () => { })
         // })
 
-        config.user_from_address = DB.application.config.data[0].account.public_address
+        config.user_from_address = local.account.public_address
         
         console.log('[BlockHub] Initializing protocol, with public address: ', config.user_from_address)
 
         protocol.api.ethereum.init(
-            local.account.wallet.provider,
+            local.wallet.provider,
             config.user_from_address,
             config.user_to_address
         )
@@ -579,7 +583,7 @@ export const deployContract = async ({ protocolName, contractName, oldContractAd
         const state = DB.application.config.data[0]
         const currentNetwork = state.current_ethereum_network
         const config = state.ethereum[currentNetwork].packages[protocolName]
-        const web3 = local.account.wallet.web3
+        const web3 = local.wallet.web3
 
         let links = []
         let params = []
@@ -633,9 +637,9 @@ export const deployContract = async ({ protocolName, contractName, oldContractAd
             const hbxToken = TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed
             const tokenLib = TokenAPI.api.ethereum.state.contracts.TokenLib.deployed
 
-            //await eternalStorage.addAdmin(hbxToken.address, { from: local.account.wallet.public_address })
+            //await eternalStorage.addAdmin(hbxToken.address, { from: local.wallet.public_address })
 
-            //await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address }).catch(() => { })
+            //await token.upgradeTo(hbxToken.address, { from: local.wallet.public_address }).catch(() => { })
 
             token = { ...TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed, ...token }
 
@@ -651,7 +655,7 @@ export const deployContract = async ({ protocolName, contractName, oldContractAd
             const tokenSupply = totalAmount.times(web3._extend.utils.toBigNumber(10).pow(decimals))
             const tokenAllowance = saleAmount.times(web3._extend.utils.toBigNumber(10).pow(decimals))
 
-            //await token.mint(tokenWallet.public_address, tokenSupply, { from: local.account.wallet.public_address })
+            //await token.mint(tokenWallet.public_address, tokenSupply, { from: local.wallet.public_address })
 
             const latestBlock = await web3.eth.getBlockPromise('latest')
 
@@ -751,7 +755,7 @@ export const deployContract = async ({ protocolName, contractName, oldContractAd
 
 export const setAccountRequest = async () => {
     return new Promise(async (resolve) => {
-        let account = DB.application.config.data[0].account
+        let account = local.account
 
         if (local.password) {
             const decryptedPrivateKey = decrypt(account.private_key, local.password)
@@ -806,16 +810,15 @@ export const updateAccountRequest = async (data) => {
     return new Promise(async (resolve) => {
         if (data.encrypt_passphrase) {
             if (data.encrypt_passphrase) {
-                DB.application.config.data[0].account.passphrase = encrypt(DB.application.config.data[0].account.passphrase, local.password)
+                local.account.passphrase = encrypt(local.account.passphrase, local.password)
             } else {
                 // We're disabling when previously enabled
-                if (DB.application.config.data[0].account.encrypt_passphrase) {
-                    DB.application.config.data[0].account.passphrase = decrypt(DB.application.config.data[0].account.passphrase, local.password)
+                if (local.account.encrypt_passphrase) {
+                    local.account.passphrase = decrypt(local.account.passphrase, local.password)
                 }
             }
 
-            DB.application.config.data[0].account.encrypt_passphrase = data.encrypt_passphrase
-            DB.save()
+            local.account.encrypt_passphrase = data.encrypt_passphrase
 
             await saveAccountFile()
 
@@ -881,7 +884,7 @@ export const saveAccountFileRequest = async (data) => {
     return new Promise(async (resolve) => {
         const userDataPath = electron.app.getPath('userData')
 
-        await saveFile(path.join(userDataPath, 'account.json'), JSON.stringify(DB.application.config.data[0].account))
+        await saveFile(path.join(userDataPath, 'account.json'), JSON.stringify(local.account))
     })
 }
 
@@ -916,7 +919,7 @@ export const importAccountFileRequest = async (data) => {
 
 export const exportAccountFileRequest = async (data) => {
     return new Promise(async (resolve, reject) => {
-        const content = JSON.stringify(DB.application.config.data[0].account)
+        const content = JSON.stringify(local.account)
 
         electron.dialog.showSaveDialog({ defaultPath: "*/account.json" }, (fileName) => {
             if (fileName === undefined) {
@@ -937,7 +940,7 @@ export const exportAccountFileRequest = async (data) => {
 
 export const deleteAccountRequest = async (data) => {
     return new Promise(async (resolve, reject) => {
-        const content = JSON.stringify(DB.application.config.data[0].account)
+        const content = JSON.stringify(local.account)
 
         const options = {
             title: 'Delete Account?',
@@ -951,7 +954,7 @@ export const deleteAccountRequest = async (data) => {
                 const path = electron.app.getPath('userData')
                 removeFile(path + '/account.json')
 
-                DB.application.config.data[0].account = {
+                local.account = {
                     public_address: null,
                     secret_question_1: null,
                     secret_answer_1: null,
@@ -966,10 +969,8 @@ export const deleteAccountRequest = async (data) => {
                     birthday: null,
                 }
 
-                DB.save()
-
                 await sendCommand('setAccountRequest', {
-                    account: DB.application.config.data[0].account
+                    account: local.account
                 })
             }
         })
@@ -980,9 +981,9 @@ export const saveAccountFile = async () => {
     return new Promise(async (resolve) => {
         const path = electron.app.getPath('userData')
 
-        console.log(DB.application.config.data[0].account)
+        console.log(local.account)
 
-        saveFile(path + '/account.json', JSON.stringify(DB.application.config.data[0].account))
+        saveFile(path + '/account.json', JSON.stringify(local.account))
 
         resolve()
     })
@@ -1034,9 +1035,9 @@ Are you sure you want to send?`
         electron.dialog.showMessageBox(Windows.main.window, options, async (res) => {
             if (res === 0) {
                 console.log(fromAddress.toLowerCase())
-                console.log(DB.application.config.data[0].account.identities)
+                console.log(local.account.identities)
                 
-                const walletIndex = DB.application.config.data[0].account.identities.find((identity) => fromAddress.toLowerCase() === identity.public_address.toLowerCase()).id
+                const walletIndex = local.account.identities.find((identity) => fromAddress.toLowerCase() === identity.public_address.toLowerCase()).id
 
                 const wallet = await Wallet.create(local.passphrase, walletIndex)
                 const web3 = wallet.web3
@@ -1090,12 +1091,12 @@ export const setEnvironmentMode = async (environmentMode) => {
         DB.save()
 
         Wallet.ethereum.activeNetwork = networkOptions[environmentMode]
-        Wallet.ethereum.fromAddress = DB.application.config.data[0].account.public_address
+        Wallet.ethereum.fromAddress = local.account.public_address
 
         console.log('[BlockHub] Setting environment mode: ', environmentMode)
         console.log('[BlockHub] Setting active network: ', networkOptions[environmentMode])
 
-        sendCommand('updateState', {
+        await sendCommand('updateState', {
             module: 'application',
             state: {
                 environment_mode: environmentMode,
@@ -1104,7 +1105,7 @@ export const setEnvironmentMode = async (environmentMode) => {
         })
 
         // Tell web protocol config data
-        if (local.account.wallet) {
+        if (local.wallet) {
             await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'token' }))
             await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'reserve' }))
             await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'funding' }))
@@ -1121,7 +1122,7 @@ export const recoverPasswordRequest = async ({ secret_question_1, secret_answer_
         let password = null
 
         try {
-            password = decrypt(DB.application.config.data[0].account.password, secret_answer_1 + birthday)
+            password = decrypt(local.account.password, secret_answer_1 + birthday)
 
             if (!password) {
                 throw new Error()
@@ -1147,22 +1148,22 @@ export const writeToClipboard = async (data) => {
 
 export const handleCreateAccountRequest = async ({ email, password, birthday, first_name, last_name, passphrase, encrypt_passphrase, secret_question_1, secret_answer_1, secret_question_2, secret_answer_2 }) => {
     return new Promise(async (resolve) => {
-        const account = await Wallet.create(passphrase, 0)
+        const wallet = await Wallet.create(passphrase, 0)
         const identity = await Wallet.create(passphrase, 10)
 
-        DB.application.config.data[0].account = {
-            ...DB.application.config.data[0].account,
-            public_address: account.public_address,
+        local.account = {
+            ...local.account,
+            public_address: wallet.public_address,
             secret_question_1: secret_question_1,
             secret_question_2: secret_question_2,
             encrypt_passphrase: encrypt_passphrase,
             passphrase: encrypt_passphrase ? encrypt(passphrase, password) : passphrase,
-            private_key: encrypt(account.private_key, password),
+            private_key: encrypt(wallet.private_key, password),
             password: encrypt(password, secret_answer_1 + birthday),
-            email: encrypt(email, account.private_key),
-            first_name: encrypt(first_name, account.private_key),
-            last_name: encrypt(last_name, account.private_key),
-            birthday: encrypt(birthday, account.private_key),
+            email: encrypt(email, wallet.private_key),
+            first_name: encrypt(first_name, wallet.private_key),
+            last_name: encrypt(last_name, wallet.private_key),
+            birthday: encrypt(birthday, wallet.private_key),
             versonCreated: config.APP_VERSION,
             identity_index: 10,
             current_identity: {
@@ -1178,17 +1179,15 @@ export const handleCreateAccountRequest = async ({ email, password, birthday, fi
             ]
         }
 
-        DB.save()
-
         await saveAccountFile()
 
         local.password = password
-        local.account.wallet = account
+        local.wallet = wallet
 
         // Tell web all non-sensitive account info
         resolve({
             account: {
-                public_address: account.public_address,
+                public_address: wallet.public_address,
                 email: email,
                 first_name: first_name,
                 last_name: last_name,
@@ -1279,29 +1278,31 @@ export const runCommand = async (cmd, meta = {}) => {
             console.log('[BlockHub] Web initialized', cmd.data) // msg from web page
 
             if (cmd.data == '1') {
-                const mode = config.IS_PRODUCTION ? 'production' : 'local'
+                await setEnvironmentMode(DB.application.config.data[0].environment_mode)
 
-                sendCommand('setMode', mode)
+                // const mode = config.IS_PRODUCTION ? 'production' : 'local'
+
+                // sendCommand('setMode', mode)
 
                 // Check for account file and load it
                 try {
                     const userDataPath = electron.app.getPath('userData')
                     const accountData = await readFile(path.join(userDataPath, 'account.json'))
 
-                    DB.application.config.data[0].account = JSON.parse(accountData)
+                    local.account = JSON.parse(accountData)
                 } catch (e) {
                     console.log(e)
                 }
 
                 // Prompt password request if account exists but hasn't been unlocked
-                if (DB.application.config.data[0].account.passphrase) {
-                    if (DB.application.config.data[0].account.encrypt_passphrase && !local.password) {
+                if (local.account.passphrase) {
+                    if (local.account.encrypt_passphrase && !local.password) {
                         // Desktop asks to prompt password
-                        await promptPasswordRequest({ secret_question_1: DB.application.config.data[0].account.secret_question_1 })
+                        await promptPasswordRequest({ secret_question_1: local.account.secret_question_1 })
                     } else {
                         // Passphrase was already decrypted and not already set (incase reloading page)
                         if (!local.passphrase) {
-                            local.passphrase = DB.application.config.data[0].account.passphrase
+                            local.passphrase = local.account.passphrase
                         }
                     }
 
@@ -1425,8 +1426,45 @@ export const runCommand = async (cmd, meta = {}) => {
         } else if (cmd.key === 'writeToClipboard') {
             resultData = await writeToClipboard(cmd.data)
             resultKey = 'writeToClipboardResponse'
+        } else if (cmd.key === 'eval') {
+            // Don't allow eval in production
+            if (!config.IS_PRODUCTION) {
+                const BABEL_PROMISE = {
+                    a: require("@babel/runtime-corejs2/core-js/promise")
+                }
+
+                const BABEL_GENERATOR = function () {
+                    return require('@babel/runtime-corejs2/helpers/asyncToGenerator')
+                }
+
+                const BABEL_REGENERATOR = {
+                    a: require('@babel/runtime-corejs2/regenerator')
+                }
+
+                let evalCode = cmd.data
+
+                evalCode = evalCode.replace(/babel_runtime_core_js_promise__WEBPACK_IMPORTED_MODULE_.___default/g, 'BABEL_PROMISE')
+                evalCode = evalCode.replace(/babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_.___default/g, 'BABEL_GENERATOR')
+                evalCode = evalCode.replace(/babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_.___default/g, 'BABEL_REGENERATOR')
+
+                resultData = Function('return (' + evalCode + ')')()(
+                    local, 
+                    DB, 
+                    FundingAPI, 
+                    MarketplaceAPI, 
+                    TokenAPI, 
+                    ReserveAPI, 
+                    BABEL_PROMISE, 
+                    BABEL_GENERATOR,
+                    BABEL_REGENERATOR
+                )
+            } else {
+                resultData = {}
+            }
+
+            resultKey = 'evalResponse'
         } else if (cmd.key === 'timmy') {
-            const web3 = local.account.wallet.web3
+            const web3 = local.wallet.web3
             const capBob = web3._extend.utils.toBigNumber(web3._extend.utils.toWei(45000 / 210.39, 'ether'))
             const bob = '0x40D68278b83F13d0310DA1560ecCF18d6Aa11c9e'
             await ReserveAPI.api.ethereum.state.contracts.TokenSale.deployed.setGroupCap([bob], capBob);
@@ -1617,6 +1655,4 @@ export const init = async (bridge) => {
     console.log('[DesktopBridge] Initializing')
 
     local.bridge = bridge
-
-    await setEnvironmentMode(DB.application.config.data[0].environment_mode)
 }

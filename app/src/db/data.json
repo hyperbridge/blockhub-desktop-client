@@ -1,7 +1,7 @@
 {
   "application": [
     {
-      "environment_mode": "production",
+      "environment_mode": "local",
       "signed_in": false,
       "loading": false,
       "connection": {
@@ -45,7 +45,7 @@
                   "address": "0x2793a23341012e0970cf478bab08606b56504c3e"
                 }
               },
-              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
+              "user_from_address": "0x71085a8010347d6a09bd33005c1f8f4c4eeffce3"
             },
             "reserve": {
               "contracts": {
@@ -57,7 +57,7 @@
                   "address": "0xebf0027ef3b4b7a742a148cddb0f2b14e5d8f0e9"
                 }
               },
-              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
+              "user_from_address": "0x71085a8010347d6a09bd33005c1f8f4c4eeffce3"
             },
             "marketplace": {
               "contracts": {
@@ -160,7 +160,7 @@
                   "created_at": null
                 }
               },
-              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
+              "user_from_address": "0x71085a8010347d6a09bd33005c1f8f4c4eeffce3"
             },
             "funding": {
               "contracts": {
@@ -265,7 +265,7 @@
                   "created_at": null
                 }
               },
-              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
+              "user_from_address": "0x71085a8010347d6a09bd33005c1f8f4c4eeffce3"
             }
           },
           "user_from_address": null,
@@ -278,32 +278,32 @@
                 "EternalStorage": {
                   "name": "EternalStorage",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/EternalStorage.sol",
-                  "created_at": 1541795262208,
-                  "address": "0x5b94982163bd6ced5e234ee6e44beb52b8ce0cfb"
+                  "created_at": null,
+                  "address": null
                 },
                 "TokenLib": {
                   "links": [],
                   "name": "TokenLib",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/TokenLib.sol",
-                  "created_at": 1541795284709,
-                  "address": "0xda79d23c1eddac9fda54bcf5aaf1d78867228bb1"
+                  "created_at": null,
+                  "address": null
                 },
                 "Token": {
                   "links": [],
                   "name": "Token",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/Token.sol",
-                  "created_at": 1541795316504,
-                  "address": "0xc21fdb98f052e29dee326d81a129a7263ca6698b"
+                  "created_at": null,
+                  "address": null
                 },
                 "TokenDelegate": {
                   "links": [ { "name": "TokenLib", "address": null } ],
                   "name": "TokenDelegate",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/TokenDelegate.sol",
-                  "created_at": 1541795342961,
-                  "address": "0x87bc80cfae3b035571f8ce29995f39f7ed1ee3ca"
+                  "created_at": null,
+                  "address": null
                 }
               },
-              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
+              "user_from_address": "0x71085a8010347d6a09bd33005c1f8f4c4eeffce3"
             },
             "reserve": {
               "contracts": {
@@ -536,8 +536,8 @@
                 "EternalStorage": {
                   "name": "EternalStorage",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/EternalStorage.sol",
-                  "created_at": 1541640823684,
-                  "address": "0x480b98068e70cb851a03b7053151df476a9a56b1"
+                  "created_at": null,
+                  "address": null
                 },
                 "TokenLib": {
                   "links": [],
@@ -561,7 +561,7 @@
                   "address": null
                 }
               },
-              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
+              "user_from_address": "0x71085a8010347d6a09bd33005c1f8f4c4eeffce3"
             },
             "reserve": {
               "contracts": {
@@ -573,52 +573,52 @@
                   "links": []
                 }
               },
-              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
+              "user_from_address": "0x71085a8010347d6a09bd33005c1f8f4c4eeffce3"
             },
             "marketplace": {
               "contracts": {
                 "MarketplaceStorage": {
                   "name": "MarketplaceStorage",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/MarketplaceStorage.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087799679,
+                  "address": "0xae708455b5e0fa9f3793a4fd15ddbfb2780efaaf"
                 },
                 "Administration": {
                   "links": [ { "name": "MarketplaceStorage", "address": null } ],
                   "name": "Administration",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/Administration.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087803496,
+                  "address": "0x9fa92c1e6e8f9cdc109d3e34ad27e536e5d417d0"
                 },
                 "ProductStorageAccess": {
                   "name": "ProductStorageAccess",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/ProductStorageAccess.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087807712,
+                  "address": "0x0117c9bd81c5650e9958344efbb9bcdcd9b4b08f"
                 },
                 "AdministrationStorageAccess": {
                   "name": "AdministrationStorageAccess",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/AdministrationStorageAccess.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087811477,
+                  "address": "0x98c01112eb3ff3e25f3a9dbc7bb1140a60d3b53f"
                 },
                 "Bytes32Utils": {
                   "name": "Bytes32Utils",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/Bytes32Utils.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087815691,
+                  "address": "0x58a122e67bb9f65aa3ba90a22b102aacd6aacfdd"
                 },
                 "BytesUtils": {
                   "name": "BytesUtils",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/BytesUtils.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087820116,
+                  "address": "0x8161801f9540d62d4048989d83419851389fb9bb"
                 },
                 "StringUtils": {
                   "name": "StringUtils",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/StringUtils.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087823984,
+                  "address": "0x3172b62c8a4ee449e52d356e09efdf0a1fff4f9d"
                 },
                 "ProductRegistration": {
                   "links": [
@@ -627,43 +627,43 @@
                   ],
                   "name": "ProductRegistration",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/ProductRegistration.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087828100,
+                  "address": "0x532733da68d3e491f7f78b352a28d8fed669507f"
                 },
                 "ProductLanguageSupport": {
                   "links": [ { "name": "MarketplaceStorage", "address": null } ],
                   "name": "ProductLanguageSupport",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/ProductLanguageSupport.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087832649,
+                  "address": "0x136f6f56c44745957e98e53e4293356ea7fbe425"
                 },
                 "ProductSystemRequirement": {
                   "links": [ { "name": "MarketplaceStorage", "address": null } ],
                   "name": "ProductSystemRequirement",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/ProductSystemRequirement.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087836393,
+                  "address": "0xed2d956ebdd4dfc7e043f0d637c654428288198d"
                 },
                 "ProductPricePlan": {
                   "links": [ { "name": "MarketplaceStorage", "address": null } ],
                   "name": "ProductPricePlan",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/ProductPricePlan.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087840277,
+                  "address": "0x1c38d727895b14d9845c91b7ed83a78a1c2cb9ac"
                 },
                 "ProductVersion": {
                   "links": [ { "name": "MarketplaceStorage", "address": null } ],
                   "name": "ProductVersion",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/ProductVersion.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087844064,
+                  "address": "0xb7e321149f2069c2cdb4cc1a6b52f37ce53d6fd5"
                 },
                 "ProductVersionVoting": {
                   "links": [ { "name": "MarketplaceStorage", "address": null } ],
                   "name": "ProductVersionVoting",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/ProductVersionVoting.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087848276,
+                  "address": "0x122f6113c5bc8c7b765ce5888ae56c3a0d6ba93b"
                 },
                 "ProductPurchase": {
                   "links": [
@@ -672,8 +672,8 @@
                   ],
                   "name": "ProductPurchase",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/ProductPurchase.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087852478,
+                  "address": "0x80131ce2a739efec1e449d3b6148589c15b0a20c"
                 },
                 "Developer": {
                   "links": [
@@ -682,56 +682,56 @@
                   ],
                   "name": "Developer",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/Developer.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087860288,
+                  "address": "0x1a997ebb40d22736360e1dde7d8978caaf737eae"
                 },
                 "DeveloperStorageAccess": {
                   "name": "DeveloperStorageAccess",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/marketplace/smart-contracts/ethereum/contracts/DeveloperStorageAccess.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087864252,
+                  "address": "0x98c5d50e1cee4db1a3f8ef312601bdceb7d4c522"
                 }
               },
-              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
+              "user_from_address": "0x71085a8010347d6a09bd33005c1f8f4c4eeffce3"
             },
             "funding": {
               "contracts": {
                 "FundingStorage": {
                   "name": "FundingStorage",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/FundingStorage.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087868444,
+                  "address": "0xd4e4ff0c145e9e93e54fdeffa6fecd1d73117713"
                 },
                 "DeveloperStorageAccess": {
                   "name": "DeveloperStorageAccess",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/DeveloperStorageAccess.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087872295,
+                  "address": "0x2d465e2500578462b16cfa2642bdb90ae8df382e"
                 },
                 "ProjectStorageAccess": {
                   "name": "ProjectStorageAccess",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ProjectStorageAccess.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087876482,
+                  "address": "0x63763b5cc06ea4bedb5ed1d8ec33897207facfc1"
                 },
                 "ContributionStorageAccess": {
                   "name": "ContributionStorageAccess",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ContributionStorageAccess.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087880670,
+                  "address": "0x192466c5b1184f9ea18d2eed1cfa0df9c14f8cd1"
                 },
                 "FundingVault": {
                   "name": "FundingVault",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/FundingVault.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087884373,
+                  "address": "0xac0c894ed52ebd6485be2b6ac984ee25f66821ae"
                 },
                 "Developer": {
                   "links": [ { "name": "DeveloperStorageAccess", "address": null } ],
                   "name": "Developer",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/Developer.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087888591,
+                  "address": "0xfd46d84bc457230818f94632155da159509a0222"
                 },
                 "Contribution": {
                   "links": [
@@ -740,49 +740,49 @@
                   ],
                   "name": "Contribution",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/Contribution.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087892823,
+                  "address": "0xff00ed66d4cc3b348fa19a3f3f2663ab65dde5e8"
                 },
                 "ProjectTimeline": {
                   "name": "ProjectTimeline",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ProjectTimeline.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087896560,
+                  "address": "0x63853b3e7c13ab1f2ab4929dc6ab9b08d7b0bf03"
                 },
                 "ProjectTimelineHelpersLibrary": {
                   "links": [ { "name": "ProjectStorageAccess", "address": null } ],
                   "name": "ProjectTimelineHelpersLibrary",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ProjectTimelineHelpersLibrary.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087900756,
+                  "address": "0x6261f3b4b0e4ec63d0ea7d4b0d7df296b5cca4b3"
                 },
                 "ProjectTimelineProposal": {
                   "links": [ { "name": "ProjectTimelineHelpersLibrary", "address": null } ],
                   "name": "ProjectTimelineProposal",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ProjectTimelineProposal.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087904967,
+                  "address": "0xcc1815d35f51d62d5f798a78836624e18cf946b1"
                 },
                 "ProjectContributionTierHelpersLibrary": {
                   "links": [ { "name": "ProjectStorageAccess", "address": null } ],
                   "name": "ProjectContributionTierHelpersLibrary",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ProjectContributionTierHelpersLibrary.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087908658,
+                  "address": "0x02e41cf9892b3067cdcd6deb339dc62859fbc459"
                 },
                 "ProjectMilestoneCompletion": {
                   "links": [ { "name": "ProjectTimelineHelpersLibrary", "address": null } ],
                   "name": "ProjectMilestoneCompletion",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ProjectMilestoneCompletion.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087912937,
+                  "address": "0x6d07b5740aeb81f7f7757f706d7a916059da768b"
                 },
                 "ProjectRegistrationHelpersLibrary": {
                   "links": [ { "name": "ProjectStorageAccess", "address": null } ],
                   "name": "ProjectRegistrationHelpersLibrary",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ProjectRegistrationHelpersLibrary.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087917094,
+                  "address": "0x47c7ac24b249a7e29d9282b4b5e799926c65ff80"
                 },
                 "ProjectRegistration": {
                   "links": [
@@ -793,14 +793,14 @@
                   ],
                   "name": "ProjectRegistration",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/ProjectRegistration.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087920833,
+                  "address": "0x37051e8d44af3baa7b8320f60aa07da4a6c94234"
                 },
                 "CurationStorageAccess": {
                   "name": "CurationStorageAccess",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/CurationStorageAccess.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087924878,
+                  "address": "0x1a9c863b8c502c7f9b7303f7fad7d9845f412ebd"
                 },
                 "Curation": {
                   "links": [
@@ -809,18 +809,18 @@
                   ],
                   "name": "Curation",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/funding/smart-contracts/ethereum/contracts/Curation.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1542087929122,
+                  "address": "0xff32b3dc3d336f7b2f3198106f44001b2b2c2c6c"
                 }
               },
-              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
+              "user_from_address": "0x71085a8010347d6a09bd33005c1f8f4c4eeffce3"
             }
           },
           "user_from_address": "0x14b47c274e2127aa5a1fe0ef9f65e3924349824c",
           "user_to_address": null
         }
       },
-      "current_ethereum_network": "mainnet",
+      "current_ethereum_network": "local",
       "user_submitted_connection_messages": [
         {
           "id": "1",
@@ -830,36 +830,15 @@
         { "id": "2", "message": "LOADING SIMULATION", "user": { "id": "0x0", "name": "GymTim" } }
       ],
       "active_modal": null,
-      "account": {
-        "public_address": null,
-        "secret_question_1": null,
-        "secret_answer_1": null,
-        "secret_question_2": null,
-        "secret_answer_2": null,
-        "passphrase": null,
-        "private_key": null,
-        "password": null,
-        "email": null,
-        "first_name": null,
-        "last_name": null,
-        "birthday": null,
-        "encrypt_passphrase": true,
-        "versonCreated": "0.7.0",
-        "identity_index": 1,
-        "current_identity": { "id": null },
-        "identities": [
-        ]
-      },
       "simulator_mode": false,
       "desktop_mode": null,
       "developer_mode": false,
       "editor_mode": "viewing",
-      "flags": [
-      ],
+      "flags": [],
       "migrations": { "latest": "1537948419066", "current": "" },
       "$loki": 1,
       "id": "1",
-      "meta": { "updated": 1541870837409, "revision": 615 }
+      "meta": { "updated": 1542087929122, "revision": 648 }
     }
   ],
   "funding": [
