@@ -627,24 +627,23 @@ export const deployContract = async ({ protocolName, contractName, oldContractAd
             }
         }
 
-        console.log('[BlockHub] Deploying contract ' + contractName + ' with params ' + params + ' and links ' + links)
-        
-
         if (protocolName === 'reserve' && contractName === 'TokenSale') {
             let token = TokenAPI.api.ethereum.state.contracts.Token.deployed
             const eternalStorage = TokenAPI.api.ethereum.state.contracts.EternalStorage.deployed
             const hbxToken = TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed
             const tokenLib = TokenAPI.api.ethereum.state.contracts.TokenLib.deployed
 
-            await eternalStorage.addAdmin(hbxToken.address, { from: local.account.wallet.public_address })
+            //await eternalStorage.addAdmin(hbxToken.address, { from: local.account.wallet.public_address })
 
-            await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address }).catch(() => { })
+            //await token.upgradeTo(hbxToken.address, { from: local.account.wallet.public_address }).catch(() => { })
 
             token = { ...TokenAPI.api.ethereum.state.contracts.TokenDelegate.deployed, ...token }
 
-            const tokenWallet = await Wallet.create(local.passphrase, 1000) // this should be a semi-secure wallet - metamask
-            const saleWallet = await Wallet.create(local.passphrase, 1001) // this should be secure wallet - hardware
+            const tokenWallet = await Wallet.create(local.passphrase, 2) // this should be a semi-secure wallet - metamask
+            const saleWallet = await Wallet.create(local.passphrase, 3) // this should be secure wallet - hardware
 
+            console.log('tokenWallet addy', tokenWallet.public_address, tokenWallet.private_key)
+            console.log('saleWallet addy', saleWallet.public_address, saleWallet.private_key)
             const decimals = web3._extend.utils.toBigNumber(18)
             const totalAmount = web3._extend.utils.toBigNumber(1000000000)
             const saleAmount = web3._extend.utils.toBigNumber(300000000)
@@ -652,28 +651,28 @@ export const deployContract = async ({ protocolName, contractName, oldContractAd
             const tokenSupply = totalAmount.times(web3._extend.utils.toBigNumber(10).pow(decimals))
             const tokenAllowance = saleAmount.times(web3._extend.utils.toBigNumber(10).pow(decimals))
 
-            //web3._extend.utils.toBigNumber('1e22') // 1^9 x 10^18
-            // await token.setTotalSupply(tokenSupply, {from: owner3})
-            await token.mint(tokenWallet.public_address, tokenSupply, { from: local.account.wallet.public_address })
+            //await token.mint(tokenWallet.public_address, tokenSupply, { from: local.account.wallet.public_address })
 
             const latestBlock = await web3.eth.getBlockPromise('latest')
-            console.log(8888, latestBlock.timestamp)
-            const openingTime = latestBlock.timestamp + 200 //latestBlock.timestamp + duration.weeks(1) // nov 10 is 1541862000
+
+            const openingTime = latestBlock.timestamp + 200 //1541862000 //latestBlock.timestamp + 200 //latestBlock.timestamp + duration.weeks(1) // nov 10 is 1541862000
             const closingTime = 1544454000 //openingTime + duration.weeks(1)
 
             const rate = web3._extend.utils.toBigNumber(210.39 / 0.055) // 3825 timbits per wei
             const cap = web3._extend.utils.toBigNumber(web3._extend.utils.toWei(18500000 / 210.39, 'ether'))
 
-            // uint256 _rate, address _wallet, ERC20 _token, address _tokenWallet, uint256 _cap, uint256 _startTime, uint256 _endTime
-            const tokensale = await ReserveAPI.api.ethereum.deployContract('TokenSale', [], [
+            params = [
                 rate,
                 saleWallet.public_address,
-                hbxToken.address,
-                tokenWallet.public_address,
-                cap,
-                openingTime,
-                closingTime
-            ])
+                hbxToken.address
+            ]
+
+            links = []
+
+            console.log('[BlockHub] Deploying contract ' + contractName + ' with params ' + JSON.stringify(params) + ' and links ' + JSON.stringify(links))
+
+            // uint256 _rate, address _wallet, ERC20 _token, address _tokenWallet, uint256 _cap, uint256 _startTime, uint256 _endTime
+            const tokensale = ReserveAPI.api.ethereum.state.contracts.TokenSale.deployed//await ReserveAPI.api.ethereum.deployContract('TokenSale', links, params)
 
             config.contracts[contractName].created_at = Date.now()
             config.contracts[contractName].address = tokensale.address
@@ -690,13 +689,15 @@ export const deployContract = async ({ protocolName, contractName, oldContractAd
             let tokenWalletHolder = await TokenAPI.api.ethereum.state.contracts.Token.contract.at(token.address)
             tokenWalletHolder = { ...tokenDelegateHolder, ...tokenWalletHolder }
 
-            await tokenWalletHolder.approve(tokensale.address, tokenAllowance, { from: tokenWallet.public_address })
+            //await tokenWalletHolder.approve(tokensale.address, tokenAllowance, { from: tokenWallet.public_address })
 
             TokenAPI.api.ethereum.state.contracts.Token.contract.setProvider(originalProvider)
             TokenAPI.api.ethereum.state.contracts.TokenDelegate.contract.setProvider(originalProvider)
 
             return resolve(config.contracts[contractName])
         } else {
+            console.log('[BlockHub] Deploying contract ' + contractName + ' with params ' + JSON.stringify(params) + ' and links ' + JSON.stringify(links))
+
             protocol.api.ethereum
                 .deployContract(contractName, links, params)
                 .then(async (contract) => {
@@ -754,7 +755,7 @@ export const setAccountRequest = async () => {
 
         if (local.password) {
             const decryptedPrivateKey = decrypt(account.private_key, local.password)
-
+            console.log('private key', decryptedPrivateKey)
             account = {
                 public_address: account.public_address,
                 secret_question_1: account.secret_question_1,

@@ -1,7 +1,7 @@
 {
   "application": [
     {
-      "environment_mode": "beta",
+      "environment_mode": "production",
       "signed_in": false,
       "loading": false,
       "connection": {
@@ -20,43 +20,44 @@
                 "EternalStorage": {
                   "name": "EternalStorage",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/EternalStorage.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1541861913124,
+                  "address": "0x306b5cf6f9ee067b676a3a6be0dff0b5df2f629f"
                 },
                 "TokenLib": {
-                  "links": [ { "name": "EternalStorage", "address": null } ],
+                  "links": [],
                   "name": "TokenLib",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/TokenLib.sol",
-                  "created_at": null,
-                  "address": null
+                  "created_at": 1541862015914,
+                  "address": "0x1ee9faa44d313a1d2e4bfa135ffb15c6f0da8a27"
                 },
                 "Token": {
-                  "links": [ { "name": "EternalStorage", "address": null } ],
+                  "links": [],
                   "name": "Token",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/Token.sol",
-                  "created_at": null
+                  "created_at": 1541862092379,
+                  "address": "0x2be42c6d0c022a49258256cb2d46aeb7b1bb994d"
                 },
                 "TokenDelegate": {
-                  "links": [
-                    { "name": "EternalStorage", "address": null },
-                    { "name": "TokenLib", "address": null }
-                  ],
+                  "links": [ { "name": "TokenLib", "address": null } ],
                   "name": "TokenDelegate",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/TokenDelegate.sol",
-                  "created_at": null
+                  "created_at": 1541862170010,
+                  "address": "0x2793a23341012e0970cf478bab08606b56504c3e"
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             },
             "reserve": {
               "contracts": {
                 "TokenSale": {
                   "name": "TokenSale",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/reserve/smart-contracts/ethereum/contracts/TokenSale.sol",
-                  "created_at": null
+                  "created_at": 1541870837408,
+                  "links": [],
+                  "address": "0xebf0027ef3b4b7a742a148cddb0f2b14e5d8f0e9"
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             },
             "marketplace": {
               "contracts": {
@@ -159,7 +160,7 @@
                   "created_at": null
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             },
             "funding": {
               "contracts": {
@@ -264,7 +265,7 @@
                   "created_at": null
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             }
           },
           "user_from_address": null,
@@ -281,31 +282,28 @@
                   "address": "0x5b94982163bd6ced5e234ee6e44beb52b8ce0cfb"
                 },
                 "TokenLib": {
-                  "links": [ { "name": "EternalStorage", "address": null } ],
+                  "links": [],
                   "name": "TokenLib",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/TokenLib.sol",
                   "created_at": 1541795284709,
                   "address": "0xda79d23c1eddac9fda54bcf5aaf1d78867228bb1"
                 },
                 "Token": {
-                  "links": [ { "name": "EternalStorage", "address": null } ],
+                  "links": [],
                   "name": "Token",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/Token.sol",
                   "created_at": 1541795316504,
                   "address": "0xc21fdb98f052e29dee326d81a129a7263ca6698b"
                 },
                 "TokenDelegate": {
-                  "links": [
-                    { "name": "EternalStorage", "address": null },
-                    { "name": "TokenLib", "address": null }
-                  ],
+                  "links": [ { "name": "TokenLib", "address": null } ],
                   "name": "TokenDelegate",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/TokenDelegate.sol",
                   "created_at": 1541795342961,
                   "address": "0x87bc80cfae3b035571f8ce29995f39f7ed1ee3ca"
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             },
             "reserve": {
               "contracts": {
@@ -313,10 +311,11 @@
                   "name": "TokenSale",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/reserve/smart-contracts/ethereum/contracts/TokenSale.sol",
                   "created_at": 1541796306158,
-                  "address": "0x37070779776ae15c76c8fa27003d1e1919cac99f"
+                  "address": "0x37070779776ae15c76c8fa27003d1e1919cac99f",
+                  "links": []
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             },
             "marketplace": {
               "contracts": {
@@ -419,7 +418,7 @@
                   "created_at": null
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             },
             "funding": {
               "contracts": {
@@ -524,7 +523,7 @@
                   "created_at": null
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             }
           },
           "user_from_address": null,
@@ -541,31 +540,28 @@
                   "address": "0x480b98068e70cb851a03b7053151df476a9a56b1"
                 },
                 "TokenLib": {
-                  "links": [ { "name": "EternalStorage", "address": null } ],
+                  "links": [],
                   "name": "TokenLib",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/TokenLib.sol",
                   "created_at": null,
                   "address": null
                 },
                 "Token": {
-                  "links": [ { "name": "EternalStorage", "address": null } ],
+                  "links": [],
                   "name": "Token",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/Token.sol",
                   "created_at": null,
                   "address": null
                 },
                 "TokenDelegate": {
-                  "links": [
-                    { "name": "EternalStorage", "address": null },
-                    { "name": "TokenLib", "address": null }
-                  ],
+                  "links": [ { "name": "TokenLib", "address": null } ],
                   "name": "TokenDelegate",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/token/smart-contracts/ethereum/contracts/TokenDelegate.sol",
                   "created_at": null,
                   "address": null
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             },
             "reserve": {
               "contracts": {
@@ -573,10 +569,11 @@
                   "name": "TokenSale",
                   "link": "https://github.com/hyperbridge/protocol/blob/master/packages/reserve/smart-contracts/ethereum/contracts/TokenSale.sol",
                   "created_at": null,
-                  "address": null
+                  "address": null,
+                  "links": []
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             },
             "marketplace": {
               "contracts": {
@@ -695,7 +692,7 @@
                   "address": null
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             },
             "funding": {
               "contracts": {
@@ -816,14 +813,14 @@
                   "address": null
                 }
               },
-              "user_from_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec"
+              "user_from_address": "0x41bd0e132b2d09abb1259cbd245f90117a432c69"
             }
           },
           "user_from_address": "0x14b47c274e2127aa5a1fe0ef9f65e3924349824c",
           "user_to_address": null
         }
       },
-      "current_ethereum_network": "ropsten",
+      "current_ethereum_network": "mainnet",
       "user_submitted_connection_messages": [
         {
           "id": "1",
@@ -834,47 +831,23 @@
       ],
       "active_modal": null,
       "account": {
-        "public_address": "0xb7e3aa139d0b96930156599ef49e4298bfc03eec",
-        "secret_question_1": "last_name_first_kissed",
+        "public_address": null,
+        "secret_question_1": null,
         "secret_answer_1": null,
-        "secret_question_2": "first_name_favorite_aunt_uncle",
+        "secret_question_2": null,
         "secret_answer_2": null,
-        "passphrase": "U2FsdGVkX1/HXj0om+3QxAgEO2oaZPKlGhBZ5dROyMuW6840IWY+NZfRddkHoe7QRErZm5rA6eZ+6SrDTnofyV9cWOUx5/APe5THE2NbD2e6jdj9RaYCCsf1LkvXAq9O",
-        "private_key": "U2FsdGVkX1/AlCTvqvyPsdUWfkfuiOoF0s4cwrCgFz4nGgiMrCiqeoodCbFON3wrFdEoZGilrez8DC59dtj4v6uYAvwOXyfR9tr938N1z4YolUnY3UbDTJxVWizpOU6u",
-        "password": "U2FsdGVkX1/HKsuBXqOn8IBL5rUkhb3+iKiHd2ShCZI=",
-        "email": "U2FsdGVkX1+V6JsRuC6ryZFDkH7nfop6IrQSl28r1sk=",
-        "first_name": "U2FsdGVkX1/MaMobplNmPi0kt99sZ13aeSCC1Sjp5cs=",
-        "last_name": "U2FsdGVkX1/JgpBmvSAcRaVqhzm0cksxT0N1nSm30XA=",
-        "birthday": "U2FsdGVkX1/J0n2ESwfP8CRp6TQj4G2HeBDlycg5T+E=",
+        "passphrase": null,
+        "private_key": null,
+        "password": null,
+        "email": null,
+        "first_name": null,
+        "last_name": null,
+        "birthday": null,
         "encrypt_passphrase": true,
-        "identity_index": 13,
-        "current_identity": { "id": 10 },
+        "versonCreated": "0.7.0",
+        "identity_index": 1,
+        "current_identity": { "id": null },
         "identities": [
-          {
-            "id": 10,
-            "name": "222Default",
-            "public_address": "0xb1b3ffdb0108b7ad639e1343f69e1fcdc6a39306",
-            "private_key": "U2FsdGVkX19LfSTfY4UZrthV+KzTBBztP1znmzFvdiPPMpri/erVkPaHVPbVW8w55mBzvCzqg/0V4ytI2VkJsof7OpGXXb7BkwLbOcvP8YhjNR/87xIoF5MKAX5xjduV",
-            "developer_id": 1,
-            "curator_id": 1
-          },
-          {
-            "id": 11,
-            "public_address": "0x5718f20a2bc774f5a38c1d6de45d1c600d722c60",
-            "name": "Test",
-            "developer_id": 2
-          },
-          {
-            "id": 12,
-            "public_address": "0x7fb7d494de4caf931d6adad966c3f8381838aeee",
-            "name": "Eric"
-          },
-          {
-            "id": 13,
-            "public_address": "0xab589b842bb22a62b52e545aec1dc1863321574f",
-            "name": "DevEric2222222222222",
-            "developer_id": 3
-          }
         ]
       },
       "simulator_mode": false,
@@ -882,14 +855,11 @@
       "developer_mode": false,
       "editor_mode": "viewing",
       "flags": [
-        { "key": "COLLECTIONS", "description": "", "type": "boolean" },
-        { "key": "CURATORS", "description": "", "type": "boolean" },
-        { "key": "BATTLE_PASS", "description": "", "type": "boolean" }
       ],
       "migrations": { "latest": "1537948419066", "current": "" },
       "$loki": 1,
       "id": "1",
-      "meta": { "updated": 1541796306163, "revision": 604 }
+      "meta": { "updated": 1541870837409, "revision": 615 }
     }
   ],
   "funding": [
