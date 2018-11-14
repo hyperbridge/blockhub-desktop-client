@@ -18,7 +18,8 @@ export const ethereum = {
                 return new HDWalletProvider(
                     passphrase,
                     'http://localhost:8545',
-                    index
+                    index,
+                    30
                 )
             },
             host: 'localhost',

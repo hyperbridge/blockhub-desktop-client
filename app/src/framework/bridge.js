@@ -439,9 +439,6 @@ export const createDeveloperRequest = async (identity) => {
             if (!error) {
                 identity.developer_id = result.args.developerId.toNumber()
 
-                DB.save()
-
-
                 saveAccountFile().then()
 
                 return resolve(identity.developer_id)
@@ -1441,13 +1438,13 @@ export const runCommand = async (cmd, meta = {}) => {
                     a: require('@babel/runtime-corejs2/regenerator')
                 }
 
-                let evalCode = cmd.data
+                let evalCode = cmd.data.code
 
                 evalCode = evalCode.replace(/babel_runtime_core_js_promise__WEBPACK_IMPORTED_MODULE_.___default/g, 'BABEL_PROMISE')
                 evalCode = evalCode.replace(/babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_.___default/g, 'BABEL_GENERATOR')
                 evalCode = evalCode.replace(/babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_.___default/g, 'BABEL_REGENERATOR')
 
-                resultData = Function('return (' + evalCode + ')')()(
+                resultData = await Function('return (' + evalCode + ')')()(
                     local, 
                     DB, 
                     FundingAPI, 
@@ -1456,7 +1453,8 @@ export const runCommand = async (cmd, meta = {}) => {
                     ReserveAPI, 
                     BABEL_PROMISE, 
                     BABEL_GENERATOR,
-                    BABEL_REGENERATOR
+                    BABEL_REGENERATOR,
+                    cmd.data.params
                 )
             } else {
                 resultData = {}
