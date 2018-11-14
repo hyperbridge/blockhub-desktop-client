@@ -21,6 +21,7 @@
         "bignumber.js": "^7.2.1",
         "bip39": "^2.5.0",
         "bluebird": "^3.5.3",
+        "commander": "^2.19.0",
         "crypto": "^1.0.1",
         "debounce": "^1.2.0",
         "electron-updater": "^3.2.3",
