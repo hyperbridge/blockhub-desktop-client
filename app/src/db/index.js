@@ -52,31 +52,32 @@ export const instance = () => {
 }
 
 export const loadDefault = () => {
-    application.config = loki.addCollection('applicationConfig');
-    marketplace.config = loki.addCollection('marketplaceConfig');
-    marketplace.products = loki.addCollection('marketplaceProducts');
-    marketplace.assets = loki.addCollection('marketplaceAssets');
-    funding.projects = loki.addCollection('fundingProjects');
-    funding.config = loki.addCollection('fundingConfig');
+    application.config = loki.addCollection('applicationConfig')
+    marketplace.config = loki.addCollection('marketplaceConfig')
+    marketplace.products = loki.addCollection('marketplaceProducts')
+    marketplace.assets = loki.addCollection('marketplaceAssets')
+    funding.projects = loki.addCollection('fundingProjects')
+    funding.config = loki.addCollection('fundingConfig')
 
     try {
         updateCollection(application.config, data.application)
         updateCollection(marketplace.config, data.marketplace)
-        updateCollection(marketplace.products, data.marketplace.products)
-        updateCollection(marketplace.assets, data.marketplace.assets)
+        updateCollection(marketplace.products, data.marketplace[0].products)
+        updateCollection(marketplace.assets, data.marketplace[0].assets)
         updateCollection(funding.config, data.funding)
-        updateCollection(funding.projects, data.funding.projects)
+        updateCollection(funding.projects, data.funding[0].projects)
     }
     catch (e) {
         console.warn(e)
     }
+    application.config.ensureId()
+    application.config.ensureAllIndexes(true)
 
-    application.config.ensureId();
-    application.config.ensureAllIndexes(true);
-    marketplace.config.ensureId();
-    marketplace.config.ensureAllIndexes(true);
-    funding.config.ensureId();
-    funding.config.ensureAllIndexes(true);
+    marketplace.config.ensureId()
+    marketplace.config.ensureAllIndexes(true)
+
+    funding.config.ensureId()
+    funding.config.ensureAllIndexes(true)
 }
 
 export const save = () => {
@@ -93,14 +94,13 @@ export const save = () => {
     data.marketplace[0].assets = marketplace.assets.data
     data.funding = funding.config.data
     data.funding[0].projects = funding.projects.data
-
     fs.writeFile('./src/db/data.json', beautify(data, null, 2, 100), 'utf8', (err) => {
         if (err) {
             return console.log('[BlockHub] Error saving database', err)
         }
 
         console.log('[BlockHub] Database saved.')
-    });
+    })
 }
 
 export const clean = () => {
@@ -118,12 +118,12 @@ const updateCollection = (collection, data) => {
     collection.data = data
   // let obj = collection.findObject({
   //   'id': data.id
-  // });
+  // })
 
   // if (obj) {
-  //   collection.update(data);
+  //   collection.update(data)
   // } else {
-  //   collection.insert(data);
+  //   collection.insert(data)
   // }
 }
 
