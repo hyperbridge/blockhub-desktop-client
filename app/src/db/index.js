@@ -89,10 +89,10 @@ export const save = () => {
 
     data.application = application.config.data
     data.marketplace = marketplace.config.data
-    data.marketplace.products = marketplace.products.data
-    data.marketplace.assets = marketplace.assets.data
+    data.marketplace[0].products = marketplace.products.data
+    data.marketplace[0].assets = marketplace.assets.data
     data.funding = funding.config.data
-    data.funding.projects = funding.projects.data
+    data.funding[0].projects = funding.projects.data
 
     fs.writeFile('./src/db/data.json', beautify(data, null, 2, 100), 'utf8', (err) => {
         if (err) {

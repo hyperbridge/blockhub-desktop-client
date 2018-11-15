@@ -333,6 +333,19 @@ export const getAllProducts = async () => {
         const results = filter.get((error, logs) => {
             // do things
             console.log(555, logs)
+
+            // {
+            //     logIndex: 0,
+            //         transactionIndex: 0,
+            //             transactionHash: '0x8a98d58debba34e7cdaba2ef92b9215954c4ac08b2c00d55b13467b9f5145aa5',
+            //                 blockHash: '0xf95cc8c8efcb7e0073c426af8e49864bb92d83086e56d3f9b1bd61aa2e93a502',
+            //                     blockNumber: 51,
+            //                         address: '0x28e6f186a229b8905b5228ad15d96f6b4fae16fc',
+            //                             data: '0x0000000000000000000000000000000000000000000000000000000000000006',
+            //                                 topics:
+            //     ['0x8bfed7c0004768df129b4900300816f8e85b8633621048ae882252021aa699b2'],
+            //         type: 'mined'
+            // }
         })
 
         // stops and uninstalls the filter
@@ -1253,7 +1266,7 @@ export const maximizeWindow = () => {
 }
 
 export const runCommand = async (cmd, meta = {}) => {
-    console.log('[DesktopBridge] Running command', cmd.key, cmd)
+    console.log('[DesktopBridge] Running command: ', cmd.key, cmd)
 
     return new Promise(async (resolve, reject) => {
         if (cmd.responseId) {
@@ -1270,6 +1283,7 @@ export const runCommand = async (cmd, meta = {}) => {
 
         let resultKey = 'genericResponse'
         let resultData = null
+        let responseId = cmd.requestId
 
         if (cmd.key === 'init') {
             console.log('[BlockHub] Web initialized', cmd.data) // msg from web page
@@ -1305,6 +1319,13 @@ export const runCommand = async (cmd, meta = {}) => {
 
                     // Tell web all non-sensitive account info
                     await setAccountRequest()
+
+                    sendCommand('updateState', {
+                        module: 'marketplace',
+                        state: {
+                            products: DB.marketplace.products.data
+                        }
+                    })
 
                     // Tell web protocol config data
                     await sendCommand('setProtocolConfig', await initProtocol({ protocolName: 'token' }))
@@ -1445,8 +1466,9 @@ export const runCommand = async (cmd, meta = {}) => {
                 evalCode = evalCode.replace(/babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_.___default/g, 'BABEL_REGENERATOR')
 
                 resultData = await Function('return (' + evalCode + ')')()(
-                    local, 
-                    DB, 
+                    local,
+                    DB,
+                    exports,
                     FundingAPI, 
                     MarketplaceAPI, 
                     TokenAPI, 
@@ -1627,7 +1649,7 @@ export const runCommand = async (cmd, meta = {}) => {
 
         emit(cmd.key, cmd.data ? cmd.data : undefined)
 
-        return resolve(await sendCommand(resultKey, resultData, meta.client, cmd.requestId))
+        return resolve(await sendCommand(resultKey, resultData, meta.client, responseId))
     })
 }
 
