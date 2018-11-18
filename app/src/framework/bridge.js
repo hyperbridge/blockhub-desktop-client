@@ -1488,6 +1488,13 @@ export const runCommand = async (cmd, meta = {}) => {
             const capBob = web3._extend.utils.toBigNumber(web3._extend.utils.toWei(45000 / 210.39, 'ether'))
             const bob = '0x40D68278b83F13d0310DA1560ecCF18d6Aa11c9e'
             await ReserveAPI.api.ethereum.state.contracts.TokenSale.deployed.setGroupCap([bob], capBob);
+        } else if (cmd.key === 'setOpenStartup') {
+            electron.app.setLoginItemSettings({
+                openAtLogin: cmd.data
+            })
+
+            resultData = {}
+            resultKey = 'setOpenStartupResponse'
         } else if (cmd.key === 'error') {
             console.log('[BlockHub] Web Error: ', cmd.data)
 
